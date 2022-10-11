@@ -1,3 +1,52 @@
 %!TEX root = ../Studienarbeit.tex
 
-% \chapter{Einleitung}
+\section{Begrifflichkeiten und Systeme}
+
+\subsection{Rust}
+
+"`Rust ist einer der beliebtesten Programmiersprachen und das 7 Jahre in Folge."'-\cite{stack_rust}
+
+Einer der Gründe dafür ist, dass Rust sich von dynamisch-typisierte
+Sprachen inspirieren lassen hat. Durch diese Inspiration
+ist es nicht nötig
+Variablen mit konkreten Datentypen zu deklarieren. Bei der
+Kompilierung werden diese automatisch erkannt und verwendetet.
+Rust setzt allerdings ein stark typisiertes System ein.
+Bei der Kompilierung werden die dynamischen Datentypen aufgelöst
+und Datentypfehler direkt erkannt.
+Dadurch werden viele Datentypkonversionsfehler während der Kompilierung und somit
+in der Entwicklungsphase aufgedeckt. Ohne Erkennung führen
+sie zu Problemen in der Laufzeit eines Programms.
+Der Compiler verfügt zugleich über umfangreiche
+Checks, die vor weiteren Laufzeitfehlern schützen sollen.
+Ohne diese Checks muss ein Entwickler diese mittels eigener Tests finden und abfangen.
+\\
+Dem Entwickler wird zusätzlich die Möglichkeit geboten zu entscheiden
+ob Daten auf dem Stack oder dem Heap
+gespeichert werden sollen. Durch eine bewusste Nutzung
+dieser Möglichkeit kann noch das letzte Bisschen
+Performanz aus dem Speichermanagement geholt werden.
+\\
+Ein großer Vorteil entgegen C\verb|#|, C/C++ oder Java liegt darin, dass
+der Compiler erkennen kann, wann Daten nicht länger benötigt werden
+und deren belegten Speicher automatisch freigibt. Dies ermöglicht ein effizientes
+Nutzen des Speichers ohne viel Aufwand dem Entwickler aufzubürden.
+Vergleichsweise viel Aufwand hat man in C/C++. Dort müssen
+verschiedene Speichernutzungen mit \emph{malloc} und \emph{free} manuell gemanagt.
+\\
+Mit diesen Möglichkeiten kann Rust direkten \emph{low-level} Code mit
+hohen Sicherheitsgarantien produzieren.
+Da Rust noch jung ist, sind Neuentwicklungen
+von Desktopanwendungen schwer umsetzbar. Durch zu wenige
+Features für die Entwicklung graphischer Oberflächen sind diese
+nur schwer zu realisieren. Dadurch
+werden häufig Performanz- und sicherheitskritische
+Abschnitte in anderen Sprachen mittels
+dem \acf{FFI} ausgetauscht. \cite{rust_overflow_blog}
+
+
+\subsection{Raspberry Pi}
+
+\subsection{Computer Vision-Stereo Vision}
+
+\section{Problemstellung}

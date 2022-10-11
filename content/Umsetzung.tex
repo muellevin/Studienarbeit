@@ -1,1 +1,59 @@
+
 %!TEX root = ../Studienarbeit.tex
+
+\section{Bilderkennung und -Verarbeitung}
+
+
+\section{Hardwarerealisierung}
+
+\comment{Verkabelung, Aufbau, Herausforderungen, spezielle Lösungen}
+Auswahl PI -> Liefermangel
+Erstidee Multiplexer um zeitverzögerung zu reduzieren -> schlechte Kritik
+% https://www.amazon.de/Arducam-Adaptermodul-Raspberry-kompatibel-Kameras/dp/B07TYL36MC/ref=sr_1_5?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=2KI1QVYFS8KN6&keywords=camera+adapter+raspberry&qid=1662198136&sprefix=camera+adapetr+raspberry%2Caps%2C77&sr=8-5
+
+Zweite Idee usb-> von vornerein "komplexer" /durch zeitkacke -> irgendwie auch teuer
+
+Dritte Idee esp32-CAM Module -> Hohe Latenzen und Zeitsynchronitätsaufwand
+
+Viertens -> compute model + I/O shield auch teuer aber 2 csi Anschlüsse
+
+5. Jetson mit 2 CSI Anschlüssen -> teuer und noch mehr Liefermangel
+
+\subsection{Wasserversorgung}
+
+\comment{integrierte Pumpe $\rightarrow$ Soll portable sein
+
+Alternativ: Gartenschlauch mit Ventilsteuerung
+
+\subsubsection{Pumpe}
+Pumpe: Membranpumpe $\rightarrow$ Gleichbleibende Fördermenge
+bei hohen Druckunterschieden (Pumpe 1-4 Bar).
+Druck Vernachlässigen und Strömungslehre mit Fördermenge
+berechnen. Membranpumpe haben Druckschalter $\rightarrow$
+wie ist ein/ausschaltverfahren? Delay etc. Auswahl Verwendung
+von Ventil zum Durchschalten oder von Versorgungsspannung der Pumpe???
+
+Normale Pumpe: Komplexer durch kennlinie $\rightarrow$ Berechnung des
+inneren Drucks nötig und Interpolation dieser. (Meiste Pumpen
+haben schon bei 1-2 Bar Probleme $\rightarrow$ Druckventil schaltet Pumpe aus.
+
+\subsubsection{Wassertank}
+Integriert oder Schlauch zu extern. Vor-/Nachteile Entscheidung?
+
+Integriert:
+
+Vollständig portable
+
+;schwerer, Dichtigkeitsproblem
+
+Extern:
+
+Bedingt portable, einfacher zu realisieren, Systembetrachtung geringer
+
+Wasserversorgung muss am Einsatzort möglich sein, Lange Strecken und Höhen für
+Pumpe nicht gut.
+)}
+
+\section{Dreidimensionales Zielsystem}
+
+\comment{Mit Vision Schwerpunkt der Arbeit teils/ganz in HW-Realisierung?}
