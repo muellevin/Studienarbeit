@@ -60,4 +60,96 @@ Pumpe nicht gut.
 
 \section{Dreidimensionales Zielsystem}
 
+% \begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth|p{0.35\textwidth}  }\label{tab:Verbindung_Res}
+%     \textbf{Motortyp}
+%     & \textbf{Vorteile}
+%     & \textbf{Nachteile}\\
+%     \hline
+%     \endfirsthead
+%     \multicolumn{2}{l}%
+%     {\textit{Fortsetzung von vorheriger Seite}} \\
+%     \hline
+%     \endhead
+%     \hline \multicolumn{2}{r}{\textit{Fortsetzung auf nachfolgender Seite}} \\
+%     \endfoot
+%     \endlastfoot
+%     Schrittmotor &
+%     \begin{itemize}
+%         \item Sehr günstig und präzise
+%         \item Schrittweite ca. 1.8 °
+%         \item Besitzt Haltemoment
+%         \item Berechnung der Position möglich (auch open-loop)
+%     \end{itemize}
+%     &
+% 	Am Ende des Zielbereichs Schrittweite zu groß (ca. 35cm bei 10m Bereich)
+% 	$\righttarrow$ Übersetzung auf kleineren Winkel nötig
+% 	Zu geringe Drehzahl möglich. Führt zu zu langsamen anvisieren des bewegenden Ziels
+% 	Umso höher die Drehzahl umso niedriger der Torque $\rightarrow$ EM-Feld überholt Stator
+% 	Schrittmotortreiber nötig
+% \\
+%     DC-Motor &
+% 	Hohe Drehzahl möglich
+% 	Ansteuerung mittels PWM
+% 	&
+% 	H-Brücke nötig
+% \\
+
+% \caption[Motortyp Vor- und Nachteile]{Motortyp Vor- und Nachteile}
+% \end{longtable}
+\begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth}|p{0.35\textwidth} }
+    \endfirsthead
+    \multicolumn{2}{l}%
+    {\textit{Fortsetzung von vorheriger Seite}} \\
+    \hline
+    \endhead
+    \hline \multicolumn{2}{r}{\textit{Fortsetzung auf nachfolgender Seite}} \\
+    \endfoot
+    \endlastfoot
+    \textbf{Motortyp} & \textbf{Vorteile} & \textbf{Nachteile}\\
+    \hline
+    Schrittmotor &
+    \begin{itemize}
+        \item Sehr günstig und präzise
+        \item Schrittweite ca. 1.8 °
+        \item Besitzt Haltemoment
+        \item Berechnung der Position möglich (auch open-loop)
+    \end{itemize}
+    &
+    \begin{itemize}
+        \item Am Ende des Zielbereichs Schrittweite zu groß (ca. 35cm bei 10m Bereich)
+	$\rightarrow$ Übersetzung auf kleineren Winkel nötig
+
+	\item Zu geringe Drehzahl möglich. Führt zu zu langsamen anvisieren des bewegenden Ziels
+	\item Umso höher die Drehzahl umso niedriger der Torque $\rightarrow$ EM-Feld überholt Stator Schrittmotortreiber nötig
+    \end{itemize}
+\\
+    DC-Motor &
+    \begin{itemize}
+        \item Hohe Drehzahl möglich $\rightarrow$ über Übersetzung kleine Winkel denkbar
+        \item PWM-gesteuert
+    \end{itemize}
+    &
+    \begin{itemize}
+        \item H-Brücke nötig
+        \item Motorsteuerung und Regelung nötig + Sensoren
+    \end{itemize}
+    \\
+    Servomotor &
+    \begin{itemize}
+        \item Keine Direkte Regelung nötig
+        \item Steuerung über PWM
+        \item hohe Genauigkeit und schnelle Stellzeit
+        \item keine Treiber nötig
+    \end{itemize}
+    &
+    \begin{itemize}
+        \item keine günstigen 12V Motoren
+        \item ist Leistung ausreichend?
+        \item Spannungswandler nötig (5-8V)
+    \end{itemize}
+    \\
+\end{longtable}
+
+$\rightarrow$ Entscheidung Servo/DC?
+
 \comment{Mit Vision Schwerpunkt der Arbeit teils/ganz in HW-Realisierung?}
