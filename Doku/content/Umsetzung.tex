@@ -6,6 +6,28 @@
 
 \section{Hardwarerealisierung}
 
+Für einen optimalen Vertreibungseffekt werden die Störfaktoren Licht, Ton und Wasser in das Abschreckgerät eingebunden. Der Aufbau und
+Betrachtung im Gesamtsystem wird im folgenden beschrieben.
+
+\subsection{Blitzlicht}
+
+Für den Einsatz eines Abschrecklichtes mit Blitzlichtfunktion
+werden zwei LED-Scheinwerfer der Marke NAIZY für 11.99€
+verwendet. Die Erweiterungsleuchten sind für den Einsatz als Erweiterungsleuchten für Geländefahrzeuge gedacht. Sie sind wasserdicht und für den Außeneinsatz geeignet. Mit 1600 Lumen und grellweißem Farbton haben sie ausreichend Leistung um die Tiere abzuschrecken. Aufgrund dieser Charakteristiken und des geringen Energieverbrauchs von 18 Watt sind sie für das Abschrecksystem ausgewählt worden. \cite{am_licht}
+
+Die zwei LED-Scheinwerfer sind an den beiden oberen Ecken der Box
+befestigt. Sie werden mit Transistoren durch den Raspberry Pi gesteuert. Um einen Gewöhnungseffekt zu vermeiden sind die
+Scheinwerfer mit 0.5 bis 10 Hz beschalten. Die Frequenz und Schaltung der Scheinwerfer wird in einem eigenen Thread
+mittels Signalsteuerung verwirklicht.
+\comment{Testen der Rust implemtierung mittels Waker?}
+\comment{Bild bei Nacht aus/an + Schaltbild}
+
+Im Schaltbild \comment{todo Schaltbild} wird die Verwendung eines
+MOSFET-Treiberbausteins erkenntlich. Der Treiber ermöglicht das
+schalten der Scheinwerfer. Der Treiber verfügt über eine zusätzliche GND-Leitung. Dadurch ist es möglich den Strom zu schalten, auch wenn der Signalgeber und \textit{DC-Out} nicht die selbe Masse haben.
+Wenn die Transistoren mittels PWM gesteuert werden, ist diese Art der Ansteuerung notwendig. Andernfalls würde das PWM-Signal auf die falsche Masse bezogen und der Transistor nicht schalten.
+\comment{todo literaturverweis}
+
 \comment{Verkabelung, Aufbau, Herausforderungen, spezielle Lösungen}
 Auswahl PI -> Liefermangel
 Erstidee Multiplexer um zeitverzögerung zu reduzieren -> schlechte Kritik
@@ -36,6 +58,11 @@ Druck Vernachlässigen und Strömungslehre mit Fördermenge
 berechnen. Membranpumpe haben Druckschalter $\rightarrow$
 wie ist ein/ausschaltverfahren? Delay etc. Auswahl Verwendung
 von Ventil zum Durchschalten oder von Versorgungsspannung der Pumpe???
+\\
+Problem beim Druckventil:\\
+Bei leerem Tank schaltet die Pumpe nicht ab, daher muss Schaltung über Versorgung der Pumpe durchgeführt werden.
+\\
+Die Pumpe arbeitet unter hoher Last. Kurzer Test bei Düsendurchmesser 1.5 mm zeigte eine Fördermenge von ca. 5 Liter pro Minute. Zudem ist durch die turbolende Strömung eine zu hohe Streuung des Wasserstrahl verursacht worden (Durchmesser 70 cm). Das Tier würde daher nur ein \enquote{tröpfeln} wahrnehmen mit geringen Störungsfaktor.
 
 Normale Pumpe: Komplexer durch kennlinie $\rightarrow$ Berechnung des
 inneren Drucks nötig und Interpolation dieser. (Meiste Pumpen
