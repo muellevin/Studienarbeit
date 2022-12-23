@@ -1,0 +1,102 @@
+\documentclass{scrartcl}
+\usepackage{fontenc}
+
+
+\title{Dispositionspapier zur Studienarbeit\\
+Entwicklung eines portablen Abschrecksystems gegen unliebsame Kleintiere}
+\author{ Levin Müller }
+\date{\today}
+\usepackage[
+	backend=bibtex,		% empfohlen. Falls biber Probleme macht: bibtex
+	bibwarn=true,
+	bibencoding=utf8,	% wenn .bib in utf8, sonst ascii
+	sortlocale=de_DE,
+	% Zitierstil
+%% siehe: http://ctan.mirrorcatalogs.com/macros/latex/contrib/biblatex/doc/biblatex.pdf (3.3.1 Citation Styles)
+%% mögliche Werte z.B numeric-comp, alphabetic, authoryear
+	style=numeric-comp,
+]{biblatex}
+\addbibresource{bibliographie.bib}
+
+\begin{document}
+
+\maketitle
+
+\section{Kurzbeschreibung der Arbeit}
+
+Das Ziel der Arbeit ist es, eine weitere Komponente zu üblichen Abschrecksystemen hinzuzufügen. Das Wasser.
+Besonders Marder und Katzen, die ihre Hinterlassenschaften im Garten verteilen,
+meiden das Wasser.
+\\
+Daher soll mit den anderen erprobten Mitteln ein Gesamtpaket entwickelt werden,
+welches überall einfach platziert werden kann und die Tiere vom Garten, sowie Auto fernhält. \\
+Da unschuldige Passanten nicht nass gespritzt werden wollen und Wasser
+gespart werden soll, soll das Abschrecksystem nur auf Kleintiere ihr Inventar loslassen. Um dies zu realisieren sollen die Kleintieren mittels Object Detection und einer Kamera erkannt werden. Da der "Wasserwerfer" für die korrekte Anvisierung des Ziels eine Tiefenansteuerung benötigt, soll zudem eine zweite Kamera für Stereo-Vision verwendet werden. Durch die zweite Kamera können Tiefeninformationen aus den 2D-Bildern der einzelnen Kameras gewonnen werden.
+\\
+Um portable zu sein wird das System in einer Alubox zusammengestellt. In dieser können alle Komponenten sicher vor Witterungsbedingungen untergebracht werden. Um tatsächlich portable zu sein verfügt das System über eine eigene Spannungsversorgung, die mit einem Solarpaneel und einer Autobatterie gespeist wird.
+\\
+
+Der funktionale Ablauf nach Erkennung eines Ziels lautet wie folgt:
+\begin{itemize}
+    \item Das Ziel ist erkannt
+    \item Die Speicherung der Aufnahmen für den Vorgang beginnen
+    \item Es werden die Zielkoordinaten bestimmt
+    \item Die Servomotoren fahren zu den Zielkoordinaten
+    \item Die Wasserpumpe/Blitzlicht/Störton werden angeschaltet
+    \item Sobald das Ziel nicht länger im Zielbereich ist werden die Aktoren deaktiviert und die Aufnahme beendet und gespeichert.
+\end{itemize}
+
+Da dies in Echtzeit geschehen soll sollten der Erkennung- und Zielprozess in unter 50 Millisekunden abgeschlossen sein.
+
+Ein großes Problem ist der derzeitige Liefermangel an Mikrocontroller
+wie den Jetson und Raspberry Pi. Dadurch verzögert sich der Aufbau und die Umsetzung drastisch.
+
+\section{Gliederung und Zeitplan}
+
+Gliederung:
+\begin{itemize}
+    \item Einleitung:
+    \begin{itemize}
+        \item Stand der Technik (bestehende Abschrecksysteme)
+        \item Begrifflichkeiten und verwendete Komponenten und Konzeptdefinitionen (HW-SW)
+        \item Problem- und Aufgabenstellung
+    \end{itemize}
+    \item Grundlagen:
+    \begin{itemize}
+        \item Stereo-Vision Konzept der Tiefenwahrnehmung
+        \item Computer-Vision und Funktionen der Object Detection mit Beispiel
+        \item Strömungstechnikgrundlagen für den "Wasserwerfer"
+    \end{itemize}
+    \item Umsetzung:
+    \begin{itemize}
+        \item Object-Detection Trainingsentwurf und Implementierungsmerkmale
+        \item Hardwaretechnische Komponenten, deren Ansteuerung und Aufbau
+        \item Wasserwerferrealisierung (Tiefenberechnungsmerkmale und eventuelle Fehlererkennung/-behebung)
+        \item Meilensteine Kosten- und Zeitaufwand
+    \end{itemize}
+\end{itemize}
+
+
+Zeitplan:
+\begin{itemize}
+    \item Hardwaresuche und Testen auf generelle Eignung (bereits ca. 15 Stunden) $\pm\textrm{Mikrocontrollermangel } \surd$
+    \item gelabelte Datensätze zu Hauptzielen Waschbär $\surd$, Katzen $\surd$, Raten $\pm \surd$, Mäuse $\pm \surd$, Marder (kein Datensatz), und ein paar mehr (bereits ca. 4 Stunden)
+    \item Hardwareansteuerung der Aktoren (Funktionstest mittelst Arduino, da der nicht in Flammen aufgeht bei Fehlern, 1 Stunde) $\rightarrow$ Mikrocontrollermangel\\
+    $\rightarrow$ bis Ende Januar (wenn auch mit Alternativen) zum Laufen bringen (ca. 10 Stunden + 15 Stunden Aufbau (3D-Drucke entwerfen))
+    \item Trainieren der Object Detection (iterativ, ca. 70)
+    \item Aufsetzten eines Webservers für automatischem und iterativen updaten der Software (ca. 15 Stunden)
+    \item Implementierung (iterativ ca. 40 Stunden)
+    \item Testen und Benchmark (ca. 20 Stunden)
+    \item Dokumentation (ca. 60 Stunden)
+    \item Werden trotzdem deutlich mehr als die genannten 250 Stunden. Insbesondere dadurch, dass Vorbereitungszeit, Einarbeitungszeit in die Programme (besonders 3D-Druck) und die überschneidende Arbeit in anderen Projekten (ML) nicht in dieser Rechnung mitbetrachtet werden.
+\end{itemize}
+
+
+\section{Grundlegende Literatur}
+
+Die Tiererkennung ist ein weitverbreitet Themenfeld. Der Artikel "A Literature Research Review on Animal Intrusion Detection and Repellent Systems" aus dem Jahre 2021 beschäftigt sich mit den verschiedenen Methoden zur Erkennung von Wildtieren und deren Vertreibung. Auch ein einfacheres Verfahren als die oben gewählte Object-Detection über Bilderkennung wird in diesem Dokument betrachtet. Die zusammenfassende Arbeit enthält 40 verschiedene Quellenverweise zu Herangehensweisen und existierende Systeme. Ein in diesem Dokument herausgearbeitetes Problem ist die Tiererkennung bei Nacht, sowie die eingeschränkten Vertreibungsmöglichkeiten bestehender Systeme. Die Studienarbeit soll diese Probleme mit eigenen Lösungsansätzen erweitern und bestmöglich auch lösen können. Aus den Referenzen des Artikels können zudem weiter Ansätze für die die Entwicklung der Bilderkennung gewonnen werden.\cite{L2021ALR}
+
+
+\printbibliography
+
+\end{document}
