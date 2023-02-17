@@ -6,16 +6,18 @@ from typing import Final
 # we are in a subfolder and need the parent
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(__file__))
 
-CUSTOM_MODEL_NAME = 'tomatoDetection320x320'
-PRETRAINED_MODEL_NAME = 'ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8'
+def singleton(cls):
+    """singleton's"""
+    instances = {}
 
-LABELS = []
-TF_RECORD_SCRIPT_NAME = 'generate_tfrecord.py'
-LABEL_MAP_NAME = 'label_map.pbtxt'
-DATASET_NAME = 'dataset.tar.gz'
-TRAINSET_NAME = 'trainset.record'
-TESTSET_NAME = 'testset.record'
+    def get_instance():
+        """single instance"""
+        if cls not in instances:
+            instances[cls] = cls()
+        return instances[cls]
+    return get_instance()
 
+@singleton
 class WorkingPaths:
     COLLECTED_IMAGES_PATH: Final[str]
     RESIZED_IMAGES_PATH: Final[str]
@@ -30,8 +32,6 @@ class WorkingPaths:
     IMAGE_PATH : Final[str]
     MODEL_PATH : Final[str]
     PRETRAINED_MODEL_PATH : Final[str]
-    CHECKPOINT_PATH : Final[str]
-    OUTPUT_PATH : Final[str]
     PROTOC_PATH : Final[str]
     LABELIMG_PATH : Final[str]
 
@@ -50,8 +50,6 @@ class WorkingPaths:
         self.ANNOTATION_PATH = os.path.join(self.WORKSPACE_PATH,'annotations')
         self.MODEL_PATH = os.path.join(self.WORKSPACE_PATH, 'models')
         self.PRETRAINED_MODEL_PATH = os.path.join(self.WORKSPACE_PATH,'pre-trained-models')
-        self.CHECKPOINT_PATH = os.path.join(self.MODEL_PATH,CUSTOM_MODEL_NAME)
-        self.OUTPUT_PATH = os.path.join(self.MODEL_PATH,CUSTOM_MODEL_NAME, 'export')
         self.PROTOC_PATH =os.path.join(CURRENT_DIRECTORY, 'Tensorflow','protoc')
         self.LABELIMG_PATH = os.path.join(CURRENT_DIRECTORY, 'Tensorflow', 'labelimg')
 
@@ -64,7 +62,21 @@ class WorkingPaths:
             print('Creating {}'.format(path))
             os.makedirs(path, exist_ok=True)
 
-from typing import Final
+
+LABELS = [{'name':'raccoon', 'id':1}]
+TF_RECORD_SCRIPT_NAME = 'generate_tfrecord.py'
+LABEL_MAP_NAME = 'label_map.pbtxt'
+DATASET_NAME = 'dataset.tar.gz'
+TRAINSET_NAME = 'trainset.record'
+TESTSET_NAME = 'testset.record'
+
+paths = WorkingPaths
+
+DATASET = os.path.join(paths.IMAGE_PATH, DATASET_NAME)
+TF_RECORD_SCRIPT = os.path.join(paths.SCRIPTS_PATH, TF_RECORD_SCRIPT_NAME)
+TRAINSET_RECORD_PATH = os.path.join(paths.ANNOTATION_PATH, TRAINSET_NAME)
+TESTSET_RECORD_PATH = os.path.join(paths.ANNOTATION_PATH, TESTSET_NAME)
+LABELMAP = os.path.join(paths.ANNOTATION_PATH, LABEL_MAP_NAME)
 
 if __name__ == '__main__':
     print("hi")
