@@ -79,5 +79,4 @@ TESTSET_RECORD_PATH = os.path.join(paths.ANNOTATION_PATH, TESTSET_NAME)
 LABELMAP = os.path.join(paths.ANNOTATION_PATH, LABEL_MAP_NAME)
 
 if __name__ == '__main__':
-    print("hi")
-    WorkingPaths().setup_paths()
+    WorkingPaths.setup_paths()
