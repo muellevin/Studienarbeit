@@ -37,21 +37,21 @@ class WorkingPaths:
 
     def __init__(self) -> None:
         """Init paths"""
-        self.IMAGE_PATH = os.path.join(CURRENT_DIRECTORY, 'Tensorflow', 'workspace','images')
+        self.IMAGE_PATH = os.path.join(CURRENT_DIRECTORY, 'workspace','images')
         self.COLLECTED_IMAGES_PATH = os.path.join(self.IMAGE_PATH, 'collected_images')
         self.RESIZED_IMAGES_PATH = self.COLLECTED_IMAGES_PATH + '_resized'
         self.TRAINSET_PATH = os.path.join(self.IMAGE_PATH, 'trainset')
         self.TESTSET_PATH = os.path.join(self.IMAGE_PATH, 'testset')
         self.DEVSET_PATH = os.path.join(self.IMAGE_PATH, 'devset')
 
-        self.WORKSPACE_PATH = os.path.join(CURRENT_DIRECTORY, 'Tensorflow', 'workspace')
-        self.SCRIPTS_PATH = os.path.join(CURRENT_DIRECTORY, 'Tensorflow','scripts')
-        self.APIMODEL_PATH = os.path.join(CURRENT_DIRECTORY, 'Tensorflow','models')
+        self.WORKSPACE_PATH = os.path.join(CURRENT_DIRECTORY, 'workspace')
+        self.SCRIPTS_PATH = os.path.join(CURRENT_DIRECTORY, 'scripts')
+        self.APIMODEL_PATH = os.path.join(CURRENT_DIRECTORY, 'models')
         self.ANNOTATION_PATH = os.path.join(self.WORKSPACE_PATH,'annotations')
         self.MODEL_PATH = os.path.join(self.WORKSPACE_PATH, 'models')
         self.PRETRAINED_MODEL_PATH = os.path.join(self.WORKSPACE_PATH,'pre-trained-models')
-        self.PROTOC_PATH =os.path.join(CURRENT_DIRECTORY, 'Tensorflow','protoc')
-        self.LABELIMG_PATH = os.path.join(CURRENT_DIRECTORY, 'Tensorflow', 'labelimg')
+        self.PROTOC_PATH =os.path.join(CURRENT_DIRECTORY, 'protoc')
+        self.LABELIMG_PATH = os.path.join(CURRENT_DIRECTORY,  'labelimg')
 
 
     def setup_paths(self) -> None:
@@ -63,7 +63,7 @@ class WorkingPaths:
             os.makedirs(path, exist_ok=True)
 
 
-LABELS = [{'name':'raccoon', 'id':1}]
+LABELS = [{'name':'Raccoon', 'id':1}]
 TF_RECORD_SCRIPT_NAME = 'generate_tfrecord.py'
 LABEL_MAP_NAME = 'label_map.pbtxt'
 DATASET_NAME = 'dataset.tar.gz'
@@ -77,6 +77,17 @@ TF_RECORD_SCRIPT = os.path.join(paths.SCRIPTS_PATH, TF_RECORD_SCRIPT_NAME)
 TRAINSET_RECORD_PATH = os.path.join(paths.ANNOTATION_PATH, TRAINSET_NAME)
 TESTSET_RECORD_PATH = os.path.join(paths.ANNOTATION_PATH, TESTSET_NAME)
 LABELMAP = os.path.join(paths.ANNOTATION_PATH, LABEL_MAP_NAME)
+XML_TO_CSV = os.path.join(paths.SCRIPTS_PATH, "xml_to_csv.py")
+CSV_FILE_NAME = "detections.csv"
+CSV_FILE = os.path.join(paths.COLLECTED_IMAGES_PATH, CSV_FILE_NAME)
+CSV_CONV = os.path.join(paths.SCRIPTS_PATH, "csv_conv", "Cargo.toml")
+CSV_RESIZE = os.path.join(paths.SCRIPTS_PATH, "resize_csv", "Cargo.toml")
+CSV_FILE_RESIZED = os.path.join(paths.RESIZED_IMAGES_PATH, CSV_FILE_NAME)
+OPEN_IMAGES = os.path.join(paths.IMAGE_PATH, "open-images-v7")
+OPEN_IMAGES_TRAIN = os.path.join(OPEN_IMAGES, "train")
+OPEN_IMAGES_TEST = os.path.join(OPEN_IMAGES, "test")
+OPEN_IMAGES_VALIDATION = os.path.join(OPEN_IMAGES, "validation")
+SPLIT_DATASET = os.path.join(paths.SCRIPTS_PATH, "split_dataset", "Cargo.toml")
 
 if __name__ == '__main__':
     WorkingPaths.setup_paths()
