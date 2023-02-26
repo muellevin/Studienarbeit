@@ -1,7 +1,10 @@
 use clap::Parser;
 use csv::{ReaderBuilder, Writer};
-use std::{path::{PathBuf}, fs::{self, create_dir_all}};
 use serde_derive::{Deserialize, Serialize};
+use std::{
+    fs::{self, create_dir_all},
+    path::PathBuf,
+};
 
 // Define the command line arguments using the clap crate
 #[derive(Parser, Debug)]
@@ -34,28 +37,28 @@ struct Detection {
 }
 
 impl Detection {
-    fn resize_height(&mut self, new_height: u16){
-        let img_ratio = self.width/self.height;
-        let new_width = new_height * img_ratio;
-        let width_ratio = new_height/self.width;
-        let height_ratio = new_height/self.height;
+    fn resize_height(&mut self, new_height: u16) {
+        if new_height != self.height {
+            let img_ratio = self.width as f32 / self.height as f32;
+            let new_width = new_height  as f32 * img_ratio;
+            let width_ratio = new_width / self.width as f32;
+            let height_ratio = new_height as f32/ self.height as f32;
 
-        self.ymin *= width_ratio;
-        self.ymax *= width_ratio;
-        self.xmin *= height_ratio;
-        self.xmax *= height_ratio;
+            self.ymin = (self.ymin as f32 * width_ratio) as u16;
+            self.ymax = (self.ymax as f32 * width_ratio) as u16;
+            self.xmin = (self.xmin as f32 * height_ratio) as u16;
+            self.xmax = (self.xmax as f32 * height_ratio) as u16;
 
-        self.width = new_width;
-        self.height = new_height;
+            self.width = new_width as u16;
+            self.height = new_height as u16;
+
+        }
     }
 }
 
-
 fn main() {
     let cli = Cli::parse();
-    let mut csv_file = ReaderBuilder::new()
-    .from_path(cli.input_file)
-    .unwrap();
+    let mut csv_file = ReaderBuilder::new().from_path(cli.input_file).unwrap();
     let mut records: Vec<Detection> = Vec::new();
     println!("starting to resize detection in csv file");
     for record in csv_file.deserialize() {
