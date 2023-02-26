@@ -33,7 +33,6 @@ class WorkingPaths:
     MODEL_PATH : Final[str]
     PRETRAINED_MODEL_PATH : Final[str]
     PROTOC_PATH : Final[str]
-    LABELIMG_PATH : Final[str]
 
     def __init__(self) -> None:
         """Init paths"""
@@ -51,7 +50,7 @@ class WorkingPaths:
         self.MODEL_PATH = os.path.join(self.WORKSPACE_PATH, 'models')
         self.PRETRAINED_MODEL_PATH = os.path.join(self.WORKSPACE_PATH,'pre-trained-models')
         self.PROTOC_PATH =os.path.join(CURRENT_DIRECTORY, 'protoc')
-        self.LABELIMG_PATH = os.path.join(CURRENT_DIRECTORY,  'labelimg')
+
 
 
     def setup_paths(self) -> None:
