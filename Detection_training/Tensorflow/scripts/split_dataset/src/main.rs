@@ -46,6 +46,7 @@ struct Detection {
 fn main() {
     let cli = Cli::parse();
     let mut images = Vec::new();
+
     if let Ok(entries) = fs::read_dir(&cli.input_dir) {
         for entry in entries.into_iter().flatten() {
             if let Some(file_name) = entry.file_name().to_str() {
@@ -55,34 +56,24 @@ fn main() {
             }
         }
     }
-    let train_set: HashSet<&String> = HashSet::from_iter(
-        images
-            .iter()
-            .take(((images.len() as f32) * cli.train_percent) as usize),
-    );
-    let test_set: HashSet<&String> = HashSet::from_iter(
-        images
-            .iter()
-            .skip(((images.len() as f32) * cli.train_percent) as usize)
-            .take(((images.len() as f32) * cli.test_percent) as usize),
-    );
-    let dev_set: HashSet<&String> = HashSet::from_iter(
-        images
-            .iter()
-            .skip(
-                ((images.len() as f32) * cli.train_percent) as usize
-                    + ((images.len() as f32) * cli.test_percent) as usize,
-            )
-            .take(((images.len() as f32) * cli.test_percent) as usize + 1),
-    );
-    let mut records: Vec<Detection> = Vec::new();
+    let train_size = (images.len() as f32 * cli.train_percent) as usize;
+    let test_size = (images.len() as f32 * cli.test_percent) as usize;
+
+    let (train_set, rest) = images.split_at(train_size);
+    let (test_set, dev_set) = rest.split_at(test_size);
+
+    let train_set: HashSet<&String> = train_set.iter().collect();
+    let test_set: HashSet<&String> = test_set.iter().collect();
+    let dev_set: HashSet<&String> = dev_set.iter().collect();
+
     let mut csv_file = ReaderBuilder::new()
         .from_path(&cli.input_dir.join("detections.csv"))
         .unwrap();
+    let mut records: Vec<Detection> = csv_file
+        .deserialize()
+        .map(|result| result.unwrap())
+        .collect();
 
-    for record in csv_file.deserialize() {
-        records.push(record.unwrap());
-    }
     write_csv(
         &cli.input_dir as &Path,
         &cli.output_dir.join("trainset") as &Path,

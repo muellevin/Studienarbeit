@@ -1,0 +1,15 @@
+[package]
+name = "csv_to_xml"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.1.6", features = ["derive"] }
+csv = "1.2.0"
+serde = "1.0.152"
+serde_derive = "1.0.152"
+remove_dir_all = "0.8.2"
+rayon = "1.7.0"
+indoc = "2"
