@@ -16,13 +16,12 @@
 
 % Chapter defines
 \newcommand*{\ListOfChapters}{%
-    Einleitung,
-	Aufgabenstellung,
-	Grundlagen,
-	Umsetzung,
-	Reflexion und Ausblick
+    % Einleitung,
+	% Aufgabenstellung,
+	Grundlagen
+	% Umsetzung,
+	% Reflexion und Ausblick
 }%
-
 
 % \makeglossaries
 % \input{ads/glossary}
@@ -77,6 +76,10 @@
 	\cleardoublepage
 	\input{ads/acronyms}
 
+	% Formelverzeichnis
+	\cleardoublepage
+	% \input{ads/Formelverzeichnis.tex}
+
 	% Abbildungsverzeichnis
 	\cleardoublepage
 	\listoffigures
@@ -84,6 +87,8 @@
 	%Tabellenverzeichnis
 	\cleardoublepage
 	\listoftables
+
+
 
 	% % Quellcodeverzeichnis
 	% \cleardoublepage
@@ -123,5 +128,6 @@
 	% \clearpage
 	% \appendix
 	% \input{ads/appendix}
+
 	
 \end{document}
