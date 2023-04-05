@@ -36,15 +36,35 @@ Ein Waschbär wird durch diesen Schlag in absehbarer Zeit es nicht noch einmal v
 
 Der Weidezaun hat von den genannten Systemen die höchste Effektivität, wenn es um die Vertreibung der Tiere geht. Durch die Blockierung sämtlicher Zugänge besteht allerdings ein sehr hoher Installationsaufwand. Zusätzlich müssen weitere Elemente, wie Gartentore installiert werden, da sonst auch die Zugänge für den Menschen blockiert sind. Das gesamte System wird somit schnell teuer, weshalb der Weidezaun auch als letztes Mittel betrachtet wird.
 
-\section{Komponenten}
 
-\subsection{Computer Vision}
+\section{Computer Vision}
 
-Computer Vision beschäftigt sich damit Computern das \enquote{Sehen} zu ermöglichen. Schon jahrzehntelang versuchen dies Wissenschaftler zu erreichen. Heutzutage sind sie schon sehr weit gekommen. Computer Vision findet in der Logistik, dem autonomen Fahren, Gesichtserkennung und bei noch vielen anderen Bereichen große Zuwendung. Ziel davon ist es Analysen, Verarbeitung und Interpretationen von Bildern und Videos durch einen Computer möglich zu machen, damit eine Maschinen visuelle Informationen so verstehen kann wie wir Menschen es tun. \cite[Seite 3-7]{cv_Szeliski}
+Computer Vision beschäftigt sich damit Computern das \enquote{Sehen} zu ermöglichen. Schon jahrzehntelang versuchen dies Wissenschaftler zu erreichen. Heutzutage sind sie schon sehr weit gekommen. Computer Vision findet in der Logistik, dem autonomen Fahren, Gesichtserkennung und bei noch vielen anderen Bereichen große Zuwendung. Ziel davon ist es Analysen, Verarbeitung und Interpretationen von Bildern und Videos durch einen Computer möglich zu machen, damit eine Maschinen visuelle Informationen so verstehen kann wie wir Menschen es tun. \cite{cv_Szeliski}
 
+\subsection{Object Detection}
 
+Object Detection ist eine Anwendung der Computer Vision, die es ermöglicht, Objekte in einem Bild oder Video zu erkennen und zu lokalisieren. Object Detection-Systeme verwenden Algorithmen, die auf \ac{ML}- und \ac{DNN}-Techniken basieren, um Objekte in Bildern oder Videos zu erkennen und zu klassifizieren. Das erkannte Objekt wird mittels einer \ac{BB} aus den Bild extrahiert.\\
+\comment{Bild rein}
+Um diese Detektion zu erhalten gibt es verschieden Basen und Architekturen von Object Detections Systemen, die im folgenden beschreiben sind. \cite{cv_Szeliski}
 
-Tiefenwahrnehmung für anständiges Zielen (statt ML? und zu viele Tricks?)
+\subsection{Two-Stage-Detectors}
+
+Eins der frühen Modelle die diese Technik verwendet hat ist das \ac{R-CNN}. Es werden hirfür zwei große Schritte angewendet. Weshalb das \ac{R-CNN} und ähnliche Modelle als \textit{two-stage-Detectors} bezeichnet werden.\\
+Der erste Schritt bei diesen Modellen ist es mittels eines \ac{RPN} rechteckige Regionen in einen Bild zu bestimmen.
+Das \ac{RPN} schlägt hierbei eine Unterteilung des Eingabebildes in verschiedene Regionen vor. Das \ac{R-CNN}-Netzwerk lässt sich dabei ~2000 Regionen vorschlagen.
+Aus diesen Regionen werden anschließend im zweiten Schritt die Feautures eines Eingabebildes durch ein \ac{CNN} extrahieren. Im Falle von \ac{R-CNN} werden die Feautures mittels einer Softmax-Schicht und einer \ac{SVM} ausgewertet und Objekte detektiert.\\
+Dabei sollte die Anzahl der Regionen vernünftig klein sein, damit das nachfolgende extrahieren und klassifizieren in einer absehbarer Zeit erfolgt. Dieser zusätzliche Zeitaufwand, der für das \ac{RPN} aufgewandt wird, ist zudem auch ein Nachteil gegenüber anderen Ansätzen. Die Two-Stage-Detektoren erhalten dadurch zwar eine höhere Genauigkeit in der Lokalisierung und Klassifizierung, benötigen aber auch mehr Zeit.\cite{R_CNN}
+
+\subsection{One-Stage-Detectors}
+
+One-Stage Detektoren sind einer der neueren Ansätze Object-Detection zu realisieren.
+Sie basieren auf die menschliche Natur und gehen von einer Single-Shot Erkennung aus. Dafür wenden sie entgegen den Two-Stage-Detektoren keinen Region-basierten Algorithmus an.
+Stattdessen unterteilen sie ein Eingabebild in ein $S \times  S$ großes Gitternetz. Auf den Gitter-Boxen wird daraufhin ein Klassifizierung und Lokalisierung vorgenommen.\\
+Dies war auch der erste Ansatz in der \ac{YOLO}-Architektur. Durch diesen Ansatz ist das \ac{YOLO}-V1 Modell entgegen den Two-Stage-Detektor Faster \ac{R-CNN} laut den Autoren in \cite{YOLO_V3} neun mal schneller bei der Detektierung. \ac{YOLO}-V1 ist aber deutlich schlechter, da deutlich weniger Objekte richtig detektiert worden sind. In Version 2 wird daher statt einem Gitternetz die Anchor-Boxen verwendet. Anchor-Boxen haben keine einheitliche Größe. Sie sind rechteckige Boxen, welche in verschiedenen Größen und Seitenverhältnissen angewendet werden. Die Anchor-Boxen werden auf einer Reihe von vordefinierten Positionen über ein Eingabebild verteilt.\\
+Bei diesem Ansatz wird die Detektierung durch die Anchor-Boxen ermöglicht, ohne einen Verlust der Geschwindigkeit zu verursachen. Die Version 2 von \ac{YOLO} enthält noch andere Anpassungen, die die Anzahl an richtigen Detektionen weiter erhöht hat.
+\cite{YOLO_V3}
+
+Es gibt noch weitere nicht Anchor oder Gitter betriebene Architekturen, wie die \textit{CenterNet} oder \textit{CornerNet}-Architektur. Diese ermitteln den Mittelpunkt eines Objektes oder deren Kanten. Sie erhöhen die Präzession eines Detektors, benötigen aber wiederum mehr Ausführungszeit.\cite{yolo_all}
 
 \subsection{Tiefenberechnung}
 
@@ -52,6 +72,7 @@ Zusätzlich zu betrachtende Effekte Luftwiderstand; Dispersion; Wind/Error-corre
 Bezug Error: Bilderkennung des Wasserstrahls $\rightarrow$ Regelungstechnik und Autokalibrierung
 + evtl. Einspielen der Tiefenwahrnehmung an neuer Position (nicht bei Stereo-Vision nötig).
 
+\section{Komponenten}
 
 \subsection{Aktoren}
 
