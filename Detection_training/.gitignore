@@ -2,3 +2,4 @@
 *.pyc
 !/Tensorflow/scripts
 runs/
+datasets/
