@@ -26,17 +26,17 @@ sys.path.append("../Detection_training/Tensorflow/")
 from scripts.Paths import LABELS, paths, TEST_IMAGE
 
 # Load the frozen graph
-MODEL_NAME = 'raccoonModel_50k_B16_img17070_efficientdet_d0_512'
+MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
 model_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export', 'saved_model')
 model = tf.saved_model.load(model_path, tags=["serve"])
 inputs = model.signatures['serving_default'].inputs
 outputs = model.signatures['serving_default'].outputs
 
 # Set parameters for preprocessing, postprocessing, and visualization
-MODEL_WIDTH = 512
-MODEL_HEIGHT = 512
+MODEL_WIDTH = 320
+MODEL_HEIGHT = 320
 SCORE_THRESHOLD = 0.5
-YOLO = False
+YOLO = True
 
 
 def get_class_name_labels() -> List[str]:
@@ -193,5 +193,5 @@ print(f"    Average time: {average_time:.4f} seconds")
 print(f"    Fastest time: {fastest_time:.4f} seconds")
 print(f"    Slowest time: {slowest_time:.4f} seconds")
 
-print("| Model Name | Model file | Device | Average Time per File (s) | Peak Time per File (s) | Fastest Time per File (s) |")
-print(f"| {MODEL_NAME} | pb | I7-10th | {average_time:.4f} | {slowest_time:.4f} | {fastest_time:.4f} |")
+print("| Model Name | Model file | Device | Average Time per File (ms) | Peak Time per File (ms) | Fastest Time per File (ms) |")
+print(f"| {MODEL_NAME} | pb | I7-10th | {average_time*1000:4.0f} | {slowest_time*1000:4.0f} | {fastest_time*1000:4.0f} |")
