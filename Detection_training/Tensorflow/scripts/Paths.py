@@ -2,7 +2,6 @@
 Ths module se up the directories and defines some general Names
 """
 import os
-from typing import Final
 # we are in a subfolder and need the parent
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(__file__))
 
@@ -19,25 +18,25 @@ def singleton(cls):
 
 @singleton
 class WorkingPaths:
-    COLLECTED_IMAGES_PATH: Final[str]
-    RESIZED_IMAGES_PATH: Final[str]
+    COLLECTED_IMAGES_PATH: str
+    RESIZED_IMAGES_PATH: str
 
-    TRAINSET_PATH : Final[str]
-    TESTSET_PATH : Final[str]
-    DEVSET_PATH : Final[str]
-    WORKSPACE_PATH : Final[str]
-    SCRIPTS_PATH : Final[str]
-    APIMODEL_PATH : Final[str]
-    ANNOTATION_PATH : Final[str]
-    IMAGE_PATH : Final[str]
-    MODEL_PATH : Final[str]
-    PRETRAINED_MODEL_PATH : Final[str]
-    PROTOC_PATH : Final[str]
-    PYCORAL : Final[str]
-    YOLO_IMG_PATH : Final[str]
-    YOLO_TRAIN_PATH : Final[str]
-    YOLO_TEST_PATH : Final[str]
-    YOLO_DEV_PATH : Final[str]
+    TRAINSET_PATH : str
+    TESTSET_PATH : str
+    DEVSET_PATH : str
+    WORKSPACE_PATH : str
+    SCRIPTS_PATH : str
+    APIMODEL_PATH : str
+    ANNOTATION_PATH : str
+    IMAGE_PATH : str
+    MODEL_PATH : str
+    PRETRAINED_MODEL_PATH : str
+    PROTOC_PATH : str
+    PYCORAL : str
+    YOLO_IMG_PATH : str
+    YOLO_TRAIN_PATH : str
+    YOLO_TEST_PATH : str
+    YOLO_DEV_PATH : str
 
     def __init__(self) -> None:
         """Init paths"""
