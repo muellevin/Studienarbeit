@@ -25,18 +25,55 @@ import tensorflow as tf
 sys.path.append("../Detection_training/Tensorflow/")
 from scripts.Paths import LABELS, paths, TEST_IMAGE
 
-# Load the frozen graph
-MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
-model_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export', 'saved_model')
-model = tf.saved_model.load(model_path, tags=["serve"])
-inputs = model.signatures['serving_default'].inputs
-outputs = model.signatures['serving_default'].outputs
-
 # Set parameters for preprocessing, postprocessing, and visualization
 MODEL_WIDTH = 320
 MODEL_HEIGHT = 320
 SCORE_THRESHOLD = 0.5
-YOLO = True
+YOLO = False    # only for .pb
+TFLITE = True
+EDGE_TPU = False
+
+MODEL_NAME = 'raccoonModel_50k_B16_img17070_efficientdet_d0_512'
+LITE_NAME = 'detect_f32.tflite'
+
+
+if TFLITE:
+    # Load the Tensorflow Lite model.
+    # If using Edge TPU, use special load_delegate argument
+    model_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export',
+                              'tfliteexport', 'saved_model', LITE_NAME)
+    if EDGE_TPU:
+        interpreter = tf.lite.Interpreter(model_path=model_path,
+                                experimental_delegates=[load_delegate('libedgetpu.so.1.0')])
+    else:
+        interpreter = tf.lite.Interpreter(model_path=model_path, num_threads=1)
+
+    interpreter.allocate_tensors()
+    # Get model details
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    MODEL_HEIGHT = input_details[0]['shape'][1]
+    MODEL_WIDTH = input_details[0]['shape'][2]
+
+    floating_model = (input_details[0]['dtype'] == np.float32)
+
+    input_mean = 127.5
+    input_std = 127.5
+
+    # Check output layer name to determine if this model was created with TF2 or TF1,
+    # because outputs are ordered differently for TF2 and TF1 models
+    outname = output_details[0]['name']
+
+    if ('StatefulPartitionedCall' in outname): # This is a TF2 model
+        boxes_idx, classes_idx, scores_idx = 1, 3, 0
+    else: # This is a TF1 model
+        boxes_idx, classes_idx, scores_idx = 0, 1, 2
+else:
+    # Load the frozen graph
+    model_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export', 'saved_model')
+    model = tf.saved_model.load(model_path, tags=["serve"])
+    inputs = model.signatures['serving_default'].inputs
+    outputs = model.signatures['serving_default'].outputs
 
 
 def get_class_name_labels() -> List[str]:
@@ -146,7 +183,24 @@ slowest_time = float('-inf')
 
 # First interference is loading the model -> ignore that
 # Run object detection on the input image
-model(preprocess_image(cv2.imread(TEST_IMAGE)))
+# Preprocess the input image
+input_image = preprocess_image(cv2.imread(TEST_IMAGE))
+if TFLITE:
+    if floating_model:
+        input_image = (np.float32(input_image) - input_mean) / input_std
+    else:
+        input_image = (np.int8(input_image))
+    # Perform the actual detection by running the model with the image as input
+    interpreter.set_tensor(input_details[0]['index'], input_image)
+    interpreter.invoke()
+
+    # Retrieve detection results
+    boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
+    # classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
+    # scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+
+else:
+    model(input_image)
 
 # Loop over the input images and perform object detection
 for filename in os.listdir(input_dir):
@@ -159,10 +213,26 @@ for filename in os.listdir(input_dir):
         input_image = preprocess_image(image)
 
         # Run object detection on the input image
-        start_time = time.time()
-        output = model(input_image)
-        end_time = time.time()
+        if TFLITE:
+            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
+            if floating_model:
+                input_image = (np.float32(input_image) - input_mean) / input_std
+            else:
+                input_image = (np.int8(input_image))
+            start_time = time.time()
+            # Perform the actual detection by running the model with the image as input
+            interpreter.set_tensor(input_details[0]['index'],input_image)
+            interpreter.invoke()
 
+            # Retrieve detection results
+            boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
+            # classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
+            # scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+        else:
+            start_time = time.time()
+            output = model(input_image)
+
+        end_time = time.time()
         # Postprocess the output detections
         # detections = postprocess_output(output)
 
@@ -194,4 +264,4 @@ print(f"    Fastest time: {fastest_time:.4f} seconds")
 print(f"    Slowest time: {slowest_time:.4f} seconds")
 
 print("| Model Name | Model file | Device | Average Time per File (ms) | Peak Time per File (ms) | Fastest Time per File (ms) |")
-print(f"| {MODEL_NAME} | pb | I7-10th | {average_time*1000:4.0f} | {slowest_time*1000:4.0f} | {fastest_time*1000:4.0f} |")
+print(f"| {MODEL_NAME} | f32 | I7-10th | {average_time*1000:4.0f} | {slowest_time*1000:4.0f} | {fastest_time*1000:4.0f} |")
