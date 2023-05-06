@@ -12,7 +12,6 @@ optional arguments:
 
 import os
 import argparse
-import imutils
 import cv2
 
 parser = argparse.ArgumentParser(
@@ -51,7 +50,13 @@ def resize_images(input_dir: os.path, output_dir: os.path, resize_height: int, g
                 img = cv2.imread(os.path.join(input_dir, file))
 
             if resize_height > 0:
-                img = imutils.resize(img, height=resize_height)
+                (h, w) = img.shape[:2]
+                # calculate the ratio of the height and construct the
+                # dimensions
+                r = resize_height / float(h)
+                dim = (int(w * r), resize_height)
+                # resize the image
+                img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
             cv2.imwrite(os.path.join(output_dir, file), img)
     print("Resized {} images with option grayscale={}".format(counter, grayscale))
 

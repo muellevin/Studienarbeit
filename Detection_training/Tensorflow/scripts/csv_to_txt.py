@@ -45,6 +45,7 @@ def convert_folder_to_yolo(input_dir: Path, output_dir: Path):
     with open(os.path.join(output_dir, "classes.txt"), "w") as classes_file:
         for class_name, class_id in classes.items():
             classes_file.write(f"{class_name}\n")
+    copy_images(input_dir, output_dir)
 
 def parse_csv_file(input_dir: Path) -> List[CSV_DETECTION]:
     
