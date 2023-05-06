@@ -21,6 +21,9 @@ from typing import Any, Dict, List, Union
 import cv2
 import numpy as np
 import tensorflow as tf
+from tensorflow.lite.python.interpreter import load_delegate
+import pycuda.autoinit
+import pycuda.driver as cuda
 
 sys.path.append("../Detection_training/Tensorflow/")
 from scripts.Paths import LABELS, paths, TEST_IMAGE
@@ -30,11 +33,12 @@ MODEL_WIDTH = 320
 MODEL_HEIGHT = 320
 SCORE_THRESHOLD = 0.5
 YOLO = False    # only for .pb
-TFLITE = True
+TFLITE = False
 EDGE_TPU = False
+TRT = True
 
-MODEL_NAME = 'raccoonModel_50k_B16_img17070_efficientdet_d0_512'
-LITE_NAME = 'detect_f32.tflite'
+MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
+LITE_NAME = 'yolo8n_f32.trt'
 
 
 if TFLITE:
@@ -43,10 +47,13 @@ if TFLITE:
     model_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export',
                               'tfliteexport', 'saved_model', LITE_NAME)
     if EDGE_TPU:
+        delegate = {'Linux': 'libedgetpu.so.1',  # install https://coral.ai/software/#edgetpu-runtime 
+                     'Darwin': 'libedgetpu.1.dylib',
+                     'Windows': 'edgetpu.dll'}[platform.system()] 
         interpreter = tf.lite.Interpreter(model_path=model_path,
-                                experimental_delegates=[load_delegate('libedgetpu.so.1.0')])
+                                experimental_delegates=[load_delegate(delegate)])
     else:
-        interpreter = tf.lite.Interpreter(model_path=model_path, num_threads=1)
+        interpreter = tf.lite.Interpreter(model_path=model_path, num_threads=4)
 
     interpreter.allocate_tensors()
     # Get model details
@@ -68,6 +75,37 @@ if TFLITE:
         boxes_idx, classes_idx, scores_idx = 1, 3, 0
     else: # This is a TF1 model
         boxes_idx, classes_idx, scores_idx = 0, 1, 2
+elif TRT:
+    import tensorrt as trt
+
+    batch = 1
+    inputs  = []
+    cuda_inputs  = []
+    outputs = []
+    cuda_outputs = []
+    bindings = []
+
+    trt_engine_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export',
+                                   'trt_engine', LITE_NAME)
+    with open(trt_engine_path, "rb") as f:
+        runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING))
+        engine = runtime.deserialize_cuda_engine(f.read())
+
+   # create buffer
+    for binding in engine:
+        size = trt.volume(engine.get_binding_shape(binding)) * engine.max_batch_size
+        dtype = trt.nptype(engine.get_binding_dtype(binding))
+        host_mem = cuda.pagelocked_empty(shape=size,dtype=dtype)
+        cuda_mem = cuda.mem_alloc(host_mem.nbytes)
+
+        bindings.append(int(cuda_mem))
+        if engine.binding_is_input(binding):
+            inputs.append(host_mem)
+            cuda_inputs.append(cuda_mem)
+        else:
+            outputs.append(host_mem)
+            cuda_outputs.append(cuda_mem)
+
 else:
     # Load the frozen graph
     model_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export', 'saved_model')
@@ -105,7 +143,7 @@ def preprocess_image(image: np.ndarray)-> np.ndarray:
     """
     image = cv2.resize(image, (MODEL_WIDTH, MODEL_HEIGHT))
     image = np.expand_dims(image, axis=0)
-    
+
     if YOLO:
         # Convert the tensor to float32 dtype
         image = tf.cast(image, tf.float32)
@@ -199,6 +237,16 @@ if TFLITE:
     # classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
     # scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
 
+elif TRT:
+    stream = cuda.Stream()
+    context = engine.create_execution_context()
+    cuda.memcpy_htod_async(cuda_inputs[0], input_image, stream)
+    context.execute_v2(bindings)
+    cuda.memcpy_dtoh_async(outputs[0], cuda_outputs[0], stream)
+    stream.synchronize()
+
+    output = outputs[0]
+    print(outputs)
 else:
     model(input_image)
 
@@ -228,6 +276,15 @@ for filename in os.listdir(input_dir):
             boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
             # classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
             # scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+        elif TRT:
+            start_time = time.time()
+            cuda.memcpy_htod_async(cuda_inputs[0], input_image, stream)
+            context.execute_v2(bindings)
+            cuda.memcpy_dtoh_async(outputs[0], cuda_outputs[0], stream)
+            stream.synchronize()
+
+            output = outputs[0]
+            print(np.argmax(output))
         else:
             start_time = time.time()
             output = model(input_image)
