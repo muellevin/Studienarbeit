@@ -37,6 +37,8 @@ class WorkingPaths:
     YOLO_TRAIN_PATH : str
     YOLO_TEST_PATH : str
     YOLO_DEV_PATH : str
+    
+    SAVED_MOVING: str
 
     def __init__(self) -> None:
         """Init paths"""
@@ -59,6 +61,8 @@ class WorkingPaths:
         self.YOLO_TRAIN_PATH = os.path.join(self.YOLO_IMG_PATH, 'trainset')
         self.YOLO_TEST_PATH = os.path.join(self.YOLO_IMG_PATH, 'testset')
         self.YOLO_DEV_PATH = os.path.join(self.YOLO_IMG_PATH, 'devset')
+        
+        self.SAVED_MOVING = os.path.join(self.IMAGE_PATH, "own_images")
 
 
 

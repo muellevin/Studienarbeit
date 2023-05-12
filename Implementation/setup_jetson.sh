@@ -23,6 +23,10 @@ sudo -H pip3 install --extra-index-url https://developer.download.nvidia.com/com
 
 # install opencv
 sudo apt-get install python3-opencv
+# and now remove to get newest version?!
+sudo apt-get remove python3-opencv
+# warning/error
+sudo apt-get install libcanberra-gtk-module -y
 
 # install coral usb accelerator
 echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
