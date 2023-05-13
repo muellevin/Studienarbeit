@@ -38,7 +38,7 @@ EDGE_TPU = False
 TRT = True
 
 MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
-LITE_NAME = 'yolo8n_f32.trt'
+LITE_NAME = 'yolo8n_int8.trt'
 
 
 if TFLITE:

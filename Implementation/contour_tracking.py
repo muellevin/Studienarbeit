@@ -1,0 +1,238 @@
+import cv2
+import numpy as np
+import sys
+import os
+
+
+sys.path.append("../Detection_training/Tensorflow/")
+from scripts.Paths import paths
+
+paths.setup_paths()
+(major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+
+dispW=640
+dispH=360
+flip=3
+OBJECT_SIZE_THRESHOLD = dispH*dispW*0.005    # object tracked at 5% display size
+
+def gstreamer_pipeline(
+    sensor_id=0,
+    capture_width=dispW,
+    capture_height=dispH,
+    display_width=dispW,
+    display_height=dispH,
+    framerate=120,
+    flip_method=0,
+):
+    return (
+        "nvarguscamerasrc sensor-id=%d !"
+        "video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, framerate=(fraction)%d/1 ! "
+        "nvvidconv flip-method=%d ! "
+        "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
+        "videoconvert ! "
+        "video/x-raw, format=(string)BGR ! appsink"
+        % (
+            sensor_id,
+            capture_width,
+            capture_height,
+            framerate,
+            flip_method,
+            display_width,
+            display_height,
+        )
+    )
+
+def write_xml_boxes_and_image(bounding_boxes, file, frame):
+    img_path = os.path.splitext(file)[0] + '.jpg'
+    cv2.imwrite(img_path, frame)
+    
+    objects = ""
+    for object_number, box in enumerate(bounding_boxes):
+        objects += f"""<object>
+                        <name>{object_number}</name>
+                        <pose>Unspecified</pose>
+                        <truncated>1</truncated>
+                        <difficult>0</difficult>
+                        <bndbox>
+                            <xmin>{box[0]}</xmin>
+                            <ymin>{box[1]}</ymin>
+                            <xmax>{box[0] + box[2]}</xmax>
+                            <ymax>{box[1] + box[3]}</ymax>
+                        </bndbox>
+                    </object>\n"""
+    file_str = f"""<annotation verified="no">
+                <folder>{os.path.dirname(file)}</folder>
+                <filename>{os.path.basename(img_path)}</filename>
+                <path>{img_path}</path>
+                <source>
+                    <database>Unknown</database>
+                </source>
+                <size>
+                    <width>{dispW}</width>
+                    <height>{dispH}</height>
+                    <depth>3</depth>
+                </size>
+                <segmented>0</segmented>
+                {objects}
+            </annotation>"""
+    with open(file, "w") as xml_file:
+        xml_file.write(file_str)
+    
+
+#Uncomment These next Two Line for Pi Camera
+# camSet='nvarguscamerasrc !  video/x-raw(memory:NVMM), width=3264, height=2464, format=NV12, framerate=21/1 ! nvvidconv flip-method='+str(flip)+' ! video/x-raw, width='+str(dispW)+', height='+str(dispH)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
+# cam= cv2.VideoCapture(camSet)
+cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=3), cv2.CAP_GSTREAMER)
+
+#Or, if you have a WEB cam, uncomment the next line
+#(If it does not work, try setting to '1' instead of '0')
+# cam=cv2.VideoCapture(0)
+# cam.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
+# cam.set(cv2.CAP_PROP_FRAME_HEIGHT, dispH)
+
+fgbg = cv2.createBackgroundSubtractorMOG2()
+tracked_objects = {}
+next_id = len(os.listdir(paths.SAVED_MOVING))
+
+
+# Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
+# Define the fps to be equal to 10. Also frame size is passed.
+frame_width = int(cam.get(3))
+frame_height = int(cam.get(4))
+# out = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
+def merge_bounding_boxes(boxes, threshold=0):
+    """
+    Merge bounding boxes that are near or overlapping
+    bounding_boxes: list of bounding boxes in the format of (x,y,w,h)
+    threshold: overlap threshold to consider two boxes as near or overlapping
+    return: a list of merged bounding boxes
+    """
+    # Convert bounding boxes to numpy array
+    boxes = np.array(boxes)
+    # Compute the coordinates of the corners of the boxes
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 0] + boxes[:, 2]
+    y2 = boxes[:, 1] + boxes[:, 3]
+
+    # Compute the area of the boxes
+    area = boxes[:, 2] * boxes[:, 3]
+    # Initialize the list of merged boxes
+    merged_boxes = []
+
+    # Loop over all boxes
+    while boxes.shape[0] > 0:
+        #First check if the objects are big enough
+        too_small = np.where(area < OBJECT_SIZE_THRESHOLD)[0]
+        deleted = 0
+        for small in too_small:
+            boxes = np.delete(boxes, small - deleted, axis=0)
+            area = np.delete(area, small - deleted, axis=0)
+            x1 = np.delete(x1, small - deleted, axis=0)
+            y1 = np.delete(y1, small - deleted, axis=0)
+            x2 = np.delete(x2, small - deleted, axis=0)
+            y2 = np.delete(y2, small - deleted, axis=0)
+            deleted += 1
+        if len(boxes) == 0:
+            continue
+        # Take the first box and remove it from the list
+        box = boxes[0, :]
+
+        # Compute the coordinates of the corners of the box
+        b_x1 = box[0]
+        b_y1 = box[1]
+        b_x2 = box[0] + box[2]
+        b_y2 = box[1] + box[3]
+
+        # Compute the intersection over union (IoU) with all remaining boxes
+        x1_diff = np.maximum(x1, b_x1)
+        y1_diff = np.maximum(y1, b_y1)
+        x2_diff = np.minimum(x2, b_x2)
+        y2_diff = np.minimum(y2, b_y2)
+        w_diff = np.maximum(0, x2_diff - x1_diff)
+        h_diff = np.maximum(0, y2_diff - y1_diff)
+        inter_area = w_diff * h_diff
+        iou = inter_area / (area + (box[2] * box[3]) - inter_area)
+
+        # Find the boxes that have IoU greater than the threshold
+        mask = iou > threshold
+        indices = np.where(mask)[0]
+
+
+        # Merge the box with the boxes that have IoU greater than the threshold
+        deleted = 0
+        if len(boxes) > 0:
+            for index in indices:
+                box = np.minimum(box, boxes[index - deleted, :])
+                box[2] = boxes[index - deleted, 0] + boxes[index - deleted, 2] - box[0]
+                box[3] = boxes[index - deleted, 1] + boxes[index - deleted, 3] - box[1]
+                boxes = np.delete(boxes, index - deleted, axis=0)
+                area = np.delete(area, index - deleted, axis=0)
+                x1 = np.delete(x1, index - deleted, axis=0)
+                y1 = np.delete(y1, index - deleted, axis=0)
+                x2 = np.delete(x2, index - deleted, axis=0)
+                y2 = np.delete(y2, index - deleted, axis=0)
+                deleted += 1
+
+        # Add the merged box to the list of merged boxes
+        merged_boxes.append(box.tolist())
+        # boxes = boxes[1:, :]
+
+    return merged_boxes
+
+
+start_time = cv2.getTickCount()
+
+while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
+# while True:
+    timer = cv2.getTickCount()
+    ret, frame = cam.read()
+    # out.write(frame)
+
+    fgmask = fgbg.apply(frame)
+    fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4)))
+
+    cv2.imshow('FGmaskComp',fgmask)
+    cv2.moveWindow('FGmaskComp',0,530)
+    
+
+    contours,_=cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours=sorted(contours,key=lambda x:cv2.contourArea(x),reverse=True)
+    
+    something_big_enough_detected = []
+    for cnt in contours:
+        # area=cv2.contourArea(cnt)
+        # if area>=OBJECT_SIZE_THRESHOLD:
+            # something_big_enough_detected.append(np.append(
+            #     np.array(cv2.boundingRect(cnt)), [area], axis=0))
+        something_big_enough_detected.append(np.array(cv2.boundingRect(cnt)))
+            # (x,y,w,h)=cv2.boundingRect(cnt)
+            #cv2.drawContours(frame,[cnt],0,(255,0,0),3)
+            # cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
+
+    # Combine intersecting bounding boxes
+    if len(something_big_enough_detected) > 1:
+        combined_bounding_boxes = merge_bounding_boxes(something_big_enough_detected)
+    else:
+        combined_bounding_boxes = something_big_enough_detected
+    for box in combined_bounding_boxes:
+        x, y, w, h = box
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    if len(combined_bounding_boxes) > 0:
+        write_xml_boxes_and_image(combined_bounding_boxes, os.path.join(paths.SAVED_MOVING, f'Saving_Frame_{str(next_id)}.xml'), frame)
+        next_id += 1
+        # cv2.imwrite("image.jpg", frame)
+    # Calculate Frames per second (FPS)
+    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
+    print(f'current fps: {fps}')
+    # Display FPS on frame
+    # cv2.putText(frame, "FPS : " + str(int(fps)), (100,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+    # Write the frame into the output video
+    # out.write(frame)
+    cv2.imshow('nanoCam',frame)
+    cv2.moveWindow('nanoCam',0,0)
+    if cv2.waitKey(1)==ord('q'):
+        break
+cam.release()
+# out.release()
+cv2.destroyAllWindows()
