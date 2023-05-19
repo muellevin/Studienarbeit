@@ -22,8 +22,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.lite.python.interpreter import load_delegate
-import pycuda.autoinit
-import pycuda.driver as cuda
+# import pycuda.autoinit
+# import pycuda.driver as cuda
 
 sys.path.append("../Detection_training/Tensorflow/")
 from scripts.Paths import LABELS, paths, TEST_IMAGE
@@ -32,10 +32,10 @@ from scripts.Paths import LABELS, paths, TEST_IMAGE
 MODEL_WIDTH = 320
 MODEL_HEIGHT = 320
 SCORE_THRESHOLD = 0.5
-YOLO = False    # only for .pb
+YOLO = True    # only for .pb
 TFLITE = False
 EDGE_TPU = False
-TRT = True
+TRT = False
 
 MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
 LITE_NAME = 'yolo8n_int8.trt'
@@ -222,7 +222,7 @@ slowest_time = float('-inf')
 # First interference is loading the model -> ignore that
 # Run object detection on the input image
 # Preprocess the input image
-input_image = preprocess_image(cv2.imread(TEST_IMAGE))
+y
 if TFLITE:
     if floating_model:
         input_image = (np.float32(input_image) - input_mean) / input_std
@@ -291,14 +291,14 @@ for filename in os.listdir(input_dir):
 
         end_time = time.time()
         # Postprocess the output detections
-        # detections = postprocess_output(output)
+        detections = postprocess_output(output)
 
-        # # Visualize the output detections
-        # output_image = visualize_output(cv2.resize(image, (MODEL_WIDTH, MODEL_HEIGHT)), detections)
+        # Visualize the output detections
+        output_image = visualize_output(cv2.resize(image, (MODEL_WIDTH, MODEL_HEIGHT)), detections)
 
-        # # Save the output image
-        # output_path = os.path.join(output_dir, filename)
-        # cv2.imwrite(output_path, output_image)
+        # Save the output image
+        output_path = os.path.join(output_dir, filename)
+        cv2.imwrite(output_path, output_image)
 
         # Calculate the time taken for this file
         file_time = end_time - start_time

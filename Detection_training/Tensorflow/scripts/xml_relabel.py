@@ -1,7 +1,6 @@
 import os
 import cv2
 
-from PIL import Image
 import xml.etree.ElementTree as ET
 from Paths import paths, LABELS
 
@@ -10,16 +9,8 @@ labels = {}
 for label in LABELS:
     labels.update({label['id'] : label['name']})
 
-def alreadyAGoalLabel(object) -> bool:
-    for element in object:
-        if element.tag == 'name':
-            if element.text == labels[0]:
-                return True
-            elif element.text == labels[1]:
-                return True
-    return False
 
-def getBoundingBox(object):
+def get_bbox(object):
     for element in object:
         if element.tag == 'bndbox':
             x = 0
@@ -46,25 +37,32 @@ def getBoundingBox(object):
 
 def main():
 
-    for file in os.listdir(paths.SAVED_MOVING):
+    print('If Unkown (remove this BoundingBox), enter [j]')
+    print(f'Avaiable Numbers and Labels: {str(labels)}')
+    files = os.listdir(paths.SAVED_MOVING)
+    print(f'Found {str(len(files)/2)} Images in {paths.SAVED_MOVING}')
+    for file in files:
         if file.endswith('.jpg'):
-            imgFilename = paths.SAVED_MOVING + '/' + file
+            img_file = os.path.join(paths.SAVED_MOVING, file)
 
-            xmlFilename = os.path.splitext(imgFilename)[0] + '.xml'
+            xml_file = os.path.splitext(img_file)[0] + '.xml'
+            if not os.path.exists(xml_file):
+                print(f"removing {img_file} because of no xml file found")
+                os.remove(img_file)
+                continue
+            
+            xmlTree = ET.parse(xml_file)
+            xml_root = xmlTree.getroot()
 
-            xmlTree = ET.parse(xmlFilename)
-            rootElement = xmlTree.getroot()
-
-            frame = cv2.imread(imgFilename)
-
-            for object in rootElement.findall("object"):
+            frame = cv2.imread(img_file)
+            bboxes = xml_root.findall("object")
+            for object in bboxes:
 
                 # Display bounding box
-                x, y, h, w = getBoundingBox(object)
+                x, y, h, w = get_bbox(object)
                 cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
 
-                print('If Unkown (remove this BoundingBox), enter [j]')
-                cv2.putText(frame, "Name : " + str(os.path.basename(imgFilename)), (100,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+                cv2.putText(frame, "Name : " + str(os.path.basename(img_file)), (100,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
                 cv2.imshow('Images', frame)
                 
                 key = cv2.waitKey(2000)
@@ -82,14 +80,18 @@ def main():
                             print(inputChar)
                             element.text = labels[inputChar]
                         elif(inputChar == 'j'):
-                            rootElement.remove(object)
+                            xml_root.remove(object)
                         elif( inputChar == 'q'):
                             exit()
                         else:
                             print('Unknwon input: {}'.format(inputChar))
 
                 # bbox.remove()
-                xmlTree.write(xmlFilename)
+            if len(xml_root.findall("object")) <=0:
+                    os.remove(xml_file)
+                    os.remove(img_file)
+            else:
+                xmlTree.write(xml_file)
 
     cv2.destroyAllWindows()
 main()

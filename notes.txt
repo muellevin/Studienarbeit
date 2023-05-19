@@ -1,0 +1,286 @@
+gucken ob schrauben passen; passt
+Pan/tilt als außenbefestigung; passt
+3D-Druck machen, gesendet
+Jetson -> overcurrewent wgen case nicht gesehen (blinken der PowerLED) -> Wahrscheinlich interner Defekt -> using barrel now
+
+mobilnet320 brauch bei training mit selber batch (16) 3 GB mehr gpu-ram | SYS-ram etwa gleich (0.4 mehr) -> 50k steps ~ 2h 46min
+mobilnet320 per step time ca. ~0.2 s
+mobilnet320 qunat train: gpu_3.3GB -> dann auf 5.3 system 6.1, 50k steps per step 0.225 ~ 3h
+yolov8n img_ 320 Batch 16 gpu_ram 2.3 GB sys ram 5.3 GB | je epoche ca. 4min 48s -> 34 epochen ca. ~ 2h 43min
+auf JHub 26sec pro epoche
+augment macht nichts aus (auch bei false wird augment ausgeführt) -> getestet
+
+Validating runs/detect/raccoon_yolov8n_320_B16_ep33_aug/weights/best.pt...
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-2.0.0+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+YOLOv8n summary (fused): 168 layers, 3006623 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  m
+                   all       1708       2002      0.575      0.538       0.57      0.393
+              Raccoon,       1708         56      0.238      0.196      0.178      0.113
+                  Cat,       1708       1648      0.759      0.819      0.852      0.598
+                  Fox,       1708         73      0.639      0.438        0.5      0.379
+              Squirrel       1708        225      0.664      0.698      0.749       0.48
+Speed: 0.0ms preprocess, 0.1ms inference, 0.0ms loss, 0.5ms postprocess per image
+Results saved to runs/detect/raccoon_yolov8n_320_B16_ep33_aug
+
+Validating runs/detect/raccoon_yolov8n_320_B16_ep33_noaugno_aug/weights/best.pt...
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-2.0.0+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+YOLOv8n summary (fused): 168 layers, 3006623 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  m
+                   all       1708       2002      0.682      0.593      0.685      0.488
+              Raccoon,       1708         56      0.527      0.429      0.525       0.33
+                  Cat,       1708       1648       0.81      0.823      0.876      0.648
+                  Fox,       1708         73      0.674      0.397      0.546      0.442
+              Squirrel       1708        225      0.718      0.724      0.793      0.532
+Speed: 0.0ms preprocess, 0.1ms inference, 0.0ms loss, 0.5ms postprocess per image
+Results saved to runs/detect/raccoon_yolov8n_320_B16_ep33_noaugno_aug
+
+alidating runs/detect/raccoon_pre_yolov8n_320_B16_ep33/weights/best.pt...
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-2.0.0+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+Model summary (fused): 168 layers, 3006623 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  m
+                   all       1708       2002      0.918      0.798      0.891      0.689
+              Raccoon,       1708         56      0.879      0.776      0.877      0.633
+                  Cat,       1708       1648       0.95      0.828       0.93      0.736
+                  Fox,       1708         73      0.896      0.767      0.849      0.711
+              Squirrel       1708        225      0.949      0.823      0.909      0.677
+Speed: 0.0ms preprocess, 0.1ms inference, 0.0ms loss, 0.5ms postprocess per image
+Results saved to runs/detect/raccoon_pre_yolov8n_320_B16_ep33
+
+Validating runs/detect/raccoon_pre_yolov8n_320_B16_ep34_aug_alb4/weights/best.pt...
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+Model summary (fused): 168 layers, 3006623 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 54/54 [00:03<00:00, 14.62it/s]
+                   all       1708       2002      0.906       0.83        0.9      0.699
+              Raccoon,       1708         56      0.951      0.804      0.883      0.641
+                  Cat,       1708       1648      0.925       0.85      0.933      0.739
+                  Fox,       1708         73      0.825      0.849      0.867       0.72
+              Squirrel       1708        225      0.925      0.818      0.916      0.694
+Speed: 0.0ms preprocess, 0.3ms inference, 0.0ms loss, 0.4ms postprocess per image
+Results saved to runs/detect/raccoon_pre_yolov8n_320_B16_ep34_aug_alb4
+gray 0.1
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [01:04<00:00, 26.63it/s]
+                   all       1708       2002      0.913      0.807      0.894      0.664
+              Raccoon,       1708         56      0.957      0.768      0.879      0.618
+                  Cat,       1708       1648      0.926      0.841      0.929      0.715
+                  Fox,       1708         73      0.861      0.808      0.857       0.68
+              Squirrel       1708        225       0.91       0.81      0.911      0.644
+Speed: 0.1ms preprocess, 26.2ms inference, 0.0ms loss, 0.2ms postprocess per image
+Results saved to runs/detect/val7
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+Loading runs/detect/raccoon_pre_yolov8n_320_B16_ep34_aug_alb4/weights/best_saved_model/best_float16.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [01:04<00:00, 26.67it/s]
+                   all       1708       2002      0.911      0.807      0.894      0.664
+              Raccoon,       1708         56      0.957      0.768      0.879      0.618
+                  Cat,       1708       1648      0.926      0.841      0.929      0.715
+                  Fox,       1708         73      0.852      0.808      0.857       0.68
+              Squirrel       1708        225       0.91       0.81      0.911      0.644
+Speed: 0.1ms preprocess, 26.1ms inference, 0.0ms loss, 0.2ms postprocess per image
+Results saved to runs/detect/val8
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+Loading runs/detect/raccoon_pre_yolov8n_320_B16_ep34_aug_alb4/weights/best_saved_model/best_full_integer_quant.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [00:45<00:00, 37.92it/s]
+                   all       1708       2002      0.959      0.646      0.802      0.618
+              Raccoon,       1708         56      0.946      0.625      0.792      0.613
+                  Cat,       1708       1648      0.976      0.677       0.82       0.64
+                  Fox,       1708         73      0.939       0.63      0.784      0.633
+              Squirrel       1708        225      0.974      0.653      0.811      0.588
+Speed: 0.1ms preprocess, 15.5ms inference, 0.0ms loss, 0.1ms postprocess per image
+Results saved to runs/detect/val9
+
+big with gray 0.4:
+Validating runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best.pt...
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+Model summary (fused): 168 layers, 3006623 parameters, 0 gradients, 8.1 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 19/19 [00:06<00:00,  2.90it/s]
+                   all       1708       2002       0.92      0.839      0.917      0.625
+              Raccoon,       1708         56      0.951      0.804      0.914      0.567
+                  Cat,       1708       1648      0.918      0.873      0.935      0.649
+                  Fox,       1708         73      0.854      0.781      0.877      0.645
+              Squirrel       1708        225      0.957      0.898      0.941       0.64
+Speed: 0.4ms preprocess, 1.3ms inference, 0.0ms loss, 0.4ms postprocess per image
+Results saved to runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb
+# directly downscaled to 320 in val()
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 107/107 [00:03<00:00, 28.14it/s]
+                   all       1708       2002      0.871      0.701      0.811        0.6
+              Raccoon,       1708         56      0.792      0.625      0.738      0.518
+                  Cat,       1708       1648      0.903      0.819      0.908      0.686
+                  Fox,       1708         73      0.881      0.611      0.738      0.587
+              Squirrel       1708        225      0.909      0.747      0.858      0.606
+Speed: 0.0ms preprocess, 0.5ms inference, 0.0ms loss, 0.3ms postprocess per image
+Loading runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best_saved_model/best_float32.tflite for TensorFlow Lite inference...
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [01:03<00:00, 26.75it/s]
+                   all       1708       2002      0.866      0.695      0.795      0.513
+              Raccoon,       1708         56       0.81      0.607      0.704      0.445
+                  Cat,       1708       1648      0.915        0.8        0.9      0.598
+                  Fox,       1708         73      0.869      0.636      0.742      0.512
+              Squirrel       1708        225      0.871      0.738      0.832      0.496
+Speed: 0.1ms preprocess, 26.1ms inference, 0.0ms loss, 0.2ms postprocess per image
+Results saved to runs/detect/val
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+Loading runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best_saved_model/best_float16.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [01:04<00:00, 26.57it/s]
+                   all       1708       2002      0.867      0.696      0.795      0.513
+              Raccoon,       1708         56       0.81      0.607      0.704      0.445
+                  Cat,       1708       1648      0.915        0.8        0.9      0.598
+                  Fox,       1708         73      0.869      0.636      0.742      0.512
+              Squirrel       1708        225      0.874       0.74      0.832      0.496
+Speed: 0.1ms preprocess, 25.9ms inference, 0.0ms loss, 0.2ms postprocess per image
+Results saved to runs/detect/val2
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+Loading runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best_saved_model/best_full_integer_quant.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [00:44<00:00, 38.42it/s]
+                   all       1708       2002      0.999      0.191      0.595       0.48
+              Raccoon,       1708         56          1      0.107      0.554       0.45
+                  Cat,       1708       1648      0.996      0.292      0.644      0.535
+                  Fox,       1708         73          1      0.315      0.658       0.53
+              Squirrel       1708        225          1     0.0489      0.524      0.404
+Speed: 0.1ms preprocess, 15.4ms inference, 0.0ms loss, 0.1ms postprocess per image
+Results saved to runs/detect/val3
+
+for 1088
+Loading runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best_saved_model/best_float32.tflite for TensorFlow Lite inference...
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Forcing batch=1 square inference (1,3,1088,1088) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [09:03<00:00,  3.14it/s]
+                   all       1708       2002      0.882      0.854      0.907      0.595
+              Raccoon,       1708         56      0.881       0.79      0.882      0.531
+                  Cat,       1708       1648       0.89      0.891      0.929      0.623
+                  Fox,       1708         73      0.841      0.822      0.881      0.612
+              Squirrel       1708        225      0.916      0.911      0.935      0.614
+Speed: 0.8ms preprocess, 301.8ms inference, 0.0ms loss, 0.3ms postprocess per image
+Results saved to runs/detect/val4
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+Loading runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best_saved_model/best_float16.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,1088,1088) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [09:01<00:00,  3.15it/s][[B
+                   all       1708       2002      0.882      0.854      0.907      0.595
+              Raccoon,       1708         56      0.881       0.79      0.882      0.531
+                  Cat,       1708       1648       0.89      0.891      0.929      0.623
+                  Fox,       1708         73      0.841      0.822      0.882      0.612
+              Squirrel       1708        225      0.915      0.912      0.935      0.614
+Speed: 0.9ms preprocess, 300.1ms inference, 0.0ms loss, 0.3ms postprocess per image
+Results saved to runs/detect/val5
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+Loading runs/detect/raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb/weights/best_saved_model/best_full_integer_quant.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,1088,1088) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 [00:00<?, ?it/s]
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [05:18<00:00,  5.37it/s]
+                   all       1708       2002          0          0          0          0
+Speed: 1.0ms preprocess, 170.4ms inference, 0.0ms loss, 0.1ms postprocess per image
+Results saved to runs/detect/val6
+
+yolo smodel
+same aug/alb as above
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 107/107 [00:03<00:00, 30.08it/s]
+                   all       1708       2002      0.934      0.878      0.932      0.768
+              Raccoon,       1708         56       0.96      0.858      0.919      0.715
+                  Cat,       1708       1648      0.917      0.911      0.955      0.802
+                  Fox,       1708         73      0.939      0.845      0.918      0.803
+              Squirrel       1708        225      0.918      0.896      0.933      0.751
+Speed: 0.0ms preprocess, 0.8ms inference, 0.0ms loss, 0.2ms postprocess per image
+Results saved to runs/detect/val17
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CPU
+
+PyTorch: starting from runs/detect/raccoon_pre_yolov8s_320_Bbest_ep100_aug_alb/weights/best.pt
+Loading runs/detect/raccoon_pre_yolov8s_320_Bbest_ep100_aug_alb/weights/best_saved_model/best_float32.tflite for TensorFlow Lite inference...
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [02:36<00:00, 10.94it/s]
+                   all       1708       2002      0.955      0.848      0.928      0.727
+              Raccoon,       1708         56       0.94      0.839      0.919      0.671
+                  Cat,       1708       1648      0.948      0.885      0.953      0.769
+                  Fox,       1708         73      0.983      0.809      0.915      0.768
+              Squirrel       1708        225      0.951      0.857      0.926      0.699
+Speed: 0.1ms preprocess, 87.7ms inference, 0.0ms loss, 0.5ms postprocess per image
+Results saved to runs/detect/val18
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+Loading runs/detect/raccoon_pre_yolov8s_320_Bbest_ep100_aug_alb/weights/best_saved_model/best_float16.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [02:34<00:00, 11.07it/s]
+                   all       1708       2002      0.955      0.848      0.928      0.728
+              Raccoon,       1708         56      0.939      0.839      0.919      0.671
+                  Cat,       1708       1648      0.948      0.885      0.953      0.769
+                  Fox,       1708         73      0.983      0.809      0.915       0.77
+              Squirrel       1708        225      0.951      0.858      0.926      0.699
+Speed: 0.1ms preprocess, 86.6ms inference, 0.0ms loss, 0.5ms postprocess per image
+Results saved to runs/detect/val19
+Ultralytics YOLOv8.0.92 🚀 Python-3.10.6 torch-1.13.1+cu117 CUDA:0 (NVIDIA GeForce RTX 3090, 24260MiB)
+Loading runs/detect/raccoon_pre_yolov8s_320_Bbest_ep100_aug_alb/weights/best_saved_model/best_full_integer_quant.tflite for TensorFlow Lite inference...
+Forcing batch=1 square inference (1,3,320,320) for non-PyTorch models
+val: Scanning /home/inf20124/Studienarbeit/Detection_training/Tensorflow/workspace/images/yolodata/devset/labels.cache... 1708 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1708/1708 
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 1708/1708 [01:22<00:00, 20.68it/s]
+                   all       1708       2002      0.965      0.761       0.86      0.664
+              Raccoon,       1708         56      0.977       0.75      0.866       0.65
+                  Cat,       1708       1648      0.955      0.806      0.869      0.667
+                  Fox,       1708         73      0.981      0.712      0.845        0.7
+              Squirrel       1708        225      0.946      0.778      0.858       0.64
+Speed: 0.1ms preprocess, 45.2ms inference, 0.0ms loss, 0.3ms postprocess per image
+
+efficientDet D0 512 Batch 4 gpu_ram 4.8GB ssys ram 5.7 | step_time 0.241s _> 50k ~> 3h 23min
+efficientDetD0_lite (img_size 320) batch 16 epochen 34| gpu_ram 4.8, sys_ram 5| 1 epoche ca. 6.30min ~3h 30min
+for convert:
+14/14 [==============================] - 30s 1s/step
+
+{'AP': 0.6968139,
+ 'AP50': 0.9212944,
+ 'AP75': 0.79229057,
+ 'APs': 0.12474172,
+ 'APm': 0.5120459,
+ 'APl': 0.7153888,
+ 'ARmax1': 0.6809535,
+ 'ARmax10': 0.7816103,
+ 'ARmax100': 0.7897183,
+ 'ARs': 0.48333332,
+ 'ARm': 0.71675086,
+ 'ARl': 0.7998777,
+ 'AP_/Raccoon': 0.72555923,
+ 'AP_/Cat': 0.7284069,
+ 'AP_/Fox': 0.61399007,
+ 'AP_/Squirrel': 0.71929926}
+
+
+nach tflite
+854/854 [==============================] - 2452s 3s/step
+
+{'AP': 0.6742691,
+ 'AP50': 0.8988655,
+ 'AP75': 0.7664101,
+ 'APs': 0.091320135,
+ 'APm': 0.46002346,
+ 'APl': 0.69393545,
+ 'ARmax1': 0.65219754,
+ 'ARmax10': 0.73051447,
+ 'ARmax100': 0.7344188,
+ 'ARs': 0.26666668,
+ 'ARm': 0.53617424,
+ 'ARl': 0.74915904,
+ 'AP_/Raccoon': 0.6917081,
+ 'AP_/Cat': 0.71443707,
+ 'AP_/Fox': 0.5819213,
+ 'AP_/Squirrel': 0.7090099}
+
+
+
+music: waterflamme
+
+
+blockierende cameras -> 0,5 sec delay in aufnahme

@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 import sys
 import os
-
+from camera_setup import gstreamer_pipeline
+import datetime
+from time import sleep
 
 sys.path.append("../Detection_training/Tensorflow/")
 from scripts.Paths import paths
@@ -15,32 +17,11 @@ dispH=360
 flip=3
 OBJECT_SIZE_THRESHOLD = dispH*dispW*0.005    # object tracked at 5% display size
 
-def gstreamer_pipeline(
-    sensor_id=0,
-    capture_width=dispW,
-    capture_height=dispH,
-    display_width=dispW,
-    display_height=dispH,
-    framerate=120,
-    flip_method=0,
-):
-    return (
-        "nvarguscamerasrc sensor-id=%d !"
-        "video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, framerate=(fraction)%d/1 ! "
-        "nvvidconv flip-method=%d ! "
-        "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
-        "videoconvert ! "
-        "video/x-raw, format=(string)BGR ! appsink"
-        % (
-            sensor_id,
-            capture_width,
-            capture_height,
-            framerate,
-            flip_method,
-            display_width,
-            display_height,
-        )
-    )
+def get_jetson_temp():
+    temp_file = "/sys/devices/virtual/thermal/thermal_zone0/temp"
+    with open(temp_file, "r") as f:
+        temp_string = f.readline().strip()
+    return float(temp_string) / 1000.0
 
 def write_xml_boxes_and_image(bounding_boxes, file, frame):
     img_path = os.path.splitext(file)[0] + '.jpg'
@@ -82,7 +63,7 @@ def write_xml_boxes_and_image(bounding_boxes, file, frame):
 #Uncomment These next Two Line for Pi Camera
 # camSet='nvarguscamerasrc !  video/x-raw(memory:NVMM), width=3264, height=2464, format=NV12, framerate=21/1 ! nvvidconv flip-method='+str(flip)+' ! video/x-raw, width='+str(dispW)+', height='+str(dispH)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
 # cam= cv2.VideoCapture(camSet)
-cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=3), cv2.CAP_GSTREAMER)
+cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=0, display_width=dispW, display_height=dispH), cv2.CAP_GSTREAMER)
 
 #Or, if you have a WEB cam, uncomment the next line
 #(If it does not work, try setting to '1' instead of '0')
@@ -92,7 +73,7 @@ cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=3), cv2.CAP_GSTREAMER)
 
 fgbg = cv2.createBackgroundSubtractorMOG2()
 tracked_objects = {}
-next_id = len(os.listdir(paths.SAVED_MOVING))
+next_id = int(len(os.listdir(paths.SAVED_MOVING))/2)
 
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
@@ -185,6 +166,13 @@ start_time = cv2.getTickCount()
 
 while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
 # while True:
+    jetson_temp = get_jetson_temp()
+    if jetson_temp > 20:
+        now = datetime.datetime.now()
+        date_string = now.strftime("%Y-%m-%d %H:%M:%S")
+        with open(os.path.join(os.path.dirname(__file__),"temperature.log"), "a") as f:
+            f.write("{}: {:.2f} C\n".format(date_string, jetson_temp))
+        sleep(0.5)
     timer = cv2.getTickCount()
     ret, frame = cam.read()
     # out.write(frame)
@@ -192,8 +180,8 @@ while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
     fgmask = fgbg.apply(frame)
     fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4)))
 
-    cv2.imshow('FGmaskComp',fgmask)
-    cv2.moveWindow('FGmaskComp',0,530)
+    # cv2.imshow('FGmaskComp',fgmask)
+    # cv2.moveWindow('FGmaskComp',0,530)
     
 
     contours,_=cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -211,13 +199,13 @@ while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
             # cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
 
     # Combine intersecting bounding boxes
-    if len(something_big_enough_detected) > 1:
+    if len(something_big_enough_detected) > 0:
         combined_bounding_boxes = merge_bounding_boxes(something_big_enough_detected)
     else:
         combined_bounding_boxes = something_big_enough_detected
     for box in combined_bounding_boxes:
         x, y, w, h = box
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     if len(combined_bounding_boxes) > 0:
         write_xml_boxes_and_image(combined_bounding_boxes, os.path.join(paths.SAVED_MOVING, f'Saving_Frame_{str(next_id)}.xml'), frame)
         next_id += 1
@@ -229,7 +217,7 @@ while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
     # cv2.putText(frame, "FPS : " + str(int(fps)), (100,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
     # Write the frame into the output video
     # out.write(frame)
-    cv2.imshow('nanoCam',frame)
+    # cv2.imshow('nanoCam',frame)
     cv2.moveWindow('nanoCam',0,0)
     if cv2.waitKey(1)==ord('q'):
         break

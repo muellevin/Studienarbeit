@@ -20,7 +20,10 @@
 | yolov8n | pb | Jetson |   53 |   82 |   48 |
 | yolov8n (1 thread)| f32 | Jetson |  338 |  355 |  331 |
 | yolov8n (4 thread)| f32 | Jetson |  179 |  226 |  166 |
+| yolov8n (4 thread)| f32 | CM3    | 591  | 686 | 559 |
+| yolov8n (4 thread)| full_int_quant | CM3    | 224  | 295 | 223 |
 | yolov8n | full_int_quant | Jetson + ETPU |   17 |   20 |   16 |
+| yolov8n | full_int_quant | CM3 + ETPU |   68 |   89 |   63 |
 | yolov5n | pb | Jetson |   47 |   70 |   43 |
 | yolov5n | full_int_quant | Jetson + ETPU |   23 |   26 |   21 |
 | MobilNet SSD (200) | pb | Jetson |  103 |  713 |   98 |
@@ -70,3 +73,20 @@ Traceback (most recent call last):
 RuntimeError: CUDA error: no kernel image is available for execution on the device
 CUDA kernel errors might be asynchronously reported at some other API call,so the stacktrace below might be incorrect.
 For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+
+
+
+
+[05/18/2023-21:52:15] [I] === Performance summary ===
+[05/18/2023-21:52:15] [I] Throughput: 72.2544 qps
+[05/18/2023-21:52:15] [I] Latency: min = 13.7075 ms, max = 14.8861 ms, mean = 13.8259 ms, median = 13.7999 ms, percentile(99%) = 14.8121 ms
+[05/18/2023-21:52:15] [I] End-to-End Host Latency: min = 13.7175 ms, max = 14.9229 ms, mean = 13.8394 ms, median = 13.8109 ms, percentile(99%) = 14.831 ms
+[05/18/2023-21:52:15] [I] Enqueue Time: min = 6.08826 ms, max = 9.51123 ms, mean = 7.35561 ms, median = 7.19287 ms, percentile(99%) = 9.49573 ms
+[05/18/2023-21:52:15] [I] H2D Latency: min = 0.117554 ms, max = 0.13623 ms, mean = 0.120202 ms, median = 0.119202 ms, percentile(99%) = 0.128906 ms
+[05/18/2023-21:52:15] [I] GPU Compute Time: min = 13.5784 ms, max = 14.7576 ms, mean = 13.6963 ms, median = 13.6698 ms, percentile(99%) = 14.6803 ms
+[05/18/2023-21:52:15] [I] D2H Latency: min = 0.00830078 ms, max = 0.0100708 ms, mean = 0.00940053 ms, median = 0.00939941 ms, percentile(99%) = 0.0100098 ms
+[05/18/2023-21:52:15] [I] Total Host Walltime: 3.03096 s
+[05/18/2023-21:52:15] [I] Total GPU Compute Time: 2.99948 s
+[05/18/2023-21:52:15] [I] Explanations of the performance metrics are printed in the verbose logs.
+[05/18/2023-21:52:15] [I]
+&&&& PASSED TensorRT.trtexec [TensorRT v8201] # /usr/src/tensorrt/bin/trtexec --onnx=best.onnx --saveEngine=here.engine --best
