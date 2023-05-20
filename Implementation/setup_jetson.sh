@@ -16,30 +16,34 @@ cd Detection_training/Tensorflow/workspace
 git clone https://github.com/muellevin/devset.git images
 cd ~/
 
+# sometimes error
+sudo ln -s /usr/include/locale.h /usr/include/xlocale.h
 # for tensorflow
 sudo apt-get install libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran -y
 sudo apt-get install python3-pip -y
 sudo python3 -m pip install --upgrade pip
 sudo -H pip3 install testresources setuptools
 # numpy .5 -> core dumb
-sudo -H pip3 install numpy==1.19.4 future mock keras_preprocessing keras_applications gast protobuf pybind11 cython pkgconfig packaging
+sudo -H pip3 install numpy==1.19.4 future mock gast protobuf pybind11 cython pkgconfig packaging
 # h5py needs something special
 sudo -H H5PY_SETUP_REQUIRES=0 pip3 install -U --no-build-isolation h5py==3.1.0
+sudo -H pip3 install keras_preprocessing keras_applications
 sudo -H pip3 install --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 tensorflow==2.7.0+nv22.1
 
 # install pytorch
-sudo apt-get -y update
+sudo apt-get -y install libomp5 libomp-dev
 sudo apt-get -y install autoconf bc build-essential g++-8 gcc-8 clang-8 lld-8 gettext-base gfortran-8 iputils-ping libbz2-dev libc++-dev libcgal-dev libffi-dev libfreetype6-dev libhdf5-dev libjpeg-dev liblzma-dev libncurses5-dev libncursesw5-dev libpng-dev libreadline-dev libssl-dev libsqlite3-dev libxml2-dev libxslt-dev locales moreutils openssl python-openssl rsync scons python3-pip libopenblas-dev
 export TORCH_INSTALL=https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5+nv22.01-cp36-cp36m-linux_aarch64.whl
-python3 -m pip install --upgrade pip
-python3 -m pip install aiohttp numpy=='1.19.4' scipy=='1.5.3' export "LD_LIBRARY_PATH=/usr/lib/llvm-8/lib:$LD_LIBRARY_PATH"
-python3 -m pip install --upgrade protobuf
-python3 -m pip install --no-cache $TORCH_INSTALL
+pip3 install --upgrade pip
+python3 -m pip install aiohttp scipy=='1.5.3'
+export LD_LIBRARY_PATH=/usr/lib/llvm-8/lib:$LD_LIBRARY_PATH
+pip3 install --no-cache $TORCH_INSTALL
+# pip3 install torch==1.10.2+cu102 torchvision==0.11.3+cu102 torchaudio==0.10.2 --extra-index-url https://download.pytorch.org/whl/cu102 or -f https://download.pytorch.org/whl/cu102/torch_stable.html
 
 # install opencv
-sudo apt-get install python3-opencv
+sudo apt-get install python3-opencv -y
 # and now remove to get newest version?!
-sudo apt-get remove python3-opencv
+sudo apt-get remove python3-opencv -y
 # warning/error
 sudo apt-get install libcanberra-gtk-module -y
 # to install newest version with cuda support follow:
@@ -49,18 +53,18 @@ sudo apt-get install libcanberra-gtk-module -y
 # install coral usb accelerator
 echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
 # make sure curl is installed
-sudo apt install curl
+sudo apt install curl -y
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-sudo apt-get update
+sudo apt-get update -y
 # sudo apt-get install libedgetpu1-std
 sudo apt-get install libedgetpu1-max -y # using max frequency
 # install pycoral
 sudo apt-get install python3-pycoral -y
 
 # install pycuda (normal installation has errors) this for some reasons now aswell
-export PATH=/usr/local/cuda/bin:$PATH
-export CUDA_ROOT=/usr/local/cuda
-sudo -H pip3 install --global-option=build_ext --global-option="-I/usr/local/cuda/include" --global-option="-L/usr/local/cuda/lib64" pycuda
+# export PATH=/usr/local/cuda/bin:$PATH
+# export CUDA_ROOT=/usr/local/cuda
+# sudo -H pip3 install --global-option=build_ext --global-option="-I/usr/local/cuda/include" --global-option="-L/usr/local/cuda/lib64" pycuda
 # now try this:
 # set -e
 

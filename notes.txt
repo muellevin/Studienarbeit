@@ -284,3 +284,7 @@ music: waterflamme
 
 
 blockierende cameras -> 0,5 sec delay in aufnahme
+longer cables -> no voltage (capacity problem) -> even my are too long. -> arduino and pyserial:
+update auf ubuntu 20.04 weils langsam nervt -> Funktioniert erst recht nichts außer alles von Source bauen
+openCV 4.1.1 ohne CUDA ca. 25 (hand moving 24) FPS (4.7 mit cuda 30)
+Opencv 4.1.1 threaded capture ca 94 fps (hand moving 40)

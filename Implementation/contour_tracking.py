@@ -2,18 +2,19 @@ import cv2
 import numpy as np
 import sys
 import os
-from camera_setup import gstreamer_pipeline
+from camera_setup import gstreamer_pipeline, vStream
 import datetime
 from time import sleep
+import atexit
 
-sys.path.append("../Detection_training/Tensorflow/")
+sys.path.append(os.path.join(os.path.dirname(__file__), "../Detection_training/Tensorflow/"))
 from scripts.Paths import paths
 
 paths.setup_paths()
 (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
 dispW=640
-dispH=360
+dispH=480
 flip=3
 OBJECT_SIZE_THRESHOLD = dispH*dispW*0.005    # object tracked at 5% display size
 
@@ -22,6 +23,14 @@ def get_jetson_temp():
     with open(temp_file, "r") as f:
         temp_string = f.readline().strip()
     return float(temp_string) / 1000.0
+
+def cleanup():
+    # Function to be called at exit
+    print("Cleaning up...")
+    camStreamed.capture.release()
+    # cam.release()
+    # out.release()
+    cv2.destroyAllWindows()
 
 def write_xml_boxes_and_image(bounding_boxes, file, frame):
     img_path = os.path.splitext(file)[0] + '.jpg'
@@ -63,13 +72,16 @@ def write_xml_boxes_and_image(bounding_boxes, file, frame):
 #Uncomment These next Two Line for Pi Camera
 # camSet='nvarguscamerasrc !  video/x-raw(memory:NVMM), width=3264, height=2464, format=NV12, framerate=21/1 ! nvvidconv flip-method='+str(flip)+' ! video/x-raw, width='+str(dispW)+', height='+str(dispH)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
 # cam= cv2.VideoCapture(camSet)
-cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=0, display_width=dispW, display_height=dispH), cv2.CAP_GSTREAMER)
-
+# cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH), cv2.CAP_GSTREAMER)
+camStreamed = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=0))
 #Or, if you have a WEB cam, uncomment the next line
 #(If it does not work, try setting to '1' instead of '0')
 # cam=cv2.VideoCapture(0)
 # cam.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
 # cam.set(cv2.CAP_PROP_FRAME_HEIGHT, dispH)
+
+# Register the cleanup function with atexit
+atexit.register(cleanup)
 
 fgbg = cv2.createBackgroundSubtractorMOG2()
 tracked_objects = {}
@@ -78,8 +90,8 @@ next_id = int(len(os.listdir(paths.SAVED_MOVING))/2)
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 # Define the fps to be equal to 10. Also frame size is passed.
-frame_width = int(cam.get(3))
-frame_height = int(cam.get(4))
+# frame_width = int(cam.get(3))
+# frame_height = int(cam.get(4))
 # out = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
 def merge_bounding_boxes(boxes, threshold=0):
     """
@@ -162,19 +174,22 @@ def merge_bounding_boxes(boxes, threshold=0):
     return merged_boxes
 
 
+sleep(1)
 start_time = cv2.getTickCount()
-
-while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
-# while True:
+fps_sum = 0
+fps_count = 0
+# while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
+while True:
     jetson_temp = get_jetson_temp()
-    if jetson_temp > 20:
+    if jetson_temp > 60:
         now = datetime.datetime.now()
         date_string = now.strftime("%Y-%m-%d %H:%M:%S")
         with open(os.path.join(os.path.dirname(__file__),"temperature.log"), "a") as f:
             f.write("{}: {:.2f} C\n".format(date_string, jetson_temp))
         sleep(0.5)
     timer = cv2.getTickCount()
-    ret, frame = cam.read()
+    frame = camStreamed.getFrame()
+    # _, frame = cam.read()
     # out.write(frame)
 
     fgmask = fgbg.apply(frame)
@@ -212,6 +227,8 @@ while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
         # cv2.imwrite("image.jpg", frame)
     # Calculate Frames per second (FPS)
     fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
+    fps_sum += fps
+    fps_count += 1
     print(f'current fps: {fps}')
     # Display FPS on frame
     # cv2.putText(frame, "FPS : " + str(int(fps)), (100,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
@@ -221,6 +238,5 @@ while int((cv2.getTickCount() - start_time) / cv2.getTickFrequency()) < 10:
     cv2.moveWindow('nanoCam',0,0)
     if cv2.waitKey(1)==ord('q'):
         break
-cam.release()
-# out.release()
-cv2.destroyAllWindows()
+
+print(f"average FPS: {fps_sum/fps_count}")
