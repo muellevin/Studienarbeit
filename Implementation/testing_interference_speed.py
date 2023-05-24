@@ -31,13 +31,14 @@ from scripts.Paths import LABELS, paths, TEST_IMAGE
 # Set parameters for preprocessing, postprocessing, and visualization
 MODEL_WIDTH = 320
 MODEL_HEIGHT = 320
-SCORE_THRESHOLD = 0.5
+SCORE_THRESHOLD = 0.1
 YOLO = True    # only for .pb
 TFLITE = False
 EDGE_TPU = False
 TRT = False
 
 MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
+# MODEL_NAME = 'raccoonModel_50k_B16_img17070_mobilnet320'
 LITE_NAME = 'yolo8n_int8.trt'
 
 
@@ -150,7 +151,7 @@ def preprocess_image(image: np.ndarray)-> np.ndarray:
 
     return image
 
-def postprocess_output(output: Dict[str, Any]) -> List[Dict[str, Union[List[float], int]]]:
+def postprocess_output(output, confidence_threshold) -> List[Dict[str, Union[List[float], int]]]:
     """
     Postprocess the object detection model output to filter out low-confidence detections and format the output in a list of dictionaries with the bounding box coordinates, score, and class ID for each detection.
 
@@ -162,25 +163,54 @@ def postprocess_output(output: Dict[str, Any]) -> List[Dict[str, Union[List[floa
     Returns:
         A list of dictionaries representing the detections with the bounding box coordinates, score, and class ID for each detection.
     """
-    boxes = output['detection_boxes'][0].numpy()
-    scores = output['detection_scores'][0].numpy()
-    class_ids = output['detection_classes'][0].numpy().astype(np.int32)
-    mask = scores > SCORE_THRESHOLD
-    boxes = boxes[mask]
-    scores = scores[mask]
-    class_ids = class_ids[mask]
-    boxes[:, 0] *= MODEL_HEIGHT
-    boxes[:, 1] *= MODEL_WIDTH
-    boxes[:, 2] *= MODEL_HEIGHT
-    boxes[:, 3] *= MODEL_WIDTH
+    
     detections = []
-    for box, score, class_id in zip(boxes, scores, class_ids):
-        detection = {
-            'box': box.tolist(),
-            'score': score.tolist(),
-            'class_id': class_id.tolist()
-        }
-        detections.append(detection)
+    if YOLO:
+        outputs = np.squeeze(output).T
+        print(outputs.shape)
+        boxes = outputs[:,:4]
+        classes_scores = outputs[:, 4:]
+        valid_indices = np.where(classes_scores > confidence_threshold)[0]
+        print(valid_indices)
+        valid_boxes = boxes[valid_indices]
+        valid_scores = classes_scores[valid_indices]
+        valid_boxes[:,0] -=  0.5 * valid_boxes[:,2]
+        valid_boxes[:,1] -= 0.5 * valid_boxes[:,3]
+        valid_boxes[:,2] += valid_boxes[:,0]
+        valid_boxes[:,3] += valid_boxes[:,1]
+        # valid_boxes *= scale
+
+        class_ids = np.argmax(valid_scores, axis=1)
+        valid_scores = np.max(valid_scores, axis=1)
+        result_boxes = cv2.dnn.NMSBoxes(valid_boxes, valid_scores, confidence_threshold, 0.45, 0.5)
+        detections = []
+        for i in result_boxes:
+            detections.append(
+                {
+                    'box': np.round(valid_boxes[i]).astype(np.int32),
+                    'score': valid_scores[i],
+                    'class_id': class_ids[i] - 1
+                })
+    else:
+        boxes = output['detection_boxes'][0].numpy()
+        scores = output['detection_scores'][0].numpy()
+        class_ids = output['detection_classes'][0].numpy().astype(np.int32)
+        mask = scores > SCORE_THRESHOLD
+        boxes = boxes[mask]
+        scores = scores[mask]
+        class_ids = class_ids[mask]
+        boxes[:, 0] *= MODEL_HEIGHT
+        boxes[:, 1] *= MODEL_WIDTH
+        boxes[:, 2] *= MODEL_HEIGHT
+        boxes[:, 3] *= MODEL_WIDTH
+
+        for box, score, class_id in zip(boxes, scores, class_ids):
+            detection = {
+                'box': box.tolist(),
+                'score': score.tolist(),
+                'class_id': class_id.tolist()
+            }
+            detections.append(detection)
     return detections
 
 def visualize_output(image: np.ndarray, detections: List[Dict[str, Union[List[float], int]]]) -> np.ndarray:
@@ -222,7 +252,8 @@ slowest_time = float('-inf')
 # First interference is loading the model -> ignore that
 # Run object detection on the input image
 # Preprocess the input image
-y
+image = cv2.imread(TEST_IMAGE)
+input_image = preprocess_image(image)
 if TFLITE:
     if floating_model:
         input_image = (np.float32(input_image) - input_mean) / input_std
@@ -248,7 +279,17 @@ elif TRT:
     output = outputs[0]
     print(outputs)
 else:
-    model(input_image)
+    output = model(input_image)
+    detections = postprocess_output(output, confidence_threshold=0.3)
+    print(detections)
+
+    # Visualize the output detections
+    output_image = visualize_output(cv2.resize(image, (MODEL_WIDTH, MODEL_HEIGHT)), detections)
+
+    # Save the output image
+    # output_path = os.path.join(output_dir, filename)
+    cv2.imwrite("test_pred.jpg", output_image)
+    exit()
 
 # Loop over the input images and perform object detection
 for filename in os.listdir(input_dir):
@@ -291,7 +332,7 @@ for filename in os.listdir(input_dir):
 
         end_time = time.time()
         # Postprocess the output detections
-        detections = postprocess_output(output)
+        detections = postprocess_output(output, confidence_threshold=0.3,)
 
         # Visualize the output detections
         output_image = visualize_output(cv2.resize(image, (MODEL_WIDTH, MODEL_HEIGHT)), detections)

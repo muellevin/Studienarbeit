@@ -31,14 +31,28 @@ sudo -H pip3 install keras_preprocessing keras_applications
 sudo -H pip3 install --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 tensorflow==2.7.0+nv22.1
 
 # install pytorch
-sudo apt-get -y install libomp5 libomp-dev
-sudo apt-get -y install autoconf bc build-essential g++-8 gcc-8 clang-8 lld-8 gettext-base gfortran-8 iputils-ping libbz2-dev libc++-dev libcgal-dev libffi-dev libfreetype6-dev libhdf5-dev libjpeg-dev liblzma-dev libncurses5-dev libncursesw5-dev libpng-dev libreadline-dev libssl-dev libsqlite3-dev libxml2-dev libxslt-dev locales moreutils openssl python-openssl rsync scons python3-pip libopenblas-dev
-export TORCH_INSTALL=https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5+nv22.01-cp36-cp36m-linux_aarch64.whl
-pip3 install --upgrade pip
-python3 -m pip install aiohttp scipy=='1.5.3'
-export LD_LIBRARY_PATH=/usr/lib/llvm-8/lib:$LD_LIBRARY_PATH
-pip3 install --no-cache $TORCH_INSTALL
-# pip3 install torch==1.10.2+cu102 torchvision==0.11.3+cu102 torchaudio==0.10.2 --extra-index-url https://download.pytorch.org/whl/cu102 or -f https://download.pytorch.org/whl/cu102/torch_stable.html
+# sudo apt-get -y install libomp5 libomp-dev
+# sudo apt-get -y install autoconf bc build-essential g++-8 gcc-8 clang-8 lld-8 gettext-base gfortran-8 iputils-ping libbz2-dev libc++-dev libcgal-dev libffi-dev libfreetype6-dev libhdf5-dev libjpeg-dev liblzma-dev libncurses5-dev libncursesw5-dev libpng-dev libreadline-dev libssl-dev libsqlite3-dev libxml2-dev libxslt-dev locales moreutils openssl python-openssl rsync scons python3-pip libopenblas-dev
+# export TORCH_INSTALL=https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5+nv22.01-cp36-cp36m-linux_aarch64.whl
+# pip3 install --upgrade pip
+# python3 -m pip install aiohttp scipy=='1.5.3'
+# export LD_LIBRARY_PATH=/usr/lib/llvm-8/lib:$LD_LIBRARY_PATH
+# pip3 install --no-cache $TORCH_INSTALL
+# nvideas pytorch does not longer support jetson nano
+wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl - O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+sudo apt-get install python3-pip libopenblas-base libopenmpi-dev libomp-dev
+pip3 install numpy torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
+git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
+cd torchvision
+export BUILD_VERSION=0.11.0
+python3 setup.py install --user
+# cleanup
+cd ../
+sudo rm -rf torchvision
+rm torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+
+# pip3 install torch==1.10.2 torchvision==0.11.3 torchaudio==0.10.2 --extra-index-url https://download.pytorch.org/whl/cu102 or -f https://download.pytorch.org/whl/cu102/torch_stable.html
 
 # install opencv
 sudo apt-get install python3-opencv -y
