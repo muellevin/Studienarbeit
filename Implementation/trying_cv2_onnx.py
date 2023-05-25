@@ -82,6 +82,7 @@ def main(onnx_model, input_image):
         detections.append(detection)
         x, y, x_plus_w, y_plus_h, = (round(box[0] * scale), round(box[1] * scale),
                           round((box[0] + box[2]) * scale), round((box[1] + box[3]) * scale))
+        print((x, y, x_plus_w, y_plus_h))
         class_id = class_ids[index]
         label = f'{CLASSES[class_id -1]} ({scores[index]:.2f})'
         print(label)

@@ -61,9 +61,34 @@ def p_to(outputs, scale=0, confidence_threshold=0.25) -> list[dict]:
             {
                 'box': np.round(valid_boxes[i]).astype(np.int32),
                 'score': valid_scores[i],
-                'class_id': class_ids[i] - 1
+                'class_id': class_ids[i]
             })
     return detections
+
+def visualize_output(image: np.ndarray, detections) -> np.ndarray:
+    """
+    Visualize the output detections by drawing the bounding box and label for each detection on the input image.
+
+    Args:
+        image: The input image as a NumPy array.
+        detections: The list of dictionaries representing the detections with the bounding box coordinates,
+                    score, and class ID for each detection.
+
+    Returns:
+        The output image as a NumPy array with the detected objects visualized.
+    """
+    for detection in detections:
+        box = detection['box']
+        score = detection['score']
+        class_id = detection['class_id']
+        color = (0, 255, 0)  # green
+        label = f"{CLASSES[class_id - 1]}: {score:.2f}"
+        x1, y1, x2, y2 = box
+        print(box)
+        cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
+        cv2.putText(image, label, (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=2)
+    return image
 
 def nms(boxes, scores, iou_threshold):
     # Sort by score
@@ -132,6 +157,8 @@ def run_object_detection(image_path, model_path, confidence_threshold=0.2):
     print(f"time needed for file {TEST_IMAGE} is {file_time*1000:4.0f} seconds")
     
     detections = p_to(output, scale)
+    cv2.imshow('img', visualize_output(original_image, detections))
+    cv2.waitKey()
 
 
 # Example usage
