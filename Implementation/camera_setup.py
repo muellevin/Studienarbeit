@@ -33,7 +33,7 @@ def gstreamer_pipeline(
         "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
         "videoconvert ! "
         "video/x-raw, format=(string)BGR ! "
-        "videobalance hue=-0.12 contrast=1.1 ! appsink"
+        "videobalance hue=-0.12 contrast=1.1 ! appsink drop"
         % (
             sensor_id,
             capture_width,
@@ -75,6 +75,7 @@ class vStream:
     def update(self):
         while True:
             _,self.frame=self.capture.read()
+
     def getFrame(self):
         return self.frame
 

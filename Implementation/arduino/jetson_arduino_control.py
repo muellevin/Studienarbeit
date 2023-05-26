@@ -43,7 +43,5 @@ atexit.register(cleanup)
 
 if __name__ == "__main__":
     SERIAL_COM.start_toggle()
-    
     sleep(5)
-    
     SERIAL_COM.stop()
