@@ -64,24 +64,22 @@ def load_model(model_path):
 def preprocess_image(image_path, input_shape):
     # Load and preprocess the input image
     original_image: np.ndarray = cv2.imread(image_path)
+    original_image = cv2.resize(original_image, input_shape)
     [height, width, _] = original_image.shape
     length = max((height, width))
     image = np.zeros((length, length, 3), np.uint8)
     image[0:height, 0:width] = original_image
     scale = length / 320
 
-    image = cv2.dnn.blobFromImage(image, scalefactor=1 / 255, size=MODEL_SHAPE, swapRB=True)
+    image = cv2.dnn.blobFromImage(image, scalefactor=1 / 255, swapRB=True)
     return image, original_image, scale
 
 # To test
 def preprocess_frame(frame: np.ndarray):
-    # image = np.zeros((MODEL_SHAPE[0], MODEL_SHAPE[0], 3), np.uint8)
-    # image[0:MODEL_SHAPE[0], 0:MODEL_SHAPE[1]] = original_image
     image = cv2.dnn.blobFromImage(frame, scalefactor=1 / 255, swapRB=True)
-    
     return image
 
-def postprocess_onnx(outputs, scale=1, confidence_threshold=0.25) -> list[dict]:
+def postprocess_onnx(outputs, scale=1, confidence_threshold=0.05):
     outputs = np.squeeze(outputs).T
     boxes = outputs[:,:4]
     classes_scores = outputs[:, 4:]
@@ -122,9 +120,9 @@ def visualize_output(image: np.ndarray, detections) -> np.ndarray:
     for detection in detections:
         box = detection['box']
         score = detection['score']
-        class_id = detection['class_id']
+        class_id = detection['class_name']
         color = (0, 255, 0)  # green
-        label = f"{CLASSES[class_id]}: {score:.2f}"
+        label = f"{class_id}: {score:.2f}"
         x1, y1, x2, y2 = box
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
         cv2.putText(image, label, (x1, y1 - 10),
@@ -135,30 +133,28 @@ CLASSES = {}
 for label in LABELS:
     CLASSES[label['id']] = label['name']
 
-def run_object_detection(image_path, model_path, confidence_threshold=0.2):
+def run_object_detection(image_path, model_path, confidence_threshold=0.25):
     input_shape = (320, 320)  # Adjust the input shape according to your model's requirements
 
     # Load the model
 
     session, input_name, output_name = load_model(model_path)
-
     # Preprocess the input image
-    
 
     for i in range(20):
         start_time = cv2.getTickCount()
         image, original_image, scale = preprocess_image(image_path, input_shape)
         output = session.run([output_name], {input_name: image})[0]
     
-        detections = postprocess_onnx(output, scale)
+        detections = postprocess_onnx(output, scale, confidence_threshold=confidence_threshold)
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
         print(f'current fps: {fps}')
-    cv2.imshow('img', visualize_output(original_image, detections))
+    cv2.imwrite('img.jpg', visualize_output(original_image, detections))
     cv2.waitKey()
 
 
 # Example usage
 image_path = TEST_IMAGE
 model_path = onnx_path
-
-run_object_detection(image_path, model_path)
+if __name__ == '__main__':
+    run_object_detection(image_path, model_path)

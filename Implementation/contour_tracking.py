@@ -32,6 +32,45 @@ def cleanup():
     # out.release()
     cv2.destroyAllWindows()
 
+
+def write_detections_and_image(detections, frame, prefix='img'):
+    file = prefix + str(datetime.datetime.now()) + '.xml'
+    img_path = os.path.splitext(file)[0] + '.jpg'
+    cv2.imwrite(img_path, frame)
+    
+    objects = ""
+    for box in detections:
+        bbox = box['box']
+        objects += f"""<object>
+                        <name>{box['class_name']}</name>
+                        <pose>Unspecified</pose>
+                        <truncated>1</truncated>
+                        <difficult>0</difficult>
+                        <bndbox>
+                            <xmin>{bbox[0]}</xmin>
+                            <ymin>{bbox[1]}</ymin>
+                            <xmax>{bbox[2]}</xmax>
+                            <ymax>{bbox[3]}</ymax>
+                        </bndbox>
+                    </object>\n"""
+    file_str = f"""<annotation verified="no">
+                <folder>{os.path.dirname(file)}</folder>
+                <filename>{os.path.basename(img_path)}</filename>
+                <path>{img_path}</path>
+                <source>
+                    <database>Unknown</database>
+                </source>
+                <size>
+                    <width>{320}</width>
+                    <height>{320}</height>
+                    <depth>3</depth>
+                </size>
+                <segmented>0</segmented>
+                {objects}
+            </annotation>"""
+    with open(file, "w") as xml_file:
+        xml_file.write(file_str)
+
 def write_xml_boxes_and_image(bounding_boxes, file, frame):
     img_path = os.path.splitext(file)[0] + '.jpg'
     cv2.imwrite(img_path, frame)
