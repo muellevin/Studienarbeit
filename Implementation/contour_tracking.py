@@ -111,7 +111,7 @@ def write_xml_boxes_and_image(bounding_boxes, file, frame):
 # frame_width = int(cam.get(3))
 # frame_height = int(cam.get(4))
 # out = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
-def merge_bounding_boxes(boxes, threshold=0):
+def merge_bounding_boxes(boxes, threshold=0.0):
     """
     Merge bounding boxes that are near or overlapping
     bounding_boxes: list of bounding boxes in the format of (x,y,w,h)
@@ -193,7 +193,7 @@ def merge_bounding_boxes(boxes, threshold=0):
 
 class ThreadedContourTracker(threading.Thread):
     
-        def __init__(self, frame_capture: vStream, prefix='none'):
+    def __init__(self, frame_capture: vStream, prefix='none'):
         threading.Thread.__init__(self)
         self.frame_capture = frame_capture
         self.daemon = True
