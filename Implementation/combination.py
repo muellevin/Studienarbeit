@@ -1,5 +1,4 @@
 
-import atexit
 import numpy as np
 from time import sleep
 from camera_setup import vStream, gstreamer_pipeline
@@ -54,15 +53,6 @@ def main():
         write_detections_and_image(right_det, frame_right, prefix='right')
 
 
-
-# ensures clean exit status
-def cleanup():
-    CAM_LEFT.capture.release()
-    CAM_RIGHT.capture.release()
-
-
-atexit.register(cleanup)
-
 def calculate_vertical_start_angle(target_x, target_y) -> float:
     
     term = WATER_SPEED**4 - GRAVITY * (GRAVITY * target_x**2 + 2 * target_y * WATER_SPEED**2)
@@ -74,3 +64,6 @@ def calculate_vertical_start_angle(target_x, target_y) -> float:
     # angle2 = np.atan((WATER_SPEED**2 - np.sqrt(term)) / (GRAVITY * x))
 
     return np.degrees(angle1)#, np.degrees(angle2)
+
+if __name__ == '__main__':
+    main()

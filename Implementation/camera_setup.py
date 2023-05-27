@@ -8,6 +8,7 @@
 import cv2
 from threading import Thread
 import time
+import atexit
 import numpy as np
 
 """ 
@@ -67,8 +68,8 @@ def gstreamer_pipeline(
 class vStream:
     def __init__(self,src):
 
-        self.capture=cv2.VideoCapture(src, cv2.CAP_GSTREAMER)
-        # self.update()
+        self.capture=cv2.VideoCapture(src)
+        atexit.register(self.capture.release)
         self.thread=Thread(target=self.update,args=())
         self.thread.daemon=True
         self.thread.start()

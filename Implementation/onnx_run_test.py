@@ -1,6 +1,7 @@
 
 import time
 import sys
+sys.path.append('/home/levin/.local/lib/python3.6/site-packages')
 import os
 import cv2
 import threading
@@ -8,7 +9,7 @@ import onnxruntime as ort
 import numpy as np
 from camera_setup import vStream
 
-sys.path.append("../Detection_training/Tensorflow/")
+sys.path.append(os.path.join(os.path.dirname(__file__), "../Detection_training/Tensorflow/"))
 from scripts.Paths import LABELS, paths, TEST_IMAGE
 
 MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
@@ -39,15 +40,16 @@ class ThreadedDetection(threading.Thread):
         while True:
             start_time = cv2.getTickCount()
             frame = self.frame_capture.getFrame()
-            blob_image = preprocess_frame(frame)
-           
-            # run interference
-            output = self.session.run([self.output_name], {self.input_name: blob_image})[0]
-           
-            self.detections[0] = postprocess_onnx(output, confidence_threshold=self.threshold)
-            self.detections[1] = frame
-            fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
-            print(f'current fps: {fps}')
+            if frame is not None:
+                blob_image = preprocess_frame(frame)
+            
+                # run interference
+                output = self.session.run([self.output_name], {self.input_name: blob_image})[0]
+            
+                self.detections[0] = postprocess_onnx(output, confidence_threshold=self.threshold)
+                self.detections[1] = frame
+                fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
+                print(f'current fps: {fps}')
 
     def get_detections(self) -> dict:
         return self.detections
@@ -71,12 +73,12 @@ def preprocess_image(image_path, input_shape):
     image[0:height, 0:width] = original_image
     scale = length / 320
 
-    image = cv2.dnn.blobFromImage(image, scalefactor=1 / 255, swapRB=True)
+    image = cv2.dnn.blobFromImage(image, scalefactor=1 / 255, size=MODEL_SHAPE, swapRB=True)
     return image, original_image, scale
 
 # To test
 def preprocess_frame(frame: np.ndarray):
-    image = cv2.dnn.blobFromImage(frame, scalefactor=1 / 255, swapRB=True)
+    image = cv2.dnn.blobFromImage(frame, scalefactor=1 / 255, size=MODEL_SHAPE, swapRB=True)
     return image
 
 def postprocess_onnx(outputs, scale=1, confidence_threshold=0.05):
@@ -153,8 +155,32 @@ def run_object_detection(image_path, model_path, confidence_threshold=0.25):
     cv2.waitKey()
 
 
+def run_object_detection_on_cam(model_path, confidence_threshold=0.25):
+    from camera_setup import vStream, gstreamer_pipeline
+    CAM_LEFT = vStream(gstreamer_pipeline(flip_method=3))
+    # CAM_RIGHT = vStream(gstreamer_pipeline(sensor_id=1, flip_method=1))
+    # Load the model
+    time.sleep(1)
+    testi = ThreadedDetection(CAM_LEFT)
+    # testi_2 = ThreadedDetection(CAM_RIGHT)
+    start_time_t = cv2.getTickCount()
+    # test for 10 seconds
+    while int((cv2.getTickCount() - start_time_t) / cv2.getTickFrequency()) < 10:
+        detections, frame = testi.get_detections()
+        # detections_2, frame_2 = testi_2.get_detections()
+        time.sleep(0.05)
+    # detections_2, frame_2 = testi_2.get_detections()
+    CAM_LEFT.capture.release()
+    # CAM_RIGHT.capture.release()
+    vis = visualize_output(frame, detections)
+    # vis_2 = visualize_output(frame_2, detections_2)
+    # myFrame3=np.hstack((vis, vis_2))
+    cv2.imwrite('img.jpg', vis)
+    # cv2.waitKey()
+
 # Example usage
 image_path = TEST_IMAGE
 model_path = onnx_path
 if __name__ == '__main__':
-    run_object_detection(image_path, model_path)
+    # run_object_detection(image_path, model_path)
+    run_object_detection_on_cam(model_path)
