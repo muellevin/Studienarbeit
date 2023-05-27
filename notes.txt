@@ -288,4 +288,6 @@ longer cables -> no voltage (capacity problem) -> even my are too long. Multimet
 update auf ubuntu 20.04 weils langsam nervt -> Funktioniert erst recht nichts außer alles von Source bauen
 openCV 4.1.1 ohne CUDA ca. 25 (hand moving 24) FPS (4.7 mit cuda 30)
 Opencv 4.1.1 threaded capture ca 94 fps (hand moving 40)
+Threaded contour with cuda 46,7 with hands -> 31,2/35.9  bei ca. 4,5 W
+Threaded contour without cuda 44 with hands -> 31,4 bei ca 5W
 21.05 Nach/Tag 2444 Bilder aufgenommen insgesamt 106 korrupt (0 byte)

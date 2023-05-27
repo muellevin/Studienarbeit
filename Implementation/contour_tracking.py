@@ -193,21 +193,24 @@ def merge_bounding_boxes(boxes, threshold=0):
 
 class ThreadedContourTracker(threading.Thread):
     
-    def __init__(self, frame_capture: vStream, prefix='none'):
+        def __init__(self, frame_capture: vStream, prefix='none'):
         threading.Thread.__init__(self)
         self.frame_capture = frame_capture
         self.daemon = True
         if cuda_available:
             self.fgbg = cv2.cuda.createBackgroundSubtractorMOG2()
             self.calc = self.calc_moving_with_cuda
+            self.stream = cv2.cuda_Stream()
+            self.uploader = cv2.cuda_GpuMat()
         else:
             self.fgbg = cv2.createBackgroundSubtractorMOG2()
             self.calc = self.calc_moving
         self.start()
         
     def calc_moving_with_cuda(self, frame):
-        fgmask = self.fgbg.apply(frame, learningRate=-1)
-        return cv2.cuda.morphologyEx(fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))).download()
+        self.uploader.upload(frame)
+        fgmask = self.fgbg.apply(self.uploader, learningRate=-1, stream=self.stream).download()
+        return cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4)))
     
     def calc_moving(self, frame):
         fgmask = self.fgbg.apply(frame)
