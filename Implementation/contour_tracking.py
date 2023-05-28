@@ -215,7 +215,10 @@ class ThreadedContourTracker(threading.Thread):
                     write_detections_and_image(self.detections[0], frame, prefix=f"Saving_Frame_{self.prefix}_")
 
                 # Calculate Frames per second (FPS)
+                
                 fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
+                if fps > 20:
+                    sleep(0.02)
                 print(f'contour {self.prefix} current fps: {fps}')
     def get_detections(self):
         return self.detections
