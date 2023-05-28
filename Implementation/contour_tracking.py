@@ -22,7 +22,7 @@ paths.setup_paths()
 dispW=640
 dispH=480
 flip=3
-OBJECT_SIZE_THRESHOLD = dispH*dispW*0.005    # object tracked at 5% display size
+OBJECT_AREA_THRESHOLD = dispH*dispW*0.005    # object tracked at 5% display size
 
 def get_jetson_temp():
     temp_file = "/sys/devices/virtual/thermal/thermal_zone0/temp"
@@ -33,6 +33,7 @@ def get_jetson_temp():
 
 def write_detections_and_image(detections, frame, prefix='img'):
     file = prefix + str(datetime.datetime.now()) + '.xml'
+    file = os.path.join(paths.SAVED_MOVING, file)
     img_path = os.path.splitext(file)[0] + '.jpg'
     cv2.imwrite(img_path, frame)
     
@@ -69,49 +70,13 @@ def write_detections_and_image(detections, frame, prefix='img'):
     with open(file, "w") as xml_file:
         xml_file.write(file_str)
 
-def write_xml_boxes_and_image(bounding_boxes, file, frame):
-    img_path = os.path.splitext(file)[0] + '.jpg'
-    cv2.imwrite(img_path, frame)
-    
-    objects = ""
-    for object_number, box in enumerate(bounding_boxes):
-        objects += f"""<object>
-                        <name>{object_number}</name>
-                        <pose>Unspecified</pose>
-                        <truncated>1</truncated>
-                        <difficult>0</difficult>
-                        <bndbox>
-                            <xmin>{box[0]}</xmin>
-                            <ymin>{box[1]}</ymin>
-                            <xmax>{box[0] + box[2]}</xmax>
-                            <ymax>{box[1] + box[3]}</ymax>
-                        </bndbox>
-                    </object>\n"""
-    file_str = f"""<annotation verified="no">
-                <folder>{os.path.dirname(file)}</folder>
-                <filename>{os.path.basename(img_path)}</filename>
-                <path>{img_path}</path>
-                <source>
-                    <database>Unknown</database>
-                </source>
-                <size>
-                    <width>{dispW}</width>
-                    <height>{dispH}</height>
-                    <depth>3</depth>
-                </size>
-                <segmented>0</segmented>
-                {objects}
-            </annotation>"""
-    with open(file, "w") as xml_file:
-        xml_file.write(file_str)
-
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 # Define the fps to be equal to 10. Also frame size is passed.
 # frame_width = int(cam.get(3))
 # frame_height = int(cam.get(4))
 # out = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
-def merge_bounding_boxes(boxes, threshold=0.0):
+def merge_bounding_boxes(boxes, threshold=0.0, area_threshold=OBJECT_AREA_THRESHOLD):
     """
     Merge bounding boxes that are near or overlapping
     bounding_boxes: list of bounding boxes in the format of (x,y,w,h)
@@ -134,7 +99,7 @@ def merge_bounding_boxes(boxes, threshold=0.0):
     # Loop over all boxes
     while boxes.shape[0] > 0:
         #First check if the objects are big enough
-        too_small = np.where(area < OBJECT_SIZE_THRESHOLD)[0]
+        too_small = np.where(area < area_threshold)[0]
         deleted = 0
         for small in too_small:
             boxes = np.delete(boxes, small - deleted, axis=0)
@@ -169,7 +134,6 @@ def merge_bounding_boxes(boxes, threshold=0.0):
         mask = iou > threshold
         indices = np.where(mask)[0]
 
-
         # Merge the box with the boxes that have IoU greater than the threshold
         deleted = 0
         if len(boxes) > 0:
@@ -185,18 +149,22 @@ def merge_bounding_boxes(boxes, threshold=0.0):
                 y2 = np.delete(y2, index - deleted, axis=0)
                 deleted += 1
 
-        # Add the merged box to the list of merged boxes
+        # Add the merged box to the list of merged boxes and change format
+        box[2] += box[0]
+        box[3] += box[1]
         merged_boxes.append(box.tolist())
-        # boxes = boxes[1:, :]
 
     return merged_boxes
 
 class ThreadedContourTracker(threading.Thread):
     
-    def __init__(self, frame_capture: vStream, prefix='none'):
+    def __init__(self, frame_capture: vStream, prefix='none', area_threshold=OBJECT_AREA_THRESHOLD):
         threading.Thread.__init__(self)
+        self.prefix = prefix
         self.frame_capture = frame_capture
         self.daemon = True
+        self.detections = [{}, None]
+        self.area_threshold = area_threshold
         if cuda_available:
             self.fgbg = cv2.cuda.createBackgroundSubtractorMOG2()
             self.calc = self.calc_moving_with_cuda
@@ -216,6 +184,8 @@ class ThreadedContourTracker(threading.Thread):
         fgmask = self.fgbg.apply(frame)
         return cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4)))
 
+    def set_area_threshold(self, area):
+        self.area_threshold = area
 
     def run(self):
         while True:
@@ -227,29 +197,27 @@ class ThreadedContourTracker(threading.Thread):
                 contours,_ = cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                 contours=sorted(contours,key=lambda x:cv2.contourArea(x),reverse=True)
                 
-                something_big_enough_detected = []
+                something_moved = []
                 for cnt in contours:
-                    something_big_enough_detected.append(np.array(cv2.boundingRect(cnt)))
+                    something_moved.append(np.array(cv2.boundingRect(cnt)))
 
                 # Combine intersecting bounding boxes
-                if len(something_big_enough_detected) > 0:
-                    combined_bounding_boxes = merge_bounding_boxes(something_big_enough_detected)
+                if len(something_moved) > 0:
+                    combined_bounding_boxes = merge_bounding_boxes(something_moved, self.area_threshold)
                 else:
-                    combined_bounding_boxes = something_big_enough_detected
-                for box in combined_bounding_boxes:
-                    x, y, w, h = box
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    combined_bounding_boxes = something_moved
+                # for box in combined_bounding_boxes:
+                #     x, y, w, h = box
+                #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if len(combined_bounding_boxes) > 0:
-                    next_id = int(len(os.listdir(paths.SAVED_MOVING))/2)
-                    write_xml_boxes_and_image(combined_bounding_boxes, os.path.join(paths.SAVED_MOVING, f'Saving_Frame_{str(next_id)}.xml'), frame)
+                    self.detections = [{'box': combined_bounding_boxes}, frame]
+                    write_detections_and_image(combined_bounding_boxes, frame, prefix=f"Saving_Frame_{self.prefix}_")
 
                 # Calculate Frames per second (FPS)
-                cv2.imshow('nanoCam',frame)
-                cv2.moveWindow('nanoCam',0,0)
-                if cv2.waitKey(1)==ord('q'):
-                    break
                 fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
-                print(f'current fps: {fps}')
+                print(f'contour {self.prefix} current fps: {fps}')
+    def get_detections(self):
+        return self.detections
 
 def main():
     # cam = cv2.VideoCapture(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH), cv2.CAP_GSTREAMER)
@@ -293,14 +261,8 @@ def main():
         
         something_big_enough_detected = []
         for cnt in contours:
-            # area=cv2.contourArea(cnt)
-            # if area>=OBJECT_SIZE_THRESHOLD:
-                # something_big_enough_detected.append(np.append(
-                #     np.array(cv2.boundingRect(cnt)), [area], axis=0))
-            something_big_enough_detected.append(np.array(cv2.boundingRect(cnt)))
-                # (x,y,w,h)=cv2.boundingRect(cnt)
-                #cv2.drawContours(frame,[cnt],0,(255,0,0),3)
-                # cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),3)
+
+        something_big_enough_detected.append(np.array(cv2.boundingRect(cnt)))
 
         # Combine intersecting bounding boxes
         if len(something_big_enough_detected) > 0:
@@ -308,8 +270,8 @@ def main():
         else:
             combined_bounding_boxes = something_big_enough_detected
         for box in combined_bounding_boxes:
-            x, y, w, h = box
-            # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            x, y, x2, y2 = box
+            # cv2.rectangle(frame, (x, y), (x2, y2), (0, 255, 0), 2)
         # if len(combined_bounding_boxes) > 0:
         #     write_xml_boxes_and_image(combined_bounding_boxes, os.path.join(paths.SAVED_MOVING, f'Saving_Frame_{str(next_id)}.xml'), frame)
         #     next_id += 1
@@ -332,10 +294,14 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    camStreamed = vStream(0)
-    #Or, if you have a WEB cam, uncomment the next line
-    camStreamed.capture.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
-    camStreamed.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, dispH)
+    camStreamed = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=0))
+    camStreamed_2 = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=1))
+    sleep(1)
+    # camStreamed = vStream(0)
+    # #Or, if you have a WEB cam, uncomment the next line
+    # camStreamed.capture.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
+    # camStreamed.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, dispH)
     sleep(1)
     test = ThreadedContourTracker(camStreamed)
+    test_2 = ThreadedContourTracker(camStreamed_2, prefix='left')
     sleep(10)

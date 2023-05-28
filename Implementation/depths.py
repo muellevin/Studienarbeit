@@ -16,7 +16,7 @@ VER_PIXEL_ANGLE = DIAG_ANGLE_PER_PIXEL * TAKEN_RESOLUTION[0]
 # print((HOR_PIXEL_ANGLE, VER_PIXEL_ANGLE))
 
 def calculate_distance_and_angles(left_box, right_box,
-                                  focal_length=2.96, baseline=150.0, pixel_size=1.12/1000.0):
+                                  focal_length=2.96, baseline=150.0, pixel_size=1.12/1000.0*10):
     """
     Calculates the distance, horizontal angle, and vertical angle of an object based on stereo image bounding box coordinates,
     focal length, baseline, and image height.

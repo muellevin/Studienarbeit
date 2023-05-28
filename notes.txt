@@ -293,3 +293,7 @@ Threaded contour without cuda 44 with hands -> 31,4 bei ca 5W
 threaded contour 2 cams with cuda + hands -> 28 FPS + 5.7W
 Bei Obj. vollständiger Absturz -> stromzufuhr gekappt
 21.05 Nach/Tag 2444 Bilder aufgenommen insgesamt 106 korrupt (0 byte)
+
+Single detection 22 FPS
+multiple cams detection 11 FPS
+beides 100% Auslastung oder mehr nach Jtop > 8W -> test in 5W modus -> kein crash 6 FPS einfach

@@ -51,7 +51,7 @@ class ThreadedDetection(threading.Thread):
                 fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
                 print(f'current fps: {fps}')
 
-    def get_detections(self) -> dict:
+    def get_detections(self):
         return self.detections
 
 
@@ -165,10 +165,10 @@ def run_object_detection_on_cam(model_path, confidence_threshold=0.25):
     # testi_2 = ThreadedDetection(CAM_RIGHT)
     start_time_t = cv2.getTickCount()
     # test for 10 seconds
-    while int((cv2.getTickCount() - start_time_t) / cv2.getTickFrequency()) < 10:
+    while int((cv2.getTickCount() - start_time_t) / cv2.getTickFrequency()) < 20:
         detections, frame = testi.get_detections()
         # detections_2, frame_2 = testi_2.get_detections()
-        time.sleep(0.05)
+        # time.sleep(0.05)
     # detections_2, frame_2 = testi_2.get_detections()
     CAM_LEFT.capture.release()
     # CAM_RIGHT.capture.release()
