@@ -32,7 +32,7 @@ def get_jetson_temp():
 
 
 def write_detections_and_image(detections, frame, prefix='img'):
-    file = prefix + str(datetime.datetime.now()) + '.xml'
+    file = prefix + str(datetime.datetime.now()).replace(':', '_') + '.xml'
     file = os.path.join(paths.SAVED_MOVING, file)
     img_path = os.path.splitext(file)[0] + '.jpg'
     cv2.imwrite(img_path, frame)
@@ -67,7 +67,7 @@ def write_detections_and_image(detections, frame, prefix='img'):
                 <segmented>0</segmented>
                 {objects}
             </annotation>"""
-    with open(file, "w") as xml_file:
+    with open(os.path.abspath(file), "w") as xml_file:
         xml_file.write(file_str)
 
 
@@ -129,7 +129,6 @@ def merge_bounding_boxes(boxes, threshold=0.0, area_threshold=OBJECT_AREA_THRESH
         h_diff = np.maximum(0, y2_diff - y1_diff)
         inter_area = w_diff * h_diff
         iou = inter_area / (area + (box[2] * box[3]) - inter_area)
-
         # Find the boxes that have IoU greater than the threshold
         mask = iou > threshold
         indices = np.where(mask)[0]
@@ -203,15 +202,17 @@ class ThreadedContourTracker(threading.Thread):
 
                 # Combine intersecting bounding boxes
                 if len(something_moved) > 0:
-                    combined_bounding_boxes = merge_bounding_boxes(something_moved, self.area_threshold)
+                    combined_bounding_boxes = merge_bounding_boxes(something_moved, area_threshold=self.area_threshold)
                 else:
-                    combined_bounding_boxes = something_moved
-                # for box in combined_bounding_boxes:
+                    combined_bounding_boxes = []
+                self.detections[0] = []
+                for box in combined_bounding_boxes:
+                    self.detections[0].append({'box': box, 'class_name':'unknown'})
                 #     x, y, w, h = box
                 #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if len(combined_bounding_boxes) > 0:
-                    self.detections = [{'box': combined_bounding_boxes}, frame]
-                    write_detections_and_image(combined_bounding_boxes, frame, prefix=f"Saving_Frame_{self.prefix}_")
+                    self.detections[1] =  frame
+                    write_detections_and_image(self.detections[0], frame, prefix=f"Saving_Frame_{self.prefix}_")
 
                 # Calculate Frames per second (FPS)
                 fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
@@ -262,7 +263,7 @@ def main():
         something_big_enough_detected = []
         for cnt in contours:
 
-        something_big_enough_detected.append(np.array(cv2.boundingRect(cnt)))
+            something_big_enough_detected.append(np.array(cv2.boundingRect(cnt)))
 
         # Combine intersecting bounding boxes
         if len(something_big_enough_detected) > 0:
@@ -294,14 +295,14 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    camStreamed = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=0))
-    camStreamed_2 = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=1))
+    # camStreamed = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=0))
+    # camStreamed_2 = vStream(gstreamer_pipeline(flip_method=flip, display_width=dispW, display_height=dispH, sensor_id=1))
     sleep(1)
-    # camStreamed = vStream(0)
-    # #Or, if you have a WEB cam, uncomment the next line
-    # camStreamed.capture.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
-    # camStreamed.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, dispH)
+    camStreamed = vStream(0)
+    #Or, if you have a WEB cam, uncomment the next line
+    camStreamed.capture.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
+    camStreamed.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, dispH)
     sleep(1)
     test = ThreadedContourTracker(camStreamed)
-    test_2 = ThreadedContourTracker(camStreamed_2, prefix='left')
-    sleep(10)
+    # test_2 = ThreadedContourTracker(camStreamed_2, prefix='left')
+    sleep(20)
