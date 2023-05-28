@@ -16,7 +16,7 @@ Die Tiere, insbesondere Waschbären, gewöhnen sich allerdings an das Licht und 
 Ultraschallgeräte können aber auch Probleme bereiten. Die eigenen Haustiere und auch Kleinkinder nehmen den Hochfrequenzton ebenso wahr. Da die Geräte auf jegliche Bewegung reagieren, kann es sein das der Ultraschall-Tierschreck vor Betreten des Gartens deaktiviert werden muss, damit die Haustiere und Kinder sich im Garten aufhalten können.\cite{anti_wasch}
 
 
-\subsection{Automatische Sprinkleranlage}
+\subsection{Automatische Sprinkleranlage} \label{sprinkler}
 
 Eine andere Variante von Abschrecksystem ist der Einsatz von Sprinkleranlagen. Durch das Beschießen mit Wasser werden die Tiere besonders gut gestört. Der automatische Sprinkler wird über einen Bewegungsmelder ausgelöst und versprüht großflächig Wasser im Zielbereich. Nach eigener Erfahrung hat eine automatische Sprinkleranlage eine höhere Erfolgsquote, um ungewollte Besucher aus dem heimischen Garten zu vertreiben, aber sie kann durch den Bewegungsmelder auch unbeabsichtigt von einem selbst ausgelöst werden.\cite{anti_wasch}
 
@@ -68,15 +68,97 @@ Es gibt noch weitere nicht Anchor oder Gitter betriebene Architekturen, wie die 
 
 \subsection{Tiefenberechnung}
 
-Zusätzlich zu betrachtende Effekte Luftwiderstand; Dispersion; Wind/Error-correction etc.
-Bezug Error: Bilderkennung des Wasserstrahls $\rightarrow$ Regelungstechnik und Autokalibrierung
-+ evtl. Einspielen der Tiefenwahrnehmung an neuer Position (nicht bei Stereo-Vision nötig).
+Für das Zielsystem ist es nötig den Abstand vom Objekt zur Zielvorrichtung zu ermitteln. Heutzutage gibt es \ac{ML} basierte Techniken diese mit jeglicher Kamera durchzuführen.\\
+Die meisten Lebewesen und wir Menschen haben aber eine andere Möglichkeit dreidimensionale Strukturen zu erfassen und wahrzunehmen. Dabei setzen wir Menschen auf unsere zwei Augen. \textit[Stereo Vision] umfasst sich mit dem Bereich das binokulares Sehen von uns Menschen Computern zu ermöglichen.\\
+Dabei werden zwei Kameras verwendet um, die gleichzeitig ein \textit{linkes} und ein \textit{rechtes} Bild aufnehmen. Die Kameras stehen dabei um eine kleine \textit{Baseline} voneinander entfernt.\\
+Der Prozess für die Tiefenbestimmung ist einfach. Für jeden Punkt im \textit{linken} Bild wird zuerst der dazu passende Punkt im \textit{rechten} Bild ermittelt, was als \textit{stereo matching} bezeichnet wird. Aus der \textit{Baseline} und den Differenzpunkten des Punktes und den Koordinaten in den einzelnen Bildern kann anschließend die Tiefeninformationen gewonnen werden.
+\cite{stereo_vision}
+
+% Zusätzlich zu betrachtende Effekte Luftwiderstand; Dispersion; Wind/Error-correction etc.
+% Bezug Error: Bilderkennung des Wasserstrahls $\rightarrow$ Regelungstechnik und Autokalibrierung
+% + evtl. Einspielen der Tiefenwahrnehmung an neuer Position (nicht bei Stereo-Vision nötig).
 
 \section{Komponenten}
 
+Für die Realisierung eines portablen Abschrecksystems werden Aktoren und Komponenten benötigt, welche in diesem Kapitel beschrieben werden.
+
 \subsection{Aktoren}
 
-Mechanisches System beschreiben etc.
+Das Abschrecksystem umfasst verschiedene Aktoren, die zur Vertreibung unliebsamer Kleintiere eingesetzt werden. Im Folgenden sind die Funktionen und Anforderungen der Aktoren sowie gegebenenfalls benötigte Zusatzelemente aufgelistet.
+
+\subsubsection{Tonwiedergabe}
+
+Waschbären, Marder und andere Tiere empfinden Hochfrequenztöne als äußerst unangenehm. Laut Westfalia \cite{westfalia_wasch} können Frequenzen im Bereich von 20 bis 40 kHz und ein Schalldruck von mindestens 100 dB bereits erfolgreich dazu beitragen, Waschbären zu vertreiben.
+
+Gemäß den Informationen aus \cite{sound_amplifier} entspricht ein Watt leistungsaufnahme bei einem Meter Abstand vom Lautsprecher in etwa einem Schalldruck von 90 dB. Da die meisten Mikrocontroller nicht genug Leistung liefern können, um einen Lautsprecher mit höheren Leistungsanforderungen anzusteuern, wird ein Verstärker benötigt. Zusätzlich ist es erforderlich, dass das Abschrecksystem einen möglichst großen Radius abdecken kann, wodurch ein höheres Leistungsvermögen als die angegeben 100 dB erforderlich wird.
+
+\subsubsection{Lichtimpulse}
+
+Zusätzlich ist es sinnvoll Blinklichter zur visuellen Abschreckung einzusetzen. Da die meisten unliebsamen Tiere nachtaktiv sind, kann durch den stroboskopischen Effekt eine Vertreibung des Tieres erreicht werden. \cite{anti_wasch}
+
+Auch hier können Mikrocontroller nicht das nötige Leistungsvermögen erbringen. Daher wird eine externe Energieversorgung und Schaltlogik benötigt.
+
+\subsubsection{Wasserversorgung}
+
+Wie in Kapitel \ref{sprinkler} beschrieben, haben sich Sprinkleranlagen als wirksam bei der Vertreibung von Tieren erwiesen. Da das System jedoch tragbar sein soll, ist es nicht möglich, einen Wasserschlauch anzuschließen. Zusätzlich muss der Wasserdruck ausreichend sein, um die Tiere in einem Radius von 10 Metern zu erfassen.
+\\
+Daher ist es erforderlich, eine Pumpe in das System einzubauen, die sowohl ausreichenden Druck als auch ausreichendes Pumpvermögen bietet. Die Pumpe muss ebenfalls von einer externen Stromversorgung und Schaltlogik gesteuert werden, da ein gezielter und leistungsstarker Einsatz erforderlich ist.
+
+\subsubsection{Zielaktorik}
+
+Für die Zielaktorik ist ein Zwei-Aktoren Zielsystem notwendig, welches horizontales und vertikales ansteuern von Zielwinkel ermöglicht. Elektromotoren eignen sich sehr gut für diese feinfühlige Ansteuerung. Allerdings gibt es große Unterschiede zwischen den verschieden Motortypen. Einige davon sind in folgender Tablelle \ref{tab:el_motors} beschrieben.
+
+\begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth}|p{0.35\textwidth} }
+    \endfirsthead
+    \multicolumn{2}{l}%
+    {\textit{Fortsetzung von vorheriger Seite}} \\
+    \hline
+    \endhead
+    \hline \multicolumn{2}{r}{\textit{Fortsetzung auf nachfolgender Seite}} \\
+    \endfoot
+    \endlastfoot
+    \textbf{Motortyp} & \textbf{Vorteile} & \textbf{Nachteile}\\
+    \hline
+    Schrittmotor &
+    \begin{itemize}
+        \item Einfache und präzise Ansteuerung möglich. Sie werden daher auch bei CNC-Fräsen und 3D-Drucker verwendet.
+        \item Besitzen ein hohes Haltemoment.
+        \item Berechnung der Position auch in der Open-Loop Steuerung möglich, da sie eine exakte Strecke pro Ansteuerungsschritt ermöglichen.
+    \end{itemize}
+    &
+    \begin{itemize}
+        \item Da sie einen inkrementelle Positionierung über die Schrittweite haben, müssen sie eventuell mit einem Getriebe untersetzt werden. Zum Beispiel würde bei einer Schrittweite von 1,8° beim Radius von 10 Metern pro Schritt 35 Zentimeter zurückgelegt werden. 
+	\item Des weiteren kann es beim Zielvorgängen zu kurzzeitigen hohen Drehzahlen kommen. Der Schrittmotor verliert bei hohen Drehzahlen an Drehmoment und kann einzelne Schritte auslassen oder sogar stoppen.
+    \end{itemize}
+\\
+    DC-Motor &
+    \begin{itemize}
+        \item Einfache Ansteuerung über \ac{PWM}.
+        \item Hohes Drehmoment bei niedriger Drehzahl.
+    \end{itemize}
+    &
+    \begin{itemize}
+        \item H-Brücke nötig, da die Energie nicht über einen herkömmlichen Mikrocontroller geliefert werden kann.
+        \item Motorsteuerung und Regelung notwendig.
+        \item Sensoren werden benötigt, da eine Open-Loop Ansteuerung nur sehr geringe Genauigkeit bietet.
+    \end{itemize}
+    \\
+    Servomotor &
+    \begin{itemize}
+        \item Keine Direkte Regelung nötig, da sie eine integrierte Closed-Loop Regelung haben.
+        \item Sie können dynamisch auf hohe Belastung reagieren.
+        \item Durch die Closed-Loop Regelung haben sie eine hohe Genauigkeit und keine zusätzlichen Bauelemente oder Treiberbauteile sind nötig.
+    \end{itemize}
+    &
+    \begin{itemize}
+        \item Häufig haben die erhältlichen Servomotoren nur einen geringen Positionsradius von 180°.
+        \item Da sie konstant versuchen eine Sollposition zu erreichen kann es zu Jitter im System kommen.
+    \end{itemize}
+    \\
+    \caption{Vergleich dreier Elektromotortypen für die Verwendung im Zielsystem. Quelle: \cite{motors_seed}}
+    \label{tab:el_motors}
+\end{longtable}
+
 
 \subsection{Strömungslehre}
 
