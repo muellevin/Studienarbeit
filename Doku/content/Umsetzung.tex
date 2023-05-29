@@ -6,8 +6,11 @@
 
 \section{Hardwarerealisierung}
 
-Für einen optimalen Vertreibungseffekt werden die Störfaktoren Licht, Ton und Wasser in das Abschreckgerät eingebunden. Der Aufbau und
-Betrachtung im Gesamtsystem wird im folgenden beschrieben.
+Für einen optimalen Vertreibungseffekt werden verschiedene Aktoren im System verbaut. Die einzelnen Geräte werden alle über eine externe Energieversorgung, beziehungsweise Batterie betrieben. Bei der Wahl der Batterie, ist ein wichtiges Kriterium, wie lange das System ohne Energiezufuhr funktionsfähig bleibt.
+\\
+Dabei wurde berücksichtigt, wie viel das System im Normalverbrauch ohne Einschalten der Aktoren verbraucht. Eine grobe Schätzung ergab, dass das System ungefähr 10 $\pm$ 2 Watt pro Stunde verbrauchen würde. Aus diesem Grund fiel die Wahl auf eine 50 Ah Autobatterie von \textit{BlackMax} \cite{Autobatterie} gefallen. Diese Batterie bietet ausreichend Kapazität, um das System über zwei Tage mit Energie zu versorgen.
+\\
+Ein weiterer Entscheidungsgrund für die Autobatterie ist der Strombedarf der Geräte. Wie nachfolgend beschrieben, kann die Wasserpumpe im laufenden Zustand bis zu 16 Ampere Strom beziehen. Viele leichte und kleine Batterien könnten langfristig durch diese Belastung Schaden nehmen. Da Autobatterien eine hohe Belastungsgrenze haben, sind sie für den Prototypen besser geeignet.
 
 \subsection{Blitzlicht}
 
@@ -87,96 +90,6 @@ Pumpe nicht gut.
 
 \section{Dreidimensionales Zielsystem}
 
-% \begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth|p{0.35\textwidth}  }\label{tab:Verbindung_Res}
-%     \textbf{Motortyp}
-%     & \textbf{Vorteile}
-%     & \textbf{Nachteile}\\
-%     \hline
-%     \endfirsthead
-%     \multicolumn{2}{l}%
-%     {\textit{Fortsetzung von vorheriger Seite}} \\
-%     \hline
-%     \endhead
-%     \hline \multicolumn{2}{r}{\textit{Fortsetzung auf nachfolgender Seite}} \\
-%     \endfoot
-%     \endlastfoot
-%     Schrittmotor &
-%     \begin{itemize}
-%         \item Sehr günstig und präzise
-%         \item Schrittweite ca. 1.8 °
-%         \item Besitzt Haltemoment
-%         \item Berechnung der Position möglich (auch open-loop)
-%     \end{itemize}
-%     &
-% 	Am Ende des Zielbereichs Schrittweite zu groß (ca. 35cm bei 10m Bereich)
-% 	$\righttarrow$ Übersetzung auf kleineren Winkel nötig
-% 	Zu geringe Drehzahl möglich. Führt zu zu langsamen anvisieren des bewegenden Ziels
-% 	Umso höher die Drehzahl umso niedriger der Torque $\rightarrow$ EM-Feld überholt Stator
-% 	Schrittmotortreiber nötig
-% \\
-%     DC-Motor &
-% 	Hohe Drehzahl möglich
-% 	Ansteuerung mittels PWM
-% 	&
-% 	H-Brücke nötig
-% \\
-
-% \caption[Motortyp Vor- und Nachteile]{Motortyp Vor- und Nachteile}
-% \end{longtable}
-\begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth}|p{0.35\textwidth} }
-    \endfirsthead
-    \multicolumn{2}{l}%
-    {\textit{Fortsetzung von vorheriger Seite}} \\
-    \hline
-    \endhead
-    \hline \multicolumn{2}{r}{\textit{Fortsetzung auf nachfolgender Seite}} \\
-    \endfoot
-    \endlastfoot
-    \textbf{Motortyp} & \textbf{Vorteile} & \textbf{Nachteile}\\
-    \hline
-    Schrittmotor &
-    \begin{itemize}
-        \item Sehr günstig und präzise
-        \item Schrittweite ca. 1.8 °
-        \item Besitzt Haltemoment
-        \item Berechnung der Position möglich (auch open-loop)
-    \end{itemize}
-    &
-    \begin{itemize}
-        \item Am Ende des Zielbereichs Schrittweite zu groß (ca. 35cm bei 10m Bereich)
-	$\rightarrow$ Übersetzung auf kleineren Winkel nötig
-
-	\item Zu geringe Drehzahl möglich. Führt zu zu langsamen anvisieren des bewegenden Ziels
-	\item Umso höher die Drehzahl umso niedriger der Torque $\rightarrow$ EM-Feld überholt Stator Schrittmotortreiber nötig
-    \end{itemize}
-\\
-    DC-Motor &
-    \begin{itemize}
-        \item Hohe Drehzahl möglich $\rightarrow$ über Übersetzung kleine Winkel denkbar
-        \item PWM-gesteuert
-    \end{itemize}
-    &
-    \begin{itemize}
-        \item H-Brücke nötig
-        \item Motorsteuerung und Regelung nötig + Sensoren
-    \end{itemize}
-    \\
-    Servomotor &
-    \begin{itemize}
-        \item Keine Direkte Regelung nötig
-        \item Steuerung über PWM
-        \item hohe Genauigkeit und schnelle Stellzeit
-        \item keine Treiber nötig
-    \end{itemize}
-    &
-    \begin{itemize}
-        \item keine günstigen 12V Motoren
-        \item ist Leistung ausreichend?
-        \item Spannungswandler nötig (5-8V)
-    \end{itemize}
-    \\
-\end{longtable}
-
 $\rightarrow$ Entscheidung Servo/DC?
 
 \comment{Mit Vision Schwerpunkt der Arbeit teils/ganz in HW-Realisierung?}
@@ -218,3 +131,9 @@ $\rightarrow$ Entscheidung Servo/DC?
     & \centering{109 DM}
     & Die Aluminiumkiste ist Witterungsfest und besitzt eine gute Wärmeableitung. Alle Aktoren und Gerätschaften können in ihr vor Witterungsbedingungen geschützt untergebracht werden.
 \end{longtable}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{images/whole_box.png}
+    \label{fig:whole_thing}
+\end{figure}
