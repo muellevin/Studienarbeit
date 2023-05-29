@@ -43,9 +43,17 @@ Computer Vision beschäftigt sich damit Computern das \enquote{Sehen} zu ermögl
 
 \subsection{Object Detection}
 
-Object Detection ist eine Anwendung der Computer Vision, die es ermöglicht, Objekte in einem Bild oder Video zu erkennen und zu lokalisieren. Object Detection-Systeme verwenden Algorithmen, die auf \ac{ML}- und \ac{DNN}-Techniken basieren, um Objekte in Bildern oder Videos zu erkennen und zu klassifizieren. Das erkannte Objekt wird mittels einer \ac{BB} aus den Bild extrahiert.\\
-\comment{Bild rein}
+Object Detection ist eine Anwendung der Computer Vision, die es ermöglicht, Objekte in einem Bild oder Video zu erkennen und zu lokalisieren. Object Detection-Systeme verwenden Algorithmen, die auf \ac{ML}- und \ac{DNN}-Techniken basieren, um Objekte in Bildern oder Videos zu erkennen und zu klassifizieren. Das erkannte Objekt wird mittels einer \ac{BB} aus den Bild extrahiert. Beispiele für Objekterkennungen sind in Abbildung \ref{fif:ob_sample} abgebildet.
+\\
 Um diese Detektion zu erhalten gibt es verschieden Basen und Architekturen von Object Detections Systemen, die im folgenden beschreiben sind. \cite{cv_Szeliski}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/object_detection_sample.png}
+    \label{fif:ob_sample}
+    \caption{Beispiele für Objekt Erkennung und \acl{BB}. Quelle: \cite{cv_Szeliski}}
+\end{figure}
 
 \subsection{Two-Stage-Detectors}
 
@@ -68,11 +76,24 @@ Es gibt noch weitere nicht Anchor oder Gitter betriebene Architekturen, wie die 
 
 \subsection{Tiefenberechnung}
 
-Für das Zielsystem ist es nötig den Abstand vom Objekt zur Zielvorrichtung zu ermitteln. Heutzutage gibt es \ac{ML} basierte Techniken diese mit jeglicher Kamera durchzuführen.\\
-Die meisten Lebewesen und wir Menschen haben aber eine andere Möglichkeit dreidimensionale Strukturen zu erfassen und wahrzunehmen. Dabei setzen wir Menschen auf unsere zwei Augen. \textit[Stereo Vision] umfasst sich mit dem Bereich das binokulares Sehen von uns Menschen Computern zu ermöglichen.\\
-Dabei werden zwei Kameras verwendet um, die gleichzeitig ein \textit{linkes} und ein \textit{rechtes} Bild aufnehmen. Die Kameras stehen dabei um eine kleine \textit{Baseline} voneinander entfernt.\\
-Der Prozess für die Tiefenbestimmung ist einfach. Für jeden Punkt im \textit{linken} Bild wird zuerst der dazu passende Punkt im \textit{rechten} Bild ermittelt, was als \textit{stereo matching} bezeichnet wird. Aus der \textit{Baseline} und den Differenzpunkten des Punktes und den Koordinaten in den einzelnen Bildern kann anschließend die Tiefeninformationen gewonnen werden.
+Für das Zielsystem ist es nötig den Abstand vom Objekt zur Zielvorrichtung zu ermitteln. Heutzutage gibt es \ac{ML}-basierte Techniken, die die Abstandsermittlung mit jeglicher Kamera durchzuführen können, aber es gibt einfachere und ältere Methode die Abstand zu einem Objekt zu bestimmen.
+\\
+Die meisten Lebewesen und wir Menschen haben eine einfache Möglichkeit dreidimensionale Strukturen zu erfassen und wahrzunehmen. Dabei setzen wir Menschen auf unsere zwei Augen. \textit{Stereo Vision} umfasst sich mit dem Bereich das binokulares Sehen von uns Menschen, um auch Computern es zu ermöglichen dreidimensional zu sehen.
+\\
+Dabei werden zwei Kameras verwendet, die gleichzeitig ein \textit{linkes} und ein \textit{rechtes} Bild aufnehmen. Die Kameras stehen dabei um eine kleine Abstand auch genannt \textit{Baseline} voneinander entfernt.
+\\
+Der Prozess zur Bestimmung der Tiefe erfolgt dann durch die Verwendung der epipolaren Geometry und Triangulation. Dabei betrachtet man einen Punkt im \textit{linken} Bild und den entsprechenden Punkt im \textit{rechten} Bild. Da die Kameras auf einer Höhe zueinander stehen, muss der Punkt nur auf der x-Achse, entlang der epipolaren Linie der beiden Kameras gesucht werden. Das ermitteln der passenden Punkte wird dabei als \textit{stereo matching} bezeichnet.
+Aus der \textit{Baseline} und den Differenzpunkten zwischen den Koordinaten der einzelnen Bildern kann anschließend die Tiefeninformationen gewonnen werden. Das beschreiben Konzept ist in Abbildung \ref{fig:stereo_depth} zu sehen.
+\\
+Bei der Methode wird das Triangulieren zwischen den Punkten verwendet.
 \cite{stereo_vision}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/depth_sample.png}
+    \label{fig:stereo_depth}
+    \caption{(a) Epipolare Linie, die einen Lichtstrahl entspricht und (b die entsprechende epipolare Linien auf der Epipolarebene. Quelle: \cite{cv_Szeliski})}
+\end{figure}
 
 % Zusätzlich zu betrachtende Effekte Luftwiderstand; Dispersion; Wind/Error-correction etc.
 % Bezug Error: Bilderkennung des Wasserstrahls $\rightarrow$ Regelungstechnik und Autokalibrierung
@@ -107,6 +128,8 @@ Daher ist es erforderlich, eine Pumpe in das System einzubauen, die sowohl ausre
 \subsubsection{Zielaktorik}
 
 Für die Zielaktorik ist ein Zwei-Aktoren Zielsystem notwendig, welches horizontales und vertikales ansteuern von Zielwinkel ermöglicht. Elektromotoren eignen sich sehr gut für diese feinfühlige Ansteuerung. Allerdings gibt es große Unterschiede zwischen den verschieden Motortypen. Einige davon sind in folgender Tablelle \ref{tab:el_motors} beschrieben.
+
+Hinzu kommt das die Motoren in ein dreidimensionales Zielsystem eingebaut werden. Daher sollte die Form und Größe ebenfalls betrachtet werden, da der Platz gering ist.
 
 \begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth}|p{0.35\textwidth} }
     \endfirsthead
@@ -160,24 +183,37 @@ Für die Zielaktorik ist ein Zwei-Aktoren Zielsystem notwendig, welches horizont
 \end{longtable}
 
 
-\subsection{Strömungslehre}
+\subsection{Sensorik}
 
-Pumpe $\rightarrow$ Nötigung anständiger Berechnung des Zielsystem
+Der Aufgabenstellung entsprechend benötigt das System lediglich zwei optischen Sensoren, die in der Lage sind Bilder auch in der Nacht aufzunehmen.
 
-\begin{equation} \label{v_qa}
-    v = Q/A
-\end{equation}
-
-\begin{equation}\label{Rohreibung}
-    \Delta p = \frac{\lambda \times L \times \rho \times Q^2}{2 \times A^2}
-\end{equation}
-
-mit Bernoulligleichung:
-
-\begin{equation}
-    \frac{v_{1}^2 \times \rho}{2} + p_1 = \frac{v_{2}^2 \times \rho}{2} + p_2 + \frac{\lambda \times L \times \rho \times Q^2}{2 \times A^2}
-\end{equation}
-
-da zunächst bei Hausleitung Druck ca. 4 Bar für $p_1$
+Je nach Wahl der Aktoren können weitere Sensoren, wie Winkel- oder Stromsensoren im System verbaut sein. Da ein leistungsfähiger Mikrocontroller für die Object Detection verwendet werden soll, ist ein Temperatursensor für die Überwachung und zum Schutz vor Überhitzung zu empfehlen.
 
 \subsection{3D-Druck}
+
+Eine Realisierung eines vollständigen Prototyps des Abschrecksystems benötigt viel Zeit und Teile, die auf dem Markt nicht immer erhältlich, nicht auf den Anwendungsgebiet zugeschnitten oder sehr teuer sind.\\
+Daher werden für das Abschrecksystem Einzelteile mittels CAD-Modellen und dem 3D-Drucker der DHBW hergestellt. Das ermöglicht eine schnelle auf dem Anwendungsgebiet zugeschnittene Herstellung von Einzelteilen zu günstigen Kosten.
+
+Zudem hat die Firma softwareinmotion einen eigenen 3D-Drucker, der in den Praxisphasen für die Studienarbeit verwendet werden kann. Der Weg zur DHBW für das Abholen der 3D-Drucke wäre in den Praxisphasen nur schwer möglich gewesen.
+
+Die CAD-Modelle werden mit der Autodesk Software \textit{Fusion 360} erstellt.
+
+% \subsection{Strömungslehre}
+
+% Pumpe $\rightarrow$ Nötigung anständiger Berechnung des Zielsystem
+
+% \begin{equation} \label{v_qa}
+%     v = Q/A
+% \end{equation}
+
+% \begin{equation}\label{Rohreibung}
+%     \Delta p = \frac{\lambda \times L \times \rho \times Q^2}{2 \times A^2}
+% \end{equation}
+
+% mit Bernoulligleichung:
+
+% \begin{equation}
+%     \frac{v_{1}^2 \times \rho}{2} + p_1 = \frac{v_{2}^2 \times \rho}{2} + p_2 + \frac{\lambda \times L \times \rho \times Q^2}{2 \times A^2}
+% \end{equation}
+
+% da zunächst bei Hausleitung Druck ca. 4 Bar für $p_1$
