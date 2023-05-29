@@ -5,8 +5,8 @@ from ultralytics import YOLO
 
 paths = pp.paths
 paths.setup_paths()
-CUSTOM_MODEL_NAME = 'raccoon_pre_yolov8n_1088_Bbest_ep100_aug_alb'
-YOLO_WEIGHTS = os.path.join(paths.MODEL_PATH, CUSTOM_MODEL_NAME, "weights")
+CUSTOM_MODEL_NAME = 'raccoon_pre_yolov8s_320_Bbest_ep100_aug_alb'
+YOLO_WEIGHTS = os.path.join("runs", "detect", CUSTOM_MODEL_NAME, "weights")
 YOLO_BEST = os.path.join(YOLO_WEIGHTS, 'best_saved_model')
 
 # make yaml
@@ -27,13 +27,14 @@ with open(pp.YOLO_CONFIG_PATH, "w") as config:
 # Load a model from the ultralytics hub
 # yaml -> scratch
 # .pt pretrained
-model = YOLO("yolov8n.pt")  # build a new model from scratch
+model = YOLO("yolov8s.pt")  # build a new model from scratch
 
+"""
 # Use the model
 results = model.train(
     data=pp.YOLO_CONFIG_PATH,
     epochs=100,
-    imgsz=1088,
+    imgsz=320,
     batch=-1, # Use best option
     augment=True,# currently it does not care
     hsv_s=0.1,# during night saturation is low increasing would not be much better
@@ -43,18 +44,27 @@ results = model.train(
     shear=4,# shearing of objects in image
     mixup=0.1,# mixin images togethter (probability)
     name=CUSTOM_MODEL_NAME)  # train the model
-
+"""
 #results = model.val()  # evaluate model performance on the validation set
 
 # Load the trained model
-#model = YOLO(os.path.join(YOLO_WEIGHTS, "best.pt"), task='detect')
-
+model = YOLO(os.path.join(YOLO_WEIGHTS, "best.pt"), task='detect')
+model.val(data=pp.YOLO_CONFIG_PATH)
 # it automatically converts for anything you need
 # Known Bug all int quantization .tflite files are not working (no Detections) same goes with the edgetpu
 # to fix this you need to manually install this PR https://github.com/ultralytics/ultralytics/pull/1695
-# model.export(format='edgetpu', imgsz=320, data=pp.YOLO_CONFIG_PATH)
+model.export(format='tflite', int8=True, imgsz=320, data=pp.YOLO_CONFIG_PATH)
 
 # eval on edgetpu only locally possible
-#TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_full_integer_quant.tflite')
-#tflite = YOLO(TFLITE_MODEL, task='detect')
-#tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
+TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_float32.tflite')
+tflite = YOLO(TFLITE_MODEL, task='detect')
+tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
+
+TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_float16.tflite')
+tflite = YOLO(TFLITE_MODEL, task='detect')
+tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
+
+# eval on edgetpu only locally possible
+TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_full_integer_quant.tflite')
+tflite = YOLO(TFLITE_MODEL, task='detect')
+tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
