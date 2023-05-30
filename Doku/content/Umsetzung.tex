@@ -1,7 +1,20 @@
-
 %!TEX root = ../Studienarbeit.tex
 
 \section{Bilderkennung und -Verarbeitung}
+
+\subsection{Object Detection}
+
+\subsubsection{Training}
+
+\subsubsection{Deployment}
+
+\subsection{Benchmarks}
+
+\subsection{Erkennung durch Kontur-tracking}
+
+\subsection{Verbesserung der Bildqualität}
+
+\subsection{Tiefenberechnung}
 
 
 \section{Hardwarerealisierung}
@@ -10,26 +23,50 @@ Für einen optimalen Vertreibungseffekt werden verschiedene Aktoren im System ve
 \\
 Dabei wurde berücksichtigt, wie viel das System im Normalverbrauch ohne Einschalten der Aktoren verbraucht. Eine grobe Schätzung ergab, dass das System ungefähr 10 $\pm$ 2 Watt pro Stunde verbrauchen würde. Aus diesem Grund fiel die Wahl auf eine 50 Ah Autobatterie von \textit{BlackMax} \cite{Autobatterie} gefallen. Diese Batterie bietet ausreichend Kapazität, um das System über zwei Tage mit Energie zu versorgen.
 \\
-Ein weiterer Entscheidungsgrund für die Autobatterie ist der Strombedarf der Geräte. Wie nachfolgend beschrieben, kann die Wasserpumpe im laufenden Zustand bis zu 16 Ampere Strom beziehen. Viele leichte und kleine Batterien könnten langfristig durch diese Belastung Schaden nehmen. Da Autobatterien eine hohe Belastungsgrenze haben, sind sie für den Prototypen besser geeignet.
+Ein weiterer Entscheidungsgrund für die Autobatterie ist der Strombedarf der Geräte. Wie nachfolgend beschrieben, kann die Wasserpumpe im laufenden Zustand bis zu 16 Ampere Strom beziehen. Viele leichte und kleine Batterien könnten langfristig durch diese Belastung Schaden nehmen. Da Autobatterien eine hohe Belastungsgrenze haben und hohe Ströme ermöglichen, sind sie daher für den Prototypen besser geeignet.
+
+Für die Unterbringung aller Teile wird eine 40x55x30 cm große Aluminiumkiste verwendet. Die Aluminiumkiste ist witterungsbeständig, und die Wärmeentwicklung im Inneren kann weitestgehend vernachlässigt werden. Aluminium hat nämlich eine gute Temperaturleitfähigkeit und kann somit einen Wärmestau verhindern. Dabei ist auch der Empfehlung aus einem \textit{Autodesk Instructables}-Projekt folge geleistet worden. In diesem Projekt wurde eine bewegungsausgelöste "`Wasserpistole"' aufgebaut. Allerdings war bei dem \textit{Instructables}-Projekt eine Vertreibung von Rehen vorgesehen, die sonst die Rosen im Garten aufgegessen hätten. Das Ziel dieser Arbeit ist es aber Waschbären und andere Kleintiere zu vertreiben, daher sind hier noch weitere Aktoren eingebaut. Zudem ist das \textit{Instructables}-Projekt nicht autark und portable, da es mit Strom und Wasser mittels Hausanschluss versorgt worden ist. \cite{watergun_dude}
+
+Die eingebauten Bauteile werden nachfolgend beschrieben.
 
 \subsection{Blitzlicht}
 
-Für den Einsatz eines Abschrecklichtes mit Blitzlichtfunktion
-werden zwei LED-Scheinwerfer der Marke NAIZY für 11.99€
-verwendet. Die Erweiterungsleuchten sind für den Einsatz als Erweiterungsleuchten für Geländefahrzeuge gedacht. Sie sind wasserdicht und für den Außeneinsatz geeignet. Mit 1600 Lumen und grellweißem Farbton haben sie ausreichend Leistung um die Tiere abzuschrecken. Aufgrund dieser Charakteristiken und des geringen Energieverbrauchs von 18 Watt sind sie für das Abschrecksystem ausgewählt worden. \cite{am_licht}
+Für den Einsatz eines Abschrecklichtes mit Blitzlichtfunktion werden zwei LED-Scheinwerfer der Marke \textit{NAIZY} verwendet. Die Scheinwerfer sind für den Einsatz als Erweiterungsleuchten für Geländefahrzeuge gedacht. Sie sind wasserdicht und für den Außeneinsatz geeignet. Mit 1600 Lumen und grellweißem Farbton erzielen sie einen hohen stroboskopischen Effekt, mit dem die Tiere abgeschreckt werden. Aufgrund dieser Charakteristiken und des geringen Energieverbrauchs von 18 Watt sind sie für das Abschrecksystem sehr gut geeignet. \cite{am_licht}
 
-Die zwei LED-Scheinwerfer sind an den beiden oberen Ecken der Box
-befestigt. Sie werden mit Transistoren durch den Raspberry Pi gesteuert. Um einen Gewöhnungseffekt zu vermeiden sind die
-Scheinwerfer mit 0.5 bis 10 Hz beschalten. Die Frequenz und Schaltung der Scheinwerfer wird in einem eigenen Thread
-mittels Signalsteuerung verwirklicht.
-\comment{Testen der Rust implemtierung mittels Waker?}
-\comment{Bild bei Nacht aus/an + Schaltbild}
+Die beiden LED-Scheinwerfer sind an den beiden oberen Ecken der Box befestigt. Sie werden mit Transistoren durch den Mikrocontroller gesteuert. Um einen Gewöhnungseffekt zu vermeiden, sind die Scheinwerfer mit 0,5 bis 10 Hz beschaltet. Die Frequenz und Schaltung der Scheinwerfer wird dynamisch angepasst. Im Schaltbild aus Abbildung \ref{diag:lights_diagram} wird die Verwendung eines MOSFET-Treiberbausteins erkennbar. Der Treiber ermöglicht das Beschalten der Scheinwerfer mit höherer Leistung, als es mit dem Arduino möglich wäre. Der Treiber verfügt über eine zusätzliche Masse-Leitung, die mit dem Arduino verbunden ist. Dadurch ist es möglich den Strom zu schalten, auch wenn der Signalgeber und \textit{DC-Out} nicht die selbe Masse haben. \cite{mosfets_am}
 
-Im Schaltbild \comment{todo Schaltbild} wird die Verwendung eines
-MOSFET-Treiberbausteins erkenntlich. Der Treiber ermöglicht das
-schalten der Scheinwerfer. Der Treiber verfügt über eine zusätzliche GND-Leitung. Dadurch ist es möglich den Strom zu schalten, auch wenn der Signalgeber und \textit{DC-Out} nicht die selbe Masse haben.
-Wenn die Transistoren mittels PWM gesteuert werden, ist diese Art der Ansteuerung notwendig. Andernfalls würde das PWM-Signal auf die falsche Masse bezogen und der Transistor nicht schalten.
-\comment{todo literaturverweis}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/lights_diagramm.pdf}
+    \label{diag:lights_diagram}
+    \caption{Schaltbild der Abschreckleuchten mit Ansteuerung}
+\end{figure}
+
+\subsection{Pumpe}
+
+Auch wenn die Aluminiumkiste witterungsbeständig ist, schützt sie nur mäßig vor kühlen Temperaturen. Dabei können viele Wasserpumpen schaden nehmen wenn sie über den Winter draußen sind. Bei Membranpumpen ist dies ein kleineres Problem. Die zu den Oszillationsverdrängerpumpen angehörige Pumpenart sind außerdem sehr wartungsfreundlich und außerordentlich robust. Sie können daher selbst schwierigen Bedingungen und Temperaturumschwünge leicht standhalten.
+\\
+Ihre Funktionsweise beruht darauf den \textit{Schöpfraum} periodisch zu vergrößern und zu verkleinern. Dadurch erzielen sie ihre Pumpwirkung und werden durch ihre Robustheit, Ölfreiheit (keine Verschmutzung der zu fördernde Flüssigkeit oder Gas) und Wartungsfreundlichkeit auch in chemischen Laboranwendungen verwendet. \cite{Jousten2018}
+Die eingesetzte Pumpe von \textit{SEAFLO} hat eine maximale Fördermenge von 17 Liter pro Minute und kann dabei bis zu 16 Ampere Strom aufnehmen. Auch bei dieser Leistungsaufnahme von über 190 Watt können die MOSFET-Treiber, die zum An- und Ausschalten der LED-Scheinwerfer verwendet werden, genutzt werden. Sie sind angegeben mit einer Dauerbelastung von 15 Ampere und mit Kühlung auch 30 Ampere. \cite{mosfets_am,seaflo_pump}
+
+Aus dem Diagramm in \ref{fig:psi_seaflo} ist zu entnehmen, das die Pumpe eine minimale Fördermenge von 5 Litern pro Minute hat. Demnach kann die Austrittsgeschwindigkeit des Wassers berechnet werden. Hierfür wird lediglich die Fördermenge und der Querschnitt des Laufs benötigt. Die Austrittsgeschwindigkeit kann aber nicht mit der Gleichung \ref{v_qa} entnommen werden, da demnach eine Geschwindigkeit von mehr als 16900 Meter pro Sekunde erreicht würden. 
+
+\begin{equation} \label{v_qa}
+        v = Q/A
+    \end{equation}
+
+\begin{wrapfigure}{l}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.35\textwidth]{images/seaflo_lpm_psi.png}
+    \label{fig:psi_seaflo}
+    \caption{Diagramm der Fördermenge gegenüber des Drucks. \cite{seaflo_pump}}
+\end{wrapfigure}
+
+
+
+\subsection{Mikrocontroller}
+
+\subsection{Ansteuerung}
 
 \comment{Verkabelung, Aufbau, Herausforderungen, spezielle Lösungen}
 Auswahl PI -> Liefermangel
