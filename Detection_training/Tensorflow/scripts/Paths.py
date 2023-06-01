@@ -61,8 +61,9 @@ class WorkingPaths:
         self.YOLO_TRAIN_PATH = os.path.join(self.YOLO_IMG_PATH, 'trainset')
         self.YOLO_TEST_PATH = os.path.join(self.YOLO_IMG_PATH, 'testset')
         self.YOLO_DEV_PATH = os.path.join(self.YOLO_IMG_PATH, 'devset')
-        
+
         self.SAVED_MOVING = os.path.join(self.IMAGE_PATH, "own_images")
+        self.SAVED_MOVING_CONTOURS = os.path.join(self.SAVED_MOVING, 'contours_tracked')
 
 
 

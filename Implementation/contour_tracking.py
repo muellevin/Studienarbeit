@@ -212,7 +212,8 @@ class ThreadedContourTracker(threading.Thread):
                 #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if len(combined_bounding_boxes) > 0:
                     self.detections[1] =  frame
-                    write_detections_and_image(self.detections[0], frame, prefix=f"Saving_Frame_{self.prefix}_")
+                    write_detections_and_image(self.detections[0], frame, prefix=f"contours_tracked/Saving_Frame_{self.prefix}_")
+
 
                 # Calculate Frames per second (FPS)
                 
