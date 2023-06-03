@@ -1,22 +1,5 @@
 %!TEX root = ../Studienarbeit.tex
 
-\section{Bilderkennung und -Verarbeitung}
-
-\subsection{Object Detection}
-
-\subsubsection{Training}
-
-\subsubsection{Deployment}
-
-\subsection{Benchmarks}
-
-\subsection{Erkennung durch Kontur-tracking}
-
-\subsection{Verbesserung der Bildqualität}
-
-\subsection{Tiefenberechnung}
-
-
 \section{Hardwarerealisierung}
 
 Für einen optimalen Vertreibungseffekt werden verschiedene Aktoren im System verbaut. Die einzelnen Geräte werden alle über eine externe Energieversorgung, beziehungsweise Batterie betrieben. Bei der Wahl der Batterie, ist ein wichtiges Kriterium, wie lange das System ohne Energiezufuhr funktionsfähig bleibt.
@@ -25,7 +8,7 @@ Dabei wurde berücksichtigt, wie viel das System im Normalverbrauch ohne Einscha
 \\
 Ein weiterer Entscheidungsgrund für die Autobatterie ist der Strombedarf der Geräte. Wie nachfolgend beschrieben, kann die Wasserpumpe im laufenden Zustand bis zu 16 Ampere Strom beziehen. Viele leichte und kleine Batterien könnten langfristig durch diese Belastung Schaden nehmen. Da Autobatterien eine hohe Belastungsgrenze haben und hohe Ströme ermöglichen, sind sie daher für den Prototypen besser geeignet.
 
-Für die Unterbringung aller Teile wird eine 40x55x30 cm große Aluminiumkiste verwendet. Die Aluminiumkiste ist witterungsbeständig, und die Wärmeentwicklung im Inneren kann weitestgehend vernachlässigt werden. Aluminium hat nämlich eine gute Temperaturleitfähigkeit und kann somit einen Wärmestau verhindern. Dabei ist auch der Empfehlung aus einem \textit{Autodesk Instructables}-Projekt folge geleistet worden. In diesem Projekt wurde eine bewegungsausgelöste "`Wasserpistole"' aufgebaut. Allerdings war bei dem \textit{Instructables}-Projekt eine Vertreibung von Rehen vorgesehen, die sonst die Rosen im Garten aufgegessen hätten. Das Ziel dieser Arbeit ist es aber Waschbären und andere Kleintiere zu vertreiben, daher sind hier noch weitere Aktoren eingebaut. Zudem ist das \textit{Instructables}-Projekt nicht autark und portable, da es mit Strom und Wasser mittels Hausanschluss versorgt worden ist. \cite{watergun_dude}
+Für die Unterbringung aller Teile wird eine 40x55x30 \ac{CM} große Aluminiumkiste verwendet. Die Aluminiumkiste ist witterungsbeständig, und die Wärmeentwicklung im Inneren kann weitestgehend vernachlässigt werden. Aluminium hat nämlich eine gute Temperaturleitfähigkeit und kann somit einen Wärmestau verhindern. Dabei ist auch der Empfehlung aus einem \textit{Autodesk Instructables}-Projekt folge geleistet worden. In diesem Projekt wurde eine bewegungsausgelöste "`Wasserpistole"' aufgebaut. Allerdings war bei dem \textit{Instructables}-Projekt eine Vertreibung von Rehen vorgesehen, die sonst die Rosen im Garten aufgegessen hätten. Das Ziel dieser Arbeit ist es aber Waschbären und andere Kleintiere zu vertreiben, daher sind hier noch weitere Aktoren eingebaut. Zudem ist das \textit{Instructables}-Projekt nicht autark und portable, da es mit Strom und Wasser mittels Hausanschluss versorgt worden ist. \cite{watergun_dude}
 
 Die eingebauten Bauteile werden nachfolgend beschrieben.
 
@@ -71,6 +54,44 @@ Vor dem Einbau in die Kiste wurde ein Dichtigkeitstest der Pumpe und des Spritzs
 
 \subsection{Mikrocontroller}
 
+Durch die derzeitigen Liefermangel an Mikrocontrollern ergab sich die Auswahl eines passenden Mikrocontrollers für den Einsatz im Abschrecksystem ebenfalls als schwierig.\\
+Getestet worden sind drei verschiedene Controller mit unterschiedlichen Erfolg, welche hier beschrieben werden.
+
+\subsubsection{Radxa \ac{CM} 3}
+
+Durch den Liefermangel bestimmt waren Ende 2022 keine der nachfolgend beschrieben Mikrocontroller verfügbar. Daher ist das vom chinesischen Startup Radxa vertriebene \textit{Radxa Compute Module 3} für den Einsatz im Abschrecksystem getestet worden. Der Mikrocontroller zeichnet sich besonders durch die eingebaute \ac{NPU} sowie die verwendete Hardware wie \ac{SATA}-/USB 3.0-Anschlüsse und die Anzahl von 50 \ac{GPIO}-Pins aus. \cite{radxa}
+
+Allerdings war das eigens für das \ac{CM} 3 konzipierte \textit{IO Board} zum Zeitpunkt der Untersuchung nicht erhältlich. Laut \textit{Radxa} ist das \ac{CM} 3 jedoch kompatibel mit dem \textit{\acl*{RPi} 4 IO Board}. Mit diesem Board kann das \ac{CM} 3 jedoch nur mit eingeschränkter Hardware genutzt werden.
+\\
+\textit{Radxa} bietet ein eigenes Betriebssystem für die Verwendung mit dem \ac{RPi} IO Board an. Bei der Einrichtung des Systems traten jedoch bereits Probleme auf. Zunächst konnte der \ac{eMMC}-Speicher nicht erfolgreich geflasht werden. Nur mit erhöhtem Aufwand war die Inbetriebnahme möglich.
+\\
+Im weiteren Betrieb traten weitere Probleme auf. Verschiedene Anwendungen und die Steuerung der Hardware (wie Kameras und \ac{GPIO}-Pins) waren sehr fehleranfällig und stürzten wiederholt ab.
+\\
+Auch konnte die \ac{NPU} des \ac{CM} 3 leider nicht mit den gängigen \ac{ML}-Frameworks wie Tensorflow genutzt werden. Stattdessen bietet \textit{Radxa} eine auf Linux basierende Toolchain an, um \ac{ML}-Projekte den Zugriff auf die \ac{NPU} zu ermöglichen. Die Einrichtung dieser Toolchain gestaltet sich jedoch als sehr umständlich, und viele Nutzer haben im \textit{Radxa}-Forum um Hilfe gebeten. \cite{radxa}
+
+Aufgrund dieser Probleme konnte das \textit{Radxa Compute Module 3} nicht für das Abschrecksystem verwendet werden.
+
+\subsubsection{Raspberry Pi \ac{CM} 3}
+
+Auch \ac{RPi}-Geräte sind von Lieferengpässen betroffen. Die Geräte sind entweder nicht verfügbar oder nur zu überhöhten Preisen erhältlich. Glücklicherweise hatte das Unternehmen \textit{softwareinmotion} noch ein \ac{CM} 3+ auf Lager, dass für die Studienarbeit ausgeliehen werden konnte.
+\\
+Es ist jedoch zu beachten, dass das \ac{CM} 3 bereits veraltet ist, da seit 2020 das \ac{CM} 4 auf dem Markt ist. Der Hauptunterschied besteht darin, dass das \ac{CM} 3 mehr \ac{GPIO}-Pins hat, jedoch nur mit 1 GB DDR2 RAM erhältlich ist. Das \ac{CM} 4 hingegen verfügt über 1 bis 8 GB DDR4 RAM und ist mit USB 3.0 ausgestattet. \cite{cm4_cm3}
+
+Die \ac{CM}-Mikrocontroller haben vor allem deshalb an Beliebtheit gewonnen, weil sie die Möglichkeit bieten, eigene Carrier Boards zu entwerfen. Diese Boards eröffnen neue Flexibilität, um die Hardware an spezifische Anforderungen anzupassen und maßgeschneiderte Lösungen zu entwickeln. Ein Beispiel dafür ist der \textit{StereoPi}, ein Carrier Board, der für die \ac{CM} Reihe entwickelt wurde. Der \textit{StereoPi} beschränkt Größe und Funktionalität des \acl{CM} auf die Stereo-Vision-Funktion, was ihn für bestimmte Anwendungen, wie die Tiefenberechnung besonders geeignet macht. Das \textit{StereoPi} Carrier Board hätte sich ideal für das Abschrecksystem geeignet. Bedauerlicherweise war es aufgrund der neuen Version und des Liefermangels nicht verfügbar, weshalb das standard Carrier Board von \acl{RPi} verwendet wurde. \cite{stereopi}
+
+Der \ac{RPi} \ac{CM} 3+ ließ sich im Gegensatz zum \ac{CM} 3 von \textit{Radxa} problemlos in Betrieb nehmen. Allerdings ist es erforderlich, Jumper-Kabel an einige \ac{GPIO} Pins anzuschließen, um die Kameras nutzen zu können. Zudem müssen die Kameras über ein \ac{RPi} Zero Flachbandkabel mit dem \acs{CSI}-Anschluss am \ac{CM} verbunden werden. \cite{cm3}
+
+Der \ac{CM} 3 Mikrocontroller eignet sich daher für den Betrieb, wurde jedoch aus anderen Gründen, die in Kapitel \ref{cap:Benchmarks} beschrieben sind, nicht verwendet.
+
+\subsubsection{Nvidia Jetson Nano}
+
+Der Jetson Nano Mikrocontroller hat eine ähnliche Größe und Form wie die Standard \ac{RPi}s. Im Vergleich zu den \ac{RPi}s verfügt der Jetson Nano jedoch nicht über WLAN oder Bluetooth. Dennoch besitzt er einen entscheidenden Unterschied: eine integrierte Grafikkarte. Aufgrund dieser Grafikkarte eignet sich der Jetson Nano besser für Aufgaben im Bereich des \acl{ML}s. \cite{nvidia_jn}
+
+Grafikkarten (\acs{GPU}s) spielen eine essenzielle Rolle bei der Anwendung von \ac{ML} in der IT-Branche. SSie ermöglichen die parallele Verarbeitung von Daten und speziell Matrixoperationen. Diese Operationen werden in \ac{ML}-Algorithmen und \ac{DNN}s intensiv verwendet. Im Vergleich dazu können herkömmliche CPUs diese Operationen nur mit erheblichem Rechenaufwand bewältigen. Die hohe Rechenleistung und Parallelverarbeitungsfähigkeit von GPUs machen sie daher attraktiv bei \ac{ML}-Anwendungen. Auch ermöglichen sie eine verbesserte Manipulation und Auswertung von Bilddaten. Dies ist besonders vorteilhaft für das Abschrecksystem, da es in Echtzeit Bilder verarbeiten soll.
+Die \ac{GPU}-basierte Verarbeitung kann dabei helfen, die Objekterkennung und Bewegungserfassung effizient auszuführen. Dadurch kann das Abschrecksystem schneller und präziser auf die Kleintiere reagieren. \cite{gpus}
+
+Dennoch traten auch bei diesem Mikrocontroller Probleme auf, wie später in verschiedenen Kapiteln beschrieben wird. Der Jetson Nano hat sich jedoch aufgrund seiner Leistungsfähigkeit als \textit{"`Mini AI-Rechner"'} für das Abschrecksystem am besten geeignet.
+
 \subsection{Sensorik-Kameras}
 
 \subsection{Ansteuerung}
@@ -112,6 +133,22 @@ Wenn man mit der niedrigsten Fördermenge von knappen 5 Liter pro Minute rechnet
 $\rightarrow$ Entscheidung Servo/DC?
 
 \comment{Mit Vision Schwerpunkt der Arbeit teils/ganz in HW-Realisierung?}
+
+\section{Bilderkennung und -Verarbeitung}
+
+\subsection{Object Detection}
+
+\subsubsection{Training}
+
+\subsubsection{Deployment}
+
+\subsection{Benchmarks} \label{cap:Benchmarks}
+
+\subsection{Erkennung durch Kontur-tracking}
+
+\subsection{Verbesserung der Bildqualität}
+
+\subsection{Tiefenberechnung}
 
 \section{Kostenaufstellung}
 
