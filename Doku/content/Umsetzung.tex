@@ -42,33 +42,40 @@ Die beiden LED-Scheinwerfer sind an den beiden oberen Ecken der Box befestigt. S
     \caption{Schaltbild der Abschreckleuchten mit Ansteuerung}
 \end{figure}
 
-\subsection{Pumpe}
+\subsection{Wasserversorgung und Pumpeneinheit}
 
-Auch wenn die Aluminiumkiste witterungsbeständig ist, schützt sie nur mäßig vor kühlen Temperaturen. Dabei können viele Wasserpumpen schaden nehmen wenn sie über den Winter draußen sind. Bei Membranpumpen ist dies ein kleineres Problem. Die zu den Oszillationsverdrängerpumpen angehörige Pumpenart sind außerdem sehr wartungsfreundlich und außerordentlich robust. Sie können daher selbst schwierigen Bedingungen und Temperaturumschwünge leicht standhalten.
+Für den Einsatz eines \textit{Abschusssystems} mit Wasser benötigt das Abschrecksystem weitere Komponenten, welche folgend beschrieben werden.
+
+\subsubsection{Pumpe}
+
+Auch wenn die Aluminiumkiste witterungsbeständig ist, schützt sie nur mäßig vor kalten Temperaturen. Dabei können viele Wasserpumpen schaden nehmen, wenn sie über den Winter draußen sind. Bei Membranpumpen ist dies ein kleineres Problem. Die zu den Oszillationsverdrängerpumpen gehörende Pumpenart ist außerdem sehr wartungsfreundlich und außerordentlich robust. Sie können daher selbst schwierigen Bedingungen und Temperaturumschwünge leicht standhalten.
 \\
-Ihre Funktionsweise beruht darauf den \textit{Schöpfraum} periodisch zu vergrößern und zu verkleinern. Dadurch erzielen sie ihre Pumpwirkung und werden durch ihre Robustheit, Ölfreiheit (keine Verschmutzung der zu fördernde Flüssigkeit oder Gas) und Wartungsfreundlichkeit auch in chemischen Laboranwendungen verwendet. \cite{Jousten2018}
-Die eingesetzte Pumpe von \textit{SEAFLO} hat eine maximale Fördermenge von 17 Liter pro Minute und kann dabei bis zu 16 Ampere Strom aufnehmen. Auch bei dieser Leistungsaufnahme von über 190 Watt können die MOSFET-Treiber, die zum An- und Ausschalten der LED-Scheinwerfer verwendet werden, genutzt werden. Sie sind angegeben mit einer Dauerbelastung von 15 Ampere und mit Kühlung auch 30 Ampere. \cite{mosfets_am,seaflo_pump}
+Ihre Funktionsweise beruht darauf, den \textit{Schöpfraum} periodisch zu vergrößern und zu verkleinern. Dadurch erzielen sie ihre Pumpwirkung und werden durch ihre Robustheit, Ölfreiheit (keine Verschmutzung der zu fördernde Flüssigkeit oder Gase) und Wartungsfreundlichkeit auch in chemischen Laboranwendungen verwendet. \cite{Jousten2018}
 
-Aus dem Diagramm in \ref{fig:psi_seaflo} ist zu entnehmen, das die Pumpe eine minimale Fördermenge von 5 Litern pro Minute hat. Demnach kann die Austrittsgeschwindigkeit des Wassers berechnet werden. Hierfür wird lediglich die Fördermenge und der Querschnitt des Laufs benötigt. Die Austrittsgeschwindigkeit kann aber nicht mit der Gleichung \ref{v_qa} entnommen werden, da demnach eine Geschwindigkeit von mehr als 16900 Meter pro Sekunde erreicht würden. 
+Für die Auswahl einer geeigneten Pumpe kamen zudem die Anforderungen an Fördermenge und Druck. Sprinkleranlagen werden wie in Kapitel \ref{sprinkler} beschrieben mit einem Gartenschlauch betrieben und können mit dieser Versorgung eine Reichweite von 10 Metern erreichen. Durch einen Hausanschluss fließen üblicherweise 20 Liter Wasser pro Minute mit einem Druck von etwa 4 Bar.\\
+Die eingesetzte Pumpe von \textit{SEAFLO} hat eine maximale Fördermenge von 17 Liter pro Minute und kommt dadurch nahe an diesen Richtwert ran. Dabei nimmt sie bis zu 16 Ampere Strom auf. Auch bei dieser Leistungsaufnahme von über 190 Watt können die MOSFET-Treiber, die zum An- und Ausschalten der LED-Scheinwerfer verwendet werden, genutzt werden. Sie sind angegeben mit einer Dauerbelastung von 15 Ampere und mit Kühlung bis zu 30 Ampere. Da die Treiber nur für kurze Dauer eingeschaltet werden, ist eine zusätzliche Kühlung nicht nötig. \cite{mosfets_am,seaflo_pump}
 
-\begin{equation} \label{v_qa}
-        v = Q/A
-\end{equation}
+Der Aufbau ist ähnlich zu dem Schaltbild \ref{diag:lights_diagram}. Allerdings wird zusätzlich eine Schutzdiode benötigt. Da Pumpen durch den internen Betrieb mittels Elektromotor eine induktive Last bilden, kann bei hartem Ein- und Ausschalten der MOSFET-Treiber durch Spannungsstöße Schaden nehmen \cite{induktive_last_diode}. Daher wird eine Schottky-Diode parallel zur Last eingebaut. Dies verhindert ein Aufbauen zu hoher Spannung, durch der der Transistor Schaden nehmen könnte. Schottky-Dioden eignen sich besonders gut für den Einsatz, da sie nur wenig Leistung aufnehmen und dadurch energiesparend sind. \cite{induktive_last_diode,am_schottky}
 
-\begin{wrapfigure}{l}{0.4\textwidth}
-    \centering
-    \includegraphics[width=0.35\textwidth]{images/seaflo_lpm_psi.png}
-    \label{fig:psi_seaflo}
-    \caption{Diagramm der Fördermenge gegenüber des Drucks. \cite{seaflo_pump}}
-\end{wrapfigure}
+\subsubsection{Versorgung mit Wasser}
 
+Damit die Pumpe mit Wasser versorgt werden kann, muss ein Wassertank in das System integriert sein. Allerdings ergeben sich dadurch verschiedene Probleme.
+\\
+Das größte Problem, das gelöst werden muss, ist die Unterbringung des Wassertanks. Durch den Einbau der verschiedenen Aktoren sowie der Autobatterie wurde in der Aluminiumkiste bereits viel Platz verwendet. Ein speziell an den verfügbaren Platz angepasster Tank kann zudem nicht mittels 3D-Drucker hergestellt werden, da die Drucke nicht wasserdicht sind. Ein herkömmlicher und einbaubarer Wassertank könnte daher nur wenige Liter fassen.
 
+Ein weiteres Problem betrifft die Dichtigkeit des Tanks und der Pumpe. Beim Transport der Aluminiumkiste könnte eine große Menge Wasser leicht austreten. Aufgrund der Leitfähigkeit des Wassers könnten die Elektronikkomponenten Schaden nehmen. Dies wäre jedoch nicht so gravierend, da die Elektronik lediglich durchbrennen und der Stromkreislauf unterbrochen würde. Allerdings besteht bei der Aluminiumkiste die Gefahr, dass sie vollständig unter Strom gestellt wird. Dadurch würde sogar eine potenzielle Lebensgefahr entstehen, wenn man die Kiste berührt.
+\\
+Um die Sicherheit zu erhöhen, wird der Wassertank deshalb außerhalb der Kiste platziert und der Zulauf erfolgt durch eine seitliche Öffnung an der Kiste. Die Pumpe befindet sich jedoch weiterhin innerhalb der Kiste, um sie vor den äußeren Witterungsbedingungen zu schützen. Sie wird durch einen gedruckten Spritzschutz räumlich von den anderen Aktoren und der Spannungsversorgung getrennt. Der 3D-Druck ermöglicht jedoch keinen vollständigen Schutz, da er nur gegen geringe Wassermengen dicht hält. Spritzwasser und kleinere Leckagen durch die Pumpe können jedoch bewältigt werden.
+\\
+Vor dem Einbau in die Kiste wurde ein Dichtigkeitstest der Pumpe und des Spritzschutzes durchgeführt. Dabei traten nur bei bestimmten Bedingungen, wie dem seitlichen Legen oder Schütteln der Pumpe, geringe Mengen Wasser aus der Pumpe aus. Daher sollte der gedruckte Spritzschutz einen ausreichenden Schutz bieten.
 
 \subsection{Mikrocontroller}
 
 \subsection{Sensorik-Kameras}
 
 \subsection{Ansteuerung}
+
+mosfet -> bei 3.3V runterregeln des Stroms
 
 \comment{Verkabelung, Aufbau, Herausforderungen, spezielle Lösungen}
 Auswahl PI -> Liefermangel
@@ -89,46 +96,19 @@ integrierte Pumpe $\rightarrow$ Soll portable sein
 
 Alternativ: Gartenschlauch mit Ventilsteuerung
 
-\subsubsection{Pumpe}
-
-Orientierung Gartenschlauch/Sprinkler:
-Durchfluss in etwa 20L/min; Druck bis 4 Bar; Düsenspritze ca. 1-2mm Durchmesser
-
-Pumpe: Membranpumpe $\rightarrow$ Gleichbleibende Fördermenge
-bei hohen Druckunterschieden (Pumpe 1-4 Bar).
-Druck Vernachlässigen und Strömungslehre mit Fördermenge
-berechnen. Membranpumpe haben Druckschalter $\rightarrow$
-wie ist ein/ausschaltverfahren? Delay etc. Auswahl Verwendung
-von Ventil zum Durchschalten oder von Versorgungsspannung der Pumpe???
-\\
-Problem beim Druckventil:\\
-Bei leerem Tank schaltet die Pumpe nicht ab, daher muss Schaltung über Versorgung der Pumpe durchgeführt werden.
-\\
-Die Pumpe arbeitet unter hoher Last. Kurzer Test bei Düsendurchmesser 1.5 mm zeigte eine Fördermenge von ca. 5 Liter pro Minute. Zudem ist durch die turbolende Strömung eine zu hohe Streuung des Wasserstrahl verursacht worden (Durchmesser 70 cm). Das Tier würde daher nur ein \enquote{tröpfeln} wahrnehmen mit geringen Störungsfaktor.
-
-Normale Pumpe: Komplexer durch kennlinie $\rightarrow$ Berechnung des
-inneren Drucks nötig und Interpolation dieser. (Meiste Pumpen
-haben schon bei 1-2 Bar Probleme $\rightarrow$ Druckventil schaltet Pumpe aus.
-
-\subsubsection{Wassertank}
-Integriert oder Schlauch zu extern. Vor-/Nachteile Entscheidung?
-
-Integriert:
-
-Vollständig portable
-
-;schwerer, Dichtigkeitsproblem
-
-Extern:
-
-Bedingt portable, einfacher zu realisieren, Systembetrachtung geringer
-
-Wasserversorgung muss am Einsatzort möglich sein, Lange Strecken und Höhen für
-Pumpe nicht gut.
 
 
-\section{Dreidimensionales Zielsystem}
+\section{Dreidimensionales Zielsystem} \label{cap:dreidim}
 
+\begin{wrapfigure}{l}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.35\textwidth]{images/seaflo_lpm_psi.png}
+    \label{fig:psi_seaflo}
+    \caption{Diagramm der Fördermenge gegenüber des Drucks. \cite{seaflo_pump}}
+\end{wrapfigure}
+Aus dem Diagramm in \ref{fig:psi_seaflo} ist zu entnehmen, das die Pumpe eine minimale Fördermenge von 5 Litern pro Minute hat. Demnach kann die Austrittsgeschwindigkeit des Wassers berechnet werden. Hierfür wird lediglich die Fördermenge und der Querschnitt des Laufs benötigt. Die Austrittsgeschwindigkeit kann aber nicht mit der allgemeinen Gleichung $ Geschwindigkeit = \frac{Volumenstrom}{Strömungsquerschnitt}
+$ aus \cite{stroemungen} entnommen werden. 
+Wenn man mit der niedrigsten Fördermenge von knappen 5 Liter pro Minute rechnet, hätte man demnach eine Austrittsgeschwindigkeit von mehr als 265 Meter pro Sekunde erreicht.
 $\rightarrow$ Entscheidung Servo/DC?
 
 \comment{Mit Vision Schwerpunkt der Arbeit teils/ganz in HW-Realisierung?}
