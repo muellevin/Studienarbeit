@@ -29,7 +29,9 @@ Die beiden LED-Scheinwerfer sind an den beiden oberen Ecken der Box befestigt. S
 
 Für den Einsatz eines \textit{Abschusssystems} mit Wasser benötigt das Abschrecksystem weitere Komponenten, welche folgend beschrieben werden.
 
-\subsubsection{Pumpe}
+\subsubsection{Pumpe} \label{cap:pumpe}
+
+\comment{Bild mit Spritzschutz von Seite aus}
 
 Auch wenn die Aluminiumkiste witterungsbeständig ist, schützt sie nur mäßig vor kalten Temperaturen. Dabei können viele Wasserpumpen schaden nehmen, wenn sie über den Winter draußen sind. Bei Membranpumpen ist dies ein kleineres Problem. Die zu den Oszillationsverdrängerpumpen gehörende Pumpenart ist außerdem sehr wartungsfreundlich und außerordentlich robust. Sie können daher selbst schwierigen Bedingungen und Temperaturumschwünge leicht standhalten.
 \\
@@ -60,6 +62,10 @@ Getestet worden sind drei verschiedene Controller mit unterschiedlichen Erfolg, 
 Eine weitere Anforderung an das Abschrecksystem besteht darin, den Einsatz von \textit{Stereo Vision} für das korrekte Zielen zu ermöglichen. Alle drei Mikrocontroller sind daher mit zwei \ac{CSI}-Anschlüssen ausgestattet. Dies war von besonderer Bedeutung, da Multi-Camera Adapter wie von \textit{ArduCam} (\cite{arducam_multicam}) und auch USB-Kameras keine ausreichende Zeitsynchronität und Anpassbarkeit an das System ermöglichen. Nicht synchronisierte Kameras verfälschen die Tiefenberechnung sehr. Ein genaues Zielen wäre demnach nicht länger möglich wie aus der Arbeit von Shimizu und Co.hervorgeht. \cite{time_delay_sv}.
 \\
 Durch den direkten Anschluss an die \ac{CSI}-Anschlüsse wird dieses Delay minimiert. Die Mikrocontroller unterstützen teilweise die zeitgleiche Aufnahme von Bildern auf beiden \ac{CSI}-Anschlüssen. Im Falle des \textit{Jetson Nano}s ist eine Zeitsynchronität jedoch nicht vollständig gewährleistet. Dies geht aus dem \textit{ArduCam} Artikel von \cite{arduCam_sync_b01} hervor. Ein eigener Test ergab jedoch, dass die Kameras ausreichend synchron Bilder aufnehmen. Die Tiefenberechnung wäre demnach nicht zu stark beeinträchtigt, wie es mit dem \textit{MultiCam} Adapter der Fall wäre.
+
+Um die Versorgungsspannung der 12V Autobatterie nutzen zu können, wird ein Spannungswandler benötigt, da die Mikrocontroller mit 5V betrieben werden. Der Spannungswandler muss in der Lage sein, kurzfristig eine ausreichende Leistung bereitzustellen. Bei der Objekterkennung können für einen kurzen Zeitraum hohe Leistungsabfragen entstehen. Wenn die Leistung dann nicht schnell genug bereitgestellt werden kann, kann es zum Zwangsabschaltungen des Mikrocontrollers kommen. Dadurch könnte auch der Controller selbst Schaden nehmen.
+\\
+Beim Aufsetzen und Testen des Jetson Nanos kam es wiederholt zu Stromabschaltungen. Der Nano wurde dabei mit einem Raspberry Pi Netzteil betrieben, das eine angegebene Leistung von 12,5 Watt hatte und daher für den Einsatz geeignet schien. Jedoch traten bei hohen Anforderungen, wie der gleichzeitigen Objekterkennung auf beiden Kameras, dennoch Stromabschaltungen auf. Im Gegensatz dazu traten beim Betrieb mit dem Spannungswandler und der Autobatterie keine unerwünschten Abschaltungen auf. Dies lag vermutlich daran, dass der einstellbare Spannungswandler von \textit{AzDelivery} laut den Angaben in \cite{am_spannungswandler} bis zu 60 Watt Leistung für den Mikrocontroller bereitstellen kann.
 
 \subsubsection{Radxa \ac{CM} 3}
 
@@ -108,29 +114,79 @@ Die Kamerasensoren sind jedoch nicht für den Jetson Nano geeignet, da laut eine
 \\
 % Daher wurden \textit{IMX219}-Kamerasensoren in das Abschrecksystem eingebaut. Diese haben allerdings keinen zuschaltbaren Infrarotfilter, wodurch die Bilder besonders bei Tageslicht an Qualität verlieren, wie nachträglich in Kapitel \ref{cap:better_image} wird daher die Manipulation der Bilddaten nötig. Ein Vorher/Nachher-Effekt kann in Abbildung \ref{fig:better_image} betrachtet werden \cite{am_imx219}.
 
-\subsection{Ansteuerung}
-
-mosfet -> bei 3.3V runterregeln des Stroms
-
-\comment{Verkabelung, Aufbau, Herausforderungen, spezielle Lösungen}
-Auswahl PI -> Liefermangel
-
-
 
 \section{Dreidimensionales Zielsystem} \label{cap:dreidim}
 
+Für das dreidimensionale Zielsystem ergaben sich mehrere Herausforderungen. Einerseits musste eine präzise Steuerung des Zielsystems gewährleistet sein, andererseits musste die Reichweite von zehn Metern für den \textit{Wasserwerfer} erreicht werden.
+
+Die präzise Steuerung ist insbesondere wichtig, da nur das anvisierte Ziel mit Wasser getroffen werden soll und nicht alles herum mit Wasser bespritzt wird. Dies ermöglicht es, Wasser nicht zu verschwenden und einen maximalen Vertreibungseffekt zu erzielen.
+\\
+In Tabelle \ref{tab:el_motors} sind einige Elektromotoren und ihre Vor- und Nachteile beschrieben. Die Elektromotoren eignen sich alle für den Einsatz im Zielsystem, haben aber Nebeneffekte, die bei der Auswahl mit berücksichtigt worden sind.
+\\
+Bei den Schrittmotoren stellte die präzise Ansteuerung ein Problem dar, da gängige Varianten nur eine Schrittweite von 1,9° haben. Dies würde zwar ausreichen, um größere Tiere gezielt anvisieren zu können, jedoch würde bei einer Entfernung von zehn Metern jeder Schritt eine Bewegung von 33 cm verursachen. Daher wäre ein Untersetzungsgetriebe erforderlich. Aufgrund des begrenzten Raums für das Zielsystem ist jedoch eine Implementierung eines solchen Getriebes nicht ohne weiteres möglich.
+\\
+Auch die DC-Elektromotoren konnten nicht verwendet werden, da auch ihr Einbau viel Platz erfordern würde. Um die Elektromotoren präzise auf eine bestimmte Position zu fahren, wären zudem Positionssensoren erforderlich. Sie müssten im Zielsystem verbaut werden und würden einen umfangreichen Aufbau erfordern. Darüber hinaus müssten für beide Motortypen zusätzliche Treiberplatinen beschafft und eingebaut werden, was die Kosten erhöhen und viel Platz in Anspruch nehmen würde.
+
+Deshalb wurden kleine Servomotoren für das Zielsystem verwendet. Die eingebauten Servomotoren von \textit{Seamuing} sind normalerweise für den Einsatz in RC-Modellen vorgesehen, verfügen jedoch mit 245 N/cm über ein sehr hohes Drehmoment. Dieses Drehmoment wird benötigt, um den Gegenkräften des Wassers beim Zielen standzuhalten. Die Servos ermöglichen zudem eine präzise Auflösung von 0,09°. Somit wäre selbst im äußeren Zielbereich nur eine Abweichung von wenigen Zentimetern zu erwarten. Die Servos können zudem einfach über \ac{PWM} angesteuert werden, sind jedoch nur im Bereich von 0° bis 180° einstellbar. \cite{am_servos}
+
+Die Servomotoren werden jedoch mit der im Modellbau üblichen Spannung von 7,4V betrieben. Hierfür eignet sich derselbe Spannungswandler, der auch für den Mikrocontroller verwendet wird. Bei dem verwendeten Spannungswandler kann nämlich die Ausgangsspannung über eine Stellschraube angepasst werden.
+
+Die zweite Herausforderung bestand darin, die geeignete Wasserpumpe zu finden und einzustellen. Hierbei wurde, wie im Kapitel \ref{cap:pumpe} beschrieben, die Hausleitung und Sprinkleranlagen als Orientierung genutzt.
+\\
+Für die Zielberechnung wurde ebenfalls auf bestehende Sprinklersysteme zurückgegriffen. Deren Düsenöffnungen haben nur einen Durchmesser von wenigen Millimetern. Daher wurde der Durchmesser des "Laufs" auf zwei Millimeter verengt. Ein Test ergab, dass mit dieser Einstellung und der verwendeten \textit{SEAFLO} Pumpe eine Reichweite von 10 Metern erreicht werden kann.
+\\
+Dennoch muss für das präzise anvisieren die Flugbahn des Wassers bestimmt werden. Um die Berechnung zu vereinfachen wird die Formeln für den \textit{schrägen Wurf} angewendet, bei den äußere Bedingungen wie Luftwiderstand und Windgeschwindigkeit nicht beachtet werden. Dabei wird die Formel nach dem Startwinkel umgestellt. Die benötigten Parameter für die Berechnung sind dann die \textit{Anfangsgeschwindigkeit} sowie die \textit{x-} und \textit{y-}Koordinate des Ziels.
+\\
+Um die Formel anwenden zu können, fehlt nur noch die Anfangsgeschwindigkeit. Nachfolgend in Kapitel \ref{cap:calc_depth} ist, wie die \textit{x-} und \textit{y-} Koordinate bestimmt werden können.
+\\
 \begin{wrapfigure}{l}{0.4\textwidth}
     \centering
     \includegraphics[width=0.35\textwidth]{images/seaflo_lpm_psi.png}
     \label{fig:psi_seaflo}
     \caption{Diagramm der Fördermenge gegenüber des Drucks. \cite{seaflo_pump}}
 \end{wrapfigure}
-Aus dem Diagramm in \ref{fig:psi_seaflo} ist zu entnehmen, das die Pumpe eine minimale Fördermenge von 5 Litern pro Minute hat. Demnach kann die Austrittsgeschwindigkeit des Wassers berechnet werden. Hierfür wird lediglich die Fördermenge und der Querschnitt des Laufs benötigt. Die Austrittsgeschwindigkeit kann aber nicht mit der allgemeinen Gleichung $ Geschwindigkeit = \frac{Volumenstrom}{Strömungsquerschnitt}
-$ aus \cite{stroemungen} entnommen werden. 
-Wenn man mit der niedrigsten Fördermenge von knappen 5 Liter pro Minute rechnet, hätte man demnach eine Austrittsgeschwindigkeit von mehr als 265 Meter pro Sekunde erreicht.
-$\rightarrow$ Entscheidung Servo/DC?
+Um die Anfangsgeschwindigkeit zu bestimmen, wurde zunächst angenommen, dass die Pumpe nahe ihrer maximalen Leistung betrieben wird. Diese Annahme basiert auf den Tests mit der zwei Millimeter Öffnung, bei denen auch die Druckabschaltung der Pumpe getestet wurde. Dabei wurde festgestellt, dass die Pumpe nahe der Druckabschaltung von etwa 2,8 Bar betrieben wird.
+\\
+Basierend auf dem Diagramm in Abbildung \ref{fig:psi_seaflo} lässt sich ableiten, dass die Pumpe bei dieser Einstellung eine Fördermenge von etwa 5 Litern pro Minute haben sollte. Mit diesen Daten kann die Austrittsgeschwindigkeit des Wassers berechnet werden. Dafür wird lediglich der Volumenstrom und der Querschnitt des Laufs benötigt. Allerdings ergibt die Formel $Geschwindigkeit = \frac{Volumenstrom}{Strömungsquerschnitt}$ aus \cite{stroemungen} keine korrekte Berechnung der Austrittsgeschwindigkeit, da ein Wert von über 265 Metern pro Sekunde berechnet wird. Es ist sehr wahrscheinlich, dass die Geschwindikeit durch den Luftwiderstand stark reduziert worden ist.
+\\
+Daher ist erneut die Formel für den \textit{schrägen Wurf} verwendet worden und nach der Anfangsgeschwindigkeit aufgelöst worden. Dabei stellte sich heraus, das die Anfangsgeschwindigkeit in etwa 10 Meter pro Sekunde beträgt.
 
-\comment{Mit Vision Schwerpunkt der Arbeit teils/ganz in HW-Realisierung?}
+Mit diesen Daten ist nun ein präzises anvisieren des Ziels möglich.
+
+\subsection{Ansteuerung}
+
+Zum Testen aller Funktionalitäten ist ein Arduino UNO verwendet worden. Der Arduino kann problemlos verwendet werden, um die Transistoren zu schalten und die Servomotoren zu steuern, da alle erforderlichen Bibliotheken bereits auf dem Board vorhanden sind. Der Testcode kann im Anhang unter \ref{list:Arduino_Test} eingesehen werden.
+\\
+Der Arduino schaltet alle Aktoren - Ton, Licht, Pumpe und Servomotoren - in bestimmten Zeitabständen ein und aus. Währenddessen werden die Servomotoren in inkrementellen Schritten angesteuert und ein Hochfrequenzton an zwei Pins ausgegeben. Bei diesen Tests stellte sich jedoch heraus, dass der erzeugte Ton zu leise war, um die Tiere effektiv zu stören. Daher wurde eine Verstärkerplatine hinzugefügt, die eine Ausgangsleistung von bis zu zehn Watt ermöglicht. Aus den Informationen von \cite{am_sound_amp} geht hervor, dass die Platine direkt ohne Spannungswandler von der Autobatterie mit Strom versorgt werden kann.
+\\
+Der Verstärker verfügt über einen Klinkenanschluss. Da der \textit{Jetson Nano} keinen Klinkenanschluss besitzt, wird ein USB-auf-Klinke-Adapter benötigt, um einen Ton abspielen zu können.
+
+Der Jetson Nano besitzt 40 \ac{GPIO} Pins, mit denen die Transistoren geschaltet und die Servomotoren bedient werden können. Der Nano verfügt aber nur über zwei \ac{PWM} Pins. Eine Ansteuerung von mehr als zwei Servomotoren ist daher nicht möglich. \cite{jn_datasheet}
+
+Das Steuern der Aktoren wird durch die von \textit{Nvidia} zur Verfügung gestellte \textit{Jetson.GPIO} Python Bibliothek ermöglicht. \cite{git_jn_gpio}
+\\
+Damit das Toggeln der Pins die Objekterkennung nicht blockiert, wurde eine threadbasierte Klasse erstellt, die jedem Pin einen eigenen Thread zuweist. Aus dem Hauptprogramm kann das Toggeln jederzeit durch den Befehl \textit{Pin.start\_toggle()} gestartet und durch \textit{Pin.stop()} pausiert werden. Auch kann die Frequenz des Toggelns durch das Multithreading dynamisch in dem Thread selbst verändert werden. Besonders für die Änderung der Schaltfrequenz für das Abschrecklicht eignet sich diese Funktion.
+\\
+Für die Steuerung der Servomotoren wurde eine ähnliche threadbasierte Klasse erstellt, bei der der Ansteuerungswinkel einfach und ähnlich wie im Arduino-Code aus \ref{list:Arduino_Test} angewendet werden kann.
+
+Beim Testen der Toggle-Funktion wurde jedoch ein irreführendes Verhalten beobachtet. Das Schaltverhalten entsprach nicht immer den Vorgaben. Nach ausführlicher Fehlersuche und einen Blick in das Datenblatt des Jetson Nanos ergab, das die Spannung, die an den meisten \ac{GPIO} Pins anliegt, lediglich 1,8V beträgt und nur teilweise 3,3V. Die ausgewählten Transistortreiber sind jedoch für eine Schaltlogik von 3,3V bis 5V ausgelegt. Zudem wurde im Datenblatt der Transistoren festgestellt, dass bei Verwendung einer 3,3V-Logik der Strom auf unter 10 Ampere begrenzt werden sollte, da sich der Transistor sonst möglicherweise nicht abschalten lässt. Dieses Verhalten konnte beim Betrieb der Wasserpumpe festgestellt werden, da sie sich nur stark verzögert ausschaltete.
+\\
+Es traten noch weitere Probleme bei der Verwendung der \ac{PWM}-Steuerung der Servomotoren auf. Es schien, als ob die Servomotoren kein gültiges Signal vom Nano erhielten und keinerlei Bewegung zeigten. Bei der Messung der \ac{PWM} stellte sich heraus, dass keine \ac{PWM} erzeugt wurde. Selbst die Troubleshooting-Anleitungen von Nvidia brachten keine Lösung. In einigen Fällen wurde sogar versucht, wie von Nikola Jelic in \cite{forum_wrong_pwm} beschrieben, Registereinträge auf dem Nano vorzunehmen. Leider führten auch diese Versuche nicht zum gewünschten Erfolg. Daher muss für die Steuerung der Servomotoren eine alternative Lösung gefunden werden.
+\\
+Doch durch den Versuch die \ac{PWM} auf den Nano zu verwenden traten noch weitere Nebeneffekte auf. Das Toggeln der Pins war nicht mehr bis zum neustarten des Nanos möglich. Deshalb wurde die gesamte Hardwareansteuerung auf den Arduino UNO ausgelagert. Dieser hatte sich bereits durch den Funktionstest bewährt.
+
+Für die Ansteuerung der Aktoren durch den Arduino wurde das Testprogramm aus \ref{list:Arduino_Test} angepasst. Der Arduino kann nun über den seriellen Port (USB) Befehle und Werte für die Steuerung des Zielsystems empfangen. Das Toggeln der Aktoren liegt vollständig in der Verantwortung des Arduino. Sobald er Werte für die Ansteuerung der Servomotoren erhält, wird er aktiv und steuert die Aktoren an. Die Steuerung wird solange ausgeführt, bis das Kommando "`g"' vom Nano empfangen wird. Das "`g"' steht dabei für \textit{gone} und signalisiert, dass das Ziel den Zielbereich verlassen hat.
+\\
+Auf der Seite des Jetson Nanos wurde außerdem eine threadbasierte Steuerung für den Arduino entwickelt. Die serielle Kommunikation mit dem Arduino benötigt deutlich mehr Zeit als die vorherige direkte Ansteuerung über die \ac{GPIO}-Pins, weshalb das Multithreading unbedingt erforderlich ist. Der Effekt auf die zeitliche Interferenz mit der Objekterkennung ist jedoch gering und es konnte keine signifikante Verbesserung durch das Multithreading festgestellt werden.
+
+Den gesamten Schaltplan können Sie in Abbildung \ref{diag:all} einsehen. Die Kamerasensoren werden über den Jetson Nano betrieben und ihre Steuerung erfolgt hauptsächlich über Software. Daher werden sie erst in den nachfolgenden Kapiteln genauer beschrieben.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[angle=90,width=0.9\textwidth]{images/Schaltskizzen-Seite-3.drawio.pdf}
+    \label{diag:all}
+    \caption{Schaltplan der Hardware}
+\end{figure}
 
 \section{Bilderkennung und -Verarbeitung}
 
@@ -146,7 +202,7 @@ $\rightarrow$ Entscheidung Servo/DC?
 
 \subsection{Verbesserung der Bildqualität}
 
-\subsection{Tiefenberechnung}
+\subsection{Tiefenberechnung} \label{cap:calc_depth}
 
 \section{Kostenaufstellung}
 
