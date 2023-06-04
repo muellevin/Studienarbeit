@@ -57,6 +57,10 @@ Vor dem Einbau in die Kiste wurde ein Dichtigkeitstest der Pumpe und des Spritzs
 Durch die derzeitigen Liefermangel an Mikrocontrollern ergab sich die Auswahl eines passenden Mikrocontrollers für den Einsatz im Abschrecksystem ebenfalls als schwierig.\\
 Getestet worden sind drei verschiedene Controller mit unterschiedlichen Erfolg, welche hier beschrieben werden.
 
+Eine weitere Anforderung an das Abschrecksystem besteht darin, den Einsatz von \textit{Stereo Vision} für das korrekte Zielen zu ermöglichen. Alle drei Mikrocontroller sind daher mit zwei \ac{CSI}-Anschlüssen ausgestattet. Dies war von besonderer Bedeutung, da Multi-Camera Adapter wie von \textit{ArduCam} (\cite{arducam_multicam}) und auch USB-Kameras keine ausreichende Zeitsynchronität und Anpassbarkeit an das System ermöglichen. Nicht synchronisierte Kameras verfälschen die Tiefenberechnung sehr. Ein genaues Zielen wäre demnach nicht länger möglich wie aus der Arbeit von Shimizu und Co.hervorgeht. \cite{time_delay_sv}.
+\\
+Durch den direkten Anschluss an die \ac{CSI}-Anschlüsse wird dieses Delay minimiert. Die Mikrocontroller unterstützen teilweise die zeitgleiche Aufnahme von Bildern auf beiden \ac{CSI}-Anschlüssen. Im Falle des \textit{Jetson Nano}s ist eine Zeitsynchronität jedoch nicht vollständig gewährleistet. Dies geht aus dem \textit{ArduCam} Artikel von \cite{arduCam_sync_b01} hervor. Ein eigener Test ergab jedoch, dass die Kameras ausreichend synchron Bilder aufnehmen. Die Tiefenberechnung wäre demnach nicht zu stark beeinträchtigt, wie es mit dem \textit{MultiCam} Adapter der Fall wäre.
+
 \subsubsection{Radxa \ac{CM} 3}
 
 Durch den Liefermangel bestimmt waren Ende 2022 keine der nachfolgend beschrieben Mikrocontroller verfügbar. Daher ist das vom chinesischen Startup Radxa vertriebene \textit{Radxa Compute Module 3} für den Einsatz im Abschrecksystem getestet worden. Der Mikrocontroller zeichnet sich besonders durch die eingebaute \ac{NPU} sowie die verwendete Hardware wie \ac{SATA}-/USB 3.0-Anschlüsse und die Anzahl von 50 \ac{GPIO}-Pins aus. \cite{radxa}
@@ -94,28 +98,22 @@ Dennoch traten auch bei diesem Mikrocontroller Probleme auf, wie später in vers
 
 \subsection{Sensorik-Kameras}
 
+Viele unliebsame Kleintiere sind nachtaktiv. Daher muss das Abschrecksystem auch unter schwierigen Belichtungsbedingungen, insbesondere bei Nacht, die Kleintiere ebenso gut erkennen können wie bei Tageslicht. Aus diesem Grund ist es erforderlich, dass die eingesetzten Kameras eine Nachtsichtfunktion besitzen. Dafür werden infrarotsensible Kamerasensoren verwendet. Für den \acl{RPi} gibt es eine Variante der \textit{OV5647}-Kamera, die für diese Anwendung geeignet ist. Bei der "Nachtsicht"-Variante fehlt im Vergleich zur herkömmlichen Variante der Infrarotfilter. Im Tageslicht enthalten sind nämlich Infrarotstrahlen, die sonst für Rotstich-Aufnahmen sorgen. 
+\\
+Doch allein dadurch ist es noch nicht möglich, auch bei Nacht "`sehen"' zu können, da es nachts keine natürliche Infrarotstrahlung durch das Sonnenlicht gibt. Die Nachtsichtvariante der \textit{OV5647}-Kamera ist daher mit zwei zusätzlichen Infrarotstrahlern ausgestattet.
+\\
+Dadurch entsteht jedoch ein neues Problem: Rotstich-Aufnahmen führen sowohl tagsüber als auch nachts zu einer Verschlechterung der Bildqualität, was auch die Objekterkennung beeinträchtigen könnte. Um tagsüber keinen Rotstich zu erhalten, verfügt die \textit{OV5647}-Kamera über einen zuschaltbaren Infrarotfilter. Bei Nacht lässt sich der Rotstich dennoch nicht vollständig vermeiden. \cite{ov_5647}
+
+Die Kamerasensoren sind jedoch nicht für den Jetson Nano geeignet, da laut einem Eintrag im Nvidia-Forum aus dem Jahr 2021 die Verarbeitung der reinen Kameradaten nicht öffentlich zugänglich ist. \cite{nvidia_forum_2021_nvidia}
+\\
+% Daher wurden \textit{IMX219}-Kamerasensoren in das Abschrecksystem eingebaut. Diese haben allerdings keinen zuschaltbaren Infrarotfilter, wodurch die Bilder besonders bei Tageslicht an Qualität verlieren, wie nachträglich in Kapitel \ref{cap:better_image} wird daher die Manipulation der Bilddaten nötig. Ein Vorher/Nachher-Effekt kann in Abbildung \ref{fig:better_image} betrachtet werden \cite{am_imx219}.
+
 \subsection{Ansteuerung}
 
 mosfet -> bei 3.3V runterregeln des Stroms
 
 \comment{Verkabelung, Aufbau, Herausforderungen, spezielle Lösungen}
 Auswahl PI -> Liefermangel
-Erstidee Multiplexer um zeitverzögerung zu reduzieren -> schlechte Kritik
-% https://www.amazon.de/Arducam-Adaptermodul-Raspberry-kompatibel-Kameras/dp/B07TYL36MC/ref=sr_1_5?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=2KI1QVYFS8KN6&keywords=camera+adapter+raspberry&qid=1662198136&sprefix=camera+adapetr+raspberry%2Caps%2C77&sr=8-5
-
-Zweite Idee usb-> von vornerein "komplexer" /durch zeitkacke -> irgendwie auch teuer
-
-Dritte Idee esp32-CAM Module -> Hohe Latenzen und Zeitsynchronitätsaufwand
-
-Viertens -> compute model + I/O shield auch teuer aber 2 csi Anschlüsse
-
-5. Jetson mit 2 CSI Anschlüssen -> teuer und noch mehr Liefermangel
-
-\subsection{Wasserversorgung}
-
-integrierte Pumpe $\rightarrow$ Soll portable sein
-
-Alternativ: Gartenschlauch mit Ventilsteuerung
 
 
 
