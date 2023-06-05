@@ -18,9 +18,17 @@ Ultraschallgeräte können aber auch Probleme bereiten. Die eigenen Haustiere un
 
 \subsection{Automatische Sprinkleranlage} \label{sprinkler}
 
-Eine andere Variante von Abschrecksystem ist der Einsatz von Sprinkleranlagen. Durch das Beschießen mit Wasser werden die Tiere besonders gut gestört. Der automatische Sprinkler wird über einen Bewegungsmelder ausgelöst und versprüht großflächig Wasser im Zielbereich. Nach eigener Erfahrung hat eine automatische Sprinkleranlage eine höhere Erfolgsquote, um ungewollte Besucher aus dem heimischen Garten zu vertreiben, aber sie kann durch den Bewegungsmelder auch unbeabsichtigt von einem selbst ausgelöst werden.\cite{anti_wasch}
+Eine andere Variante von Abschrecksystem ist der Einsatz von Sprinkleranlagen. Durch das Beschießen mit Wasser werden die Tiere besonders gut gestört. Der automatische Sprinkler wird über einen Bewegungsmelder ausgelöst und versprüht großflächig Wasser im Zielbereich, wie in Abbildung \ref{fig:katzenschreck} zu sehen ist. Nach eigener Erfahrung hat eine automatische Sprinkleranlage eine höhere Erfolgsquote, um ungewollte Besucher aus dem heimischen Garten zu vertreiben, aber sie kann durch den Bewegungsmelder auch unbeabsichtigt von einem selbst ausgelöst werden.\cite{anti_wasch}
 
-Der Nachteil bei diesem System ist, dass der Sprinkler direkt mit einem Gartenschlauch verbunden werden muss. Dadurch treten deutliche Einschränkungen in der Positionierung des Abschrecksystems auf, da ein Wasseranschluss mit ausreichend Druck und Volumenstrom an ihm befestigt sein muss. Zusätzlich fällt der Druck und der Volumenstrom mit zunehmender Länge des Gartenschlauches ab, was in den Artikel aus \cite{bewaesserung_foerderverlust} getestet worden ist. Der Author hat in diesem Artikel zwei verschieden Gartenschläuche und deren Druck- und Volumenstromverlust gemessen. Bei dem Test des Gartenschlauches mit 1/2 Zoll Durchmesser kam es gegenüber dem mit 3/4 Zoll Durchmesser nach zwei Metern bereits eine Reduzierung des Volumenstroms auf 62\%.\\
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/Wasser-Katzenschreck-300x229.png}
+    \label{fig:katzenschreck}
+    \caption{Ausgelöster Wassertierschreck. \cite{katzenverscheuchen}}
+\end{figure}
+
+Der Nachteil bei diesem System ist, dass der Sprinkler direkt mit einem Gartenschlauch verbunden werden muss. Dadurch treten deutliche Einschränkungen in der Positionierung des Abschrecksystems auf, da ein Wasseranschluss mit ausreichend Druck und Volumenstrom an ihm befestigt sein muss. Zusätzlich fällt der Druck und der Volumenstrom mit zunehmender Länge des Gartenschlauches ab, was in den Artikel aus \cite{bewaesserung_foerderverlust} getestet worden ist. Der Author hat in diesem Artikel zwei verschieden Gartenschläuche und deren Druck- und Volumenstromverlust gemessen. Bei dem Test des Gartenschlauches mit 1/2 Zoll Durchmesser kam es gegenüber dem mit 3/4 Zoll Durchmesser nach zwei Metern bereits eine Reduzierung des Volumenstroms auf 62\%.
+\\
 
 Angenommen ein eingesetzter Sprinkler hätte eine Düse mit einer Öffnung von 1,5 Millimeter in einer Höhe von einem Meter befestigt, so hätte die Reduzierung den Zielbereich von knappen 10 Metern auf 6 Meter reduziert.
 Ein Sprinkler hätte somit mit zunehmender Entfernung proportional zum Volumenstrom an Reichweite verloren.
@@ -98,6 +106,15 @@ Bei der Methode wird das Triangulieren zwischen den Punkten verwendet.
 % Bezug Error: Bilderkennung des Wasserstrahls $\rightarrow$ Regelungstechnik und Autokalibrierung
 % + evtl. Einspielen der Tiefenwahrnehmung an neuer Position (nicht bei Stereo-Vision nötig).
 
+\section{Google Colab}
+
+Google Colab ist eine webbasierte Plattform von Google, die es ermöglicht, Python-Code in der Cloud auszuführen. Mit Colab können Jupyter-Notebooks erstellt, bearbeitet und ausgeführt werden.
+\\
+Ein großer Vorteil der Nutzung von Google Colab ist, dass eine \textit{Tesla T4} Grafikkarte kostenlos zur Verfügung steht. Dadurch können auch \ac{ML}-Aufgaben effizient durchgeführt werden. Ein weiterer Vorteil von Google Colab ist, dass keine aufwendige Konfiguration erforderlich ist. Gängige Bibliotheken wie z.B. \textit{TensorFlow} können ohne großen Aufwand installiert werden. Zudem werden einige Bibliotheken im Cache gespeichert, was bedeutet, dass eine erneute Installation nur wenige Minuten dauert. Dies macht Google Colab besonders attraktiv.
+\\
+Ein weiterer Vorteil von Google Colab ist die Möglichkeit, Notebooks über einen Link mit anderen Nutzern zu teilen. Dadurch wird ein schneller und einfacher Einstieg ermöglicht.
+\cite{colab}
+
 \section{Komponenten}
 
 Für die Realisierung eines portablen Abschrecksystems werden Aktoren und Komponenten benötigt, welche in diesem Kapitel beschrieben werden.
@@ -130,7 +147,7 @@ Für die Zielaktorik ist ein Zwei-Aktoren Zielsystem notwendig, welches horizont
 
 Hinzu kommt das die Motoren in ein dreidimensionales Zielsystem eingebaut werden. Daher sollte die Form und Größe ebenfalls betrachtet werden, da der Platz gering ist.
 
-\begin{longtable}{ p{0.15\textwidth}|p{0.35\textwidth}|p{0.35\textwidth} }
+\begin{longtable}{ p{0.15\textwidth}|p{0.42\textwidth}|p{0.42\textwidth} }
     \endfirsthead
     \multicolumn{2}{l}%
     {\textit{Fortsetzung von vorheriger Seite}} \\
@@ -142,40 +159,28 @@ Hinzu kommt das die Motoren in ein dreidimensionales Zielsystem eingebaut werden
     \textbf{Motortyp} & \textbf{Vorteile} & \textbf{Nachteile}\\
     \hline
     Schrittmotor &
-    \begin{itemize}
-        \item Einfache und präzise Ansteuerung möglich. Sie werden daher auch bei CNC-Fräsen und 3D-Drucker verwendet.
-        \item Besitzen ein hohes Haltemoment.
-        \item Berechnung der Position auch in der Open-Loop Steuerung möglich, da sie eine exakte Strecke pro Ansteuerungsschritt ermöglichen.
-    \end{itemize}
+    Einfache und präzise Ansteuerung möglich. Sie werden daher auch bei CNC-Fräsen und 3D-Druckern verwendet. \newline
+    Besitzen ein hohes Haltemoment. \newline
+    Berechnung der Position auch in der Open-Loop Steuerung möglich, da sie eine exakte Strecke pro Ansteuerungsschritt ermöglichen.
     &
-    \begin{itemize}
-        \item Da sie einen inkrementelle Positionierung über die Schrittweite haben, müssen sie eventuell mit einem Getriebe untersetzt werden. Zum Beispiel würde bei einer Schrittweite von 1,8° beim Radius von 10 Metern pro Schritt 35 Zentimeter zurückgelegt werden. 
-	\item Des weiteren kann es beim Zielvorgängen zu kurzzeitigen hohen Drehzahlen kommen. Der Schrittmotor verliert bei hohen Drehzahlen an Drehmoment und kann einzelne Schritte auslassen oder sogar stoppen.
-    \end{itemize}
-\\
+    Da sie einen inkrementelle Positionierung über die Schrittweite haben, müssen sie eventuell mit einem Getriebe untersetzt werden. Zum Beispiel würde bei einer Schrittweite von 1,8° beim Radius von 10 Metern pro Schritt 35 Zentimeter zurückgelegt werden. \newline
+    Des Weiteren kann es bei Zielvorgängen zu kurzzeitigen hohen Drehzahlen kommen. Der Schrittmotor verliert bei hohen Drehzahlen an Drehmoment und kann einzelne Schritte auslassen oder sogar stoppen.
+    \\
     DC-Motor &
-    \begin{itemize}
-        \item Einfache Ansteuerung über \ac{PWM}.
-        \item Hohes Drehmoment bei niedriger Drehzahl.
-    \end{itemize}
+    Einfache Ansteuerung über \ac{PWM}. \newline
+    Hohes Drehmoment bei niedriger Drehzahl.
     &
-    \begin{itemize}
-        \item H-Brücke nötig, da die Energie nicht über einen herkömmlichen Mikrocontroller geliefert werden kann.
-        \item Motorsteuerung und Regelung notwendig.
-        \item Sensoren werden benötigt, da eine Open-Loop Ansteuerung nur sehr geringe Genauigkeit bietet.
-    \end{itemize}
+    H-Brücke nötig, da die Energie nicht über einen herkömmlichen Mikrocontroller geliefert werden kann. \newline
+    Motorsteuerung und Regelung notwendig. \newline
+    Sensoren werden benötigt, da eine Open-Loop Ansteuerung nur sehr geringe Genauigkeit bietet.
     \\
     Servomotor &
-    \begin{itemize}
-        \item Keine Direkte Regelung nötig, da sie eine integrierte Closed-Loop Regelung haben.
-        \item Sie können dynamisch auf hohe Belastung reagieren.
-        \item Durch die Closed-Loop Regelung haben sie eine hohe Genauigkeit und keine zusätzlichen Bauelemente oder Treiberbauteile sind nötig.
-    \end{itemize}
+    Keine direkte Regelung nötig, da sie eine integrierte Closed-Loop Regelung haben. \newline
+    Sie können dynamisch auf hohe Belastungen reagieren. \newline
+    Durch die Closed-Loop Regelung haben sie eine hohe Genauigkeit und es sind keine zusätzlichen Bauelemente oder Treiberbauteile nötig.
     &
-    \begin{itemize}
-        \item Häufig haben die erhältlichen Servomotoren nur einen geringen Positionsradius von 180°.
-        \item Da sie konstant versuchen eine Sollposition zu erreichen kann es zu Jitter im System kommen.
-    \end{itemize}
+    Häufig haben die erhältlichen Servomotoren nur einen geringen Positionsradius von 180°. \newline
+    Da sie konstant versuchen, eine Sollposition zu erreichen, kann es zu Jitter im System kommen.
     \\
     \caption{Vergleich dreier Elektromotortypen für die Verwendung im Zielsystem. Quelle: \cite{motors_seed}}
     \label{tab:el_motors}
