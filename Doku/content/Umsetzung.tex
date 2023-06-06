@@ -12,6 +12,8 @@ Für die Objekterkennung wurden verschiedene Modelle verwendet. Darunter zwei Mo
 \\
 Überwiegend wurde jedoch mit dem \textit{YOLOv8}-Objekterkennungsmodell gearbeitet. Dieses Modell bot klare Vorteile gegenüber den anderen Frameworks. Insbesondere das sehr einfache Setup für das Training sowie die Exportmöglichkeit in verschiedene \ac{ML}-Formate überzeugten. Eine detaillierte Beschreibung dieser Vorteile wird im weiteren Verlauf gegeben.
 
+\subsection{Ordner- und Datenstruktur}
+
 \subsubsection{Sammlung der Trainingsdaten}
 
 Zu Beginn der Arbeit wurde zunächst nach vergleichbaren Modellen und Datensätzen für die \textit{Objekterkennung} gesucht. Dabei fiel auf, dass es für einige unliebsame Kleintiere wie den \textit{Marder} leider keine geeigneten Datensätze gab.
@@ -20,7 +22,7 @@ Es gab jedoch bereits ein Modell für die Objekterkennung von Waschbären. Dat T
 \cite{wasch_detect}
 
 Mit etwas anderer Absicht lässt sich dies aber auch für die Studienarbeit nutzen, da Dat Tran seine 200 handgelabelten Bilder online zur Verfügung gestellt hat. Diese können für die Objekterkennung des Waschbären verwendet werden und dienen als Grundlage für das Training des Modells in der vorliegenden Arbeit.\\
-Die Anzahl der Bilder erscheint für eine erste Betrachtung und Einarbeitung in das Trainieren eines eigenen Objekterkennungsmodells als geeignet. Ein Vergleich der Trainingsmodelle kann in Kapitel \ref{cap:Benchmarks} eingeesehen werden.
+Die Anzahl der Bilder erscheint für eine erste Betrachtung und Einarbeitung in das Trainieren eines eigenen Objekterkennungsmodells als geeignet. Ein Vergleich der Trainingsmodelle kann in Kapitel \ref{cap:Benchmarks} eingesehen werden.
 
 Der Marder und der Waschbär waren aber nicht die einzigen Tiere, die aus dem Garten ferngehalten werden sollten. Auch Katzen, Füchse und Eichhörnchen sollten aus dem Garten ferngehalten werden. Die Absicht, Katzen und Eichhörnchen fernzuhalten, begründet sich damit, dass wir Vogelliebhaber sind und verhindern möchten, dass diese Tiere die Vögel stören oder ihnen schaden.
 \\
@@ -43,12 +45,31 @@ Das Problem beim manuellen Erstellen solcher Datensätze ist jedoch, dass dies v
 \\
 Dabei stachen die Daten von \textit{Google Open-Images-V7} heraus. Der Datensatz enthält 16 Millionen Bounding Boxes auf 1,9 Millionen Bildern. Von den 600 verfügbaren Klassen sind auch die für die Arbeit relevanten Tiere enthalten. Allerdings ist ihre Verteilung ungleichmäßig. Ein Großteil der relevanten Bilder handelt von Katzen, während es weniger als tausend Bilder von Waschbären gibt. Daher ist zu erwarten, dass die Waschbären im Endprodukt schlechter erkannt werden als die Katzen. \cite{google_oi7}
 
-Fiftyone workflow -> rust skript conversion csv/xml/xml/csv etc.
+Von den 1,9 Millionen Bildern in \textit{Google Open-Images-V7} sind nur etwa 17.000 für das Abschrecksystem relevant, da sie Waschbären, Katzen, Füchse oder Eichhörnchen enthalten. Nur diese Bilder sollten dem Datensatz hinzugefügt werden.
+\\
+Hier kommt \textit{FiftyOne} ins Spiel. \textit{FiftyOne} ist eine Open-Source-Bibliothek und Plattform zur Datenanalyse von Computer-Vision-Modellen. Eine Funktion von \textit{FiftyOne} ist das Extrahieren und Herunterladen von Computer-Vision-Datensätzen.
+\\
+Allerdings werden die Bilder und Bounding Boxes nicht getrennt von den nicht benötigten Daten heruntergeladen. Stattdessen werden CSV-Dateien heruntergeladen, die alle Bounding Boxes aufgeteilt in Train-, Test- und Devset enthalten. Diese CSV-Dateien werden anschließend von \textit{FiftyOne} ausgewertet, und die entsprechenden Bilder werden nachträglich heruntergeladen. \cite{fiftyone}
+
+Das Herunterladen der Bilder kann je nach Bandbreite des Netzanbieters eine sehr lange Zeit in Anspruch nehmen. Besonders da die Größe der CSV-Datei, die alle Trainingsdaten beschreibt, bereits mehr als 2,1 GB groß ist. Zusätzlich zur Download-Zeit der CSV-Dateien kommt die Auswertungszeit hinzu, um festzustellen, welche Bilder heruntergeladen werden sollen, sowie die Download-Zeit der eigentlich ausgewählten Bilder.
+\\
+Nach dem Herunterladen der ausgewählten Bilder und den dazugehörigen Bounding Boxes steht der Datensatz immer noch nicht direkt zur Verwendung bereit. Die Bounding Boxes sind zwar vorhanden, jedoch sind sie weiterhin mit allen anderen Bounding Boxes kombiniert. Dabei beträgt die Größe der CSV-Datei für die Trainingsdaten 2,1 GB, was der Hälfte des Speicherplatzes der heruntergeladenen Bilddaten entspricht.
+\\
+Weitere Schritte sind daher erforderlich, um den Datensatz für das Training verwenden zu können. Unter dem Skriptordner ist daher ein in \textit{Rust} geschriebenes Konvertierungsprogramm mit der Bezeichnung \textit{csv\_conv} abgelegt. Dieses Skript konvertiert die heruntergeladenen CSV-Dateien in ein CSV-Format, das mit \textit{TensorFlow} kompatibel ist. Dabei werden auch alle nicht relevanten Bilddaten und Bounding Boxes herausgefiltert. Die Größe der resultierende CSV-Datei, die alle Trainings-, Test- und Devset-Bounding Boxes enthält, beträgt danach weniger als 1 MB.\\
+Zusätzlich wurden irrelevante Daten entfernt, wie die Datenquelle sowie die Informationen \textit{IsOccluded, IsTruncated, IsGroupOf, IsDepiction, IsInside} und die \textit{Confidence}. Die \textit{Confidence} gibt an, mit welcher Wahrscheinlichkeit ein Objekt erkannt wurde. Jedoch spielt dieses Feld nur eine Rolle, wenn ein Objekterkennungsmodell die Bounding Box vorhersagen würde. Da dies bei den vorliegenden Daten nicht der Fall ist, kann das Feld ebenfalls gelöscht werden.
+\\
+Durch die Deserializierung können diese Felder automatisch ohne Mehraufwand in der Programmierung entfernt werden.
+Als ein letzter Schritt werden danach die Bounding Box Daten, welche in Prozent angegeben sind, in eine Ganzzahl konvertiert und die Klasse des Objektes von einer ID zu einem Namen (zum Beispiel \textit{Racoon}) aufgelöst.
+
+Nun gibt es jedoch ein weiteres Problem: Die Daten von Dat Tran und die von \textit{Google-Open-Images} liegen in unterschiedlichen Dateiannotierungsformaten vor. Allerdings hat Dat Tran in \cite{wasch_detect} bereits ein Python-Skript mit dem Namen \textit{xml\_to\_csv} erstellt, das die XML-Dateien in eine CSV-Datei konvertiert. Dieses Skript wurde an dieser Stelle verwendet und befindet sich ebenfalls im Skriptordner.
+
+Mit den nun vorliegenden Daten kann die Objekterkennung angegangen werden.
 
 \subsubsection{Training}
 
 \subsubsection{Deployment}
 
+ Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
 \subsection{Benchmarks} \label{cap:Benchmarks}
 
 \subsubsection{Interferenzzeit}
