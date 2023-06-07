@@ -6,15 +6,14 @@
 
 Der Haupteil der Arbeit bestand in der Entwicklung der Software, insbesondere der Implementierung der Objekterkennung und der Interaktion und Synchronisation der Kameras. Für das Training und Deployment der Objekterkennung wurden hauptsächlich Frameworks verwendet. Dennoch wurden auch einige Hilfsprogramme entwickelt und eingesetzt, welche im Folgenden beschrieben werden.
 
-\subsection{Objekterkennung}
-
 Für die Objekterkennung wurden verschiedene Modelle verwendet. Darunter zwei Modelle aus dem \textit{TensorFlow Model Zoo} und ein Modell von Google für ihren USB-Accelerator \textit{Coral}.
 \\
-Überwiegend wurde jedoch mit dem \textit{YOLOv8}-Objekterkennungsmodell gearbeitet. Dieses Modell bot klare Vorteile gegenüber den anderen Frameworks. Insbesondere das sehr einfache Setup für das Training sowie die Exportmöglichkeit in verschiedene \ac{ML}-Formate überzeugten. Eine detaillierte Beschreibung dieser Vorteile wird im weiteren Verlauf gegeben.
+Überwiegend wurde jedoch mit dem \textit{\ac{YOLO}v8}-Objekterkennungsmodell gearbeitet. Dieses Modell bot klare Vorteile gegenüber den anderen Frameworks. Insbesondere das sehr einfache Setup für das Training sowie die Exportmöglichkeit in verschiedene \ac{ML}-Formate überzeugten. Eine detaillierte Beschreibung dieser Vorteile wird im weiteren Verlauf gegeben.
 
-\subsection{Ordner- und Datenstruktur}
+\subsection{Ordner- und Datenstruktur} \label{cap:struktur}
 
-\subsubsection{Sammlung der Trainingsdaten}
+
+\subsection{Sammlung der Trainingsdaten}
 
 Zu Beginn der Arbeit wurde zunächst nach vergleichbaren Modellen und Datensätzen für die \textit{Objekterkennung} gesucht. Dabei fiel auf, dass es für einige unliebsame Kleintiere wie den \textit{Marder} leider keine geeigneten Datensätze gab.
 
@@ -65,16 +64,64 @@ Nun gibt es jedoch ein weiteres Problem: Die Daten von Dat Tran und die von \tex
 
 Mit den nun vorliegenden Daten kann die Objekterkennung angegangen werden.
 
-\subsubsection{Training}
+\subsection{Training}
 
-\subsubsection{Deployment}
+In der Studienarbeit wurden drei verschiedene Frameworks verwendet, um verschiedene Objekterkennungsmodelle hinsichtlich ihrer Inferenzzeit und Genauigkeit zu evaluieren. Im Folgenden sind die Workflows beschrieben, die für das Training der Modelle erforderlich sind.
+
+\subsubsection{TensorFlow Model Zoo} \label{cap:tensorflow}
+
+TensorFlow bietet zwei Möglichkeiten, Modelle für die Objekterkennung zu trainieren. Zum einen kann ein eigenes Modell mithilfe der \textit{Keras}-API definiert und trainiert werden. Zum anderen besteht die Möglichkeit, vortrainierte Modelle aus ihrer Modellsammlung \textit{Model Zoo} weiter zu trainieren und auf die eigene Nutzung anzupassen. 
+
+Wie später in Kapitel \ref{cap:yolov8} beschrieben wird, eignen sich vortrainierte Modelle besser für die Entwicklung der Objekterkennung im Abschrecksystem, da sie während des Trainings schneller eine höhere Genauigkeit erreichen.
+\\
+In der TensorFlow-Bibliothek sind auch die Inferenzzeit und Genauigkeit der vortrainierten Modelle auf dem \textit{COCO-2017}-Datensatz angegeben. Dadurch kann ein Entwickler bereits entscheiden, welche Modelle für das Anwendungsgebiet relevant sein könnten. Bei den meisten Modellen steigt die Genauigkeit mit der Ausführungszeit und Bildgröße.  Das genaueste Modell im Model Zoo ist das \textit{EfficientDet}-Modell mit einer \ac{mAP} von 51,2. Das Modell ist mit Bildern der Größe 1536x1536 Pixel trainiert worden.
+\\
+Das schnellste Modell, welches auf eine Bildgröße von 320x320 Pixel trainiert worden ist, ist das \textit{CenterNet MobileNetV2}-Modell mit einer Ausführungszeit von nur 6 Millisekunden. Obwohl es nur etwa 2 Prozent der Ausführungszeit des \textit{EfficientDet}-Modells benötigt, fällt die Genauigkeit auf unter 24 \ac{mAP} ab.
+\\
+Basierend auf diesen Werten wurde entschieden, dass die beiden Modelle \textit{SSD MobileNet V2 FPNLite 320x320} und \textit{EfficientDet D0 512x512} für das Abschrecksystem in Betracht gezogen werden sollen. Diese Modelle weisen eine geringe Ausführungszeit auf und ihre Genauigkeit ist nicht zu niedrig. \cite{tens_zoo}
+
+\begin{wrapfigure}{l}{0.3\textwidth}
+    \centering
+    \includegraphics[width=0.18\textwidth]{images/pap_train_tensorflow.pdf}
+    \label{fig:tens-pap}
+    \caption{\acs*{PAP} TensorFlow Nachtraining}
+\end{wrapfigure}
+
+Der Aufwand, die Modelle nachzutrainieren, ist gering, da TensorFlow die erforderlichen Jupyter Notebooks in ihrem GitHub-Repository (\cite{tens_zoo}) hochgeladen hat. Mit kleinen Anpassungen kann das Notebook für das Training des Abschrecksystems verwendet werden. Der Ablauf eines Trainings mit dem Jupyter Notebook ist in dem \ac{PAP} in Abbildung \ref{fig:tens-pap} dargestellt.
+\\
+Zunächst müssen alle erforderlichen Pfade definiert und die entsprechenden Ordnerstrukturen erstellt werden. Ein Großteil dieser Ordnerstrukturen wurde bereits mithilfe des Python-Skripts aus Kapitel \ref{cap:struktur} erzeugt. Es ist lediglich die spezifische Benennung des Modells erforderlich.
+\\
+Anschließend wird das vortrainierte Modell heruntergeladen, sowie die TensorFlow Object Detection API installiert.
+
+Bevor das Training beginnen kann, müssen die Annotationen, die in der Trainings-CSV-Datei enthalten sind, in das TFRecord-Format umgewandelt werden. TensorFlow bietet hierfür ein Python-Skript an. Allerdings musste dieses Skript angepasst werden, da es nicht direkt verwendet werden konnte. Das angepasste Skript iordnest unter dem Skriptordner enthalten.\\
+Anschließend wird die Konfigurationsdatei des zuvor heruntergeladenen Modells aktualisiert. Dies bedeutet, dass die Pfade zu den Bilddaten und der TFRecord-Datei angepasst werden müssen. Darüber hinaus können weitere Trainingsparameter geändert oder hinzugefügt werden. Zum Beispiel können auch Augmentierungen hinzugefügt werden und die Anzahl der Objekttypen kann an den Anwendungsfall angepasst werden.
+
+Erst nach Abschluss dieser Schritte kann das Training gestartet werden. Die Installation der TensorFlow Object Detection API sollte jedoch nur einmal erforderlich sein. Für das Training wird dann nur noch die Anzahl der Trainingsschritte benötigt. Diese gibt an, wie lange und intensiv das Modell nachtrainiert werden soll. Basierend auf der angepassten Konfigurationsdatei wird das Nachtraining gestartet.
+
+Nach Abschluss des Trainings wird das Modell eingefroren. Das eingefrorene Modell kann dann für die Objekterkennung verwendet werden.
+
+\subsubsection{Training für Google Coral} \label{cap:coral_train}
+
+\subsubsection{\ac{YOLO}v8} \label{cap:yolov8}
+
+\subsubsection{Das Training auf \textit{Google Colab}}
+
+Für das Trainieren der Modelle wurd zunächst \textit{Google Colab} verwendet, allerdings ist die kostenlose \ac{GPU} nicht besonders leistungsstark. Zum späteren Zeitpunkt konnte die DHBW für den Rahmen der Studienarbeit allerdings eine leistungsstarke \ac{GPU} zur Verfügung stellen. Mit dieser konnte die maximale Trainingszeit von wenigen Stunden auf mehrere Tage ausgedehnt werden. Zudem verkürzte sich die Trainingszeit von einigen Stunden auf \textit{Google Colab} zu weniger als 30 Minuten. Wodurch ein großer Perfomancesprung verfügbar war.
+
+Allerdings hatte der wechsel seine Nachteile. Da Rechte zum installieren aller Bibliotheken -TensorFlow (Objekterkennung API), EdgeTPU-Konvertierung und TensorFlow-Lite Model Maker- nicht ausreichend waren konnte nur noch \ac{YOLO}-Modelle trainiert werden.
+
++ Mousklicker skript trick für colab
+
+\subsection{Deployment}
 
  Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
 \subsection{Benchmarks} \label{cap:Benchmarks}
 
-\subsubsection{Interferenzzeit}
+\subsection{Interferenzzeit}
 
-\subsubsection{Erkennungsqualität}
+\subsection{Erkennungsqualität}
+
+\section{Zusätzliche Softwarekomponenten}
 
 \subsection{Erkennung durch Kontur-tracking}
 
@@ -120,7 +167,7 @@ Mit den nun vorliegenden Daten kann die Objekterkennung angegangen werden.
     & Die Aluminiumkiste ist Witterungsfest und besitzt eine gute Wärmeableitung. Alle Aktoren und Gerätschaften können in ihr vor Witterungsbedingungen geschützt untergebracht werden.
 \end{longtable}
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{images/whole_box.png}
     \label{fig:whole_thing}
