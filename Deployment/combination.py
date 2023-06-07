@@ -1,10 +1,10 @@
 
 import numpy as np
 from time import sleep
-from camera_setup import vStream, gstreamer_pipeline
-from onnx_run_test import CLASSES, ThreadedDetection
-from arduino import SERIAL_COM
-from depths import calculate_distance_and_angles
+from camera_interaction import vStream, gstreamer_pipeline
+from onnx_object_detector import ThreadedDetection
+from hardware_interaction import SERIAL_COM
+from depths_estimation_and_angle import calculate_distance_and_angles
 from contour_tracking import write_detections_and_image, ThreadedContourTracker
 
 # initialize cameras:
