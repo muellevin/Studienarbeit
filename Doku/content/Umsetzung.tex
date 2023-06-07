@@ -68,6 +68,10 @@ Mit den nun vorliegenden Daten kann die Objekterkennung angegangen werden.
 
 In der Studienarbeit wurden drei verschiedene Frameworks verwendet, um verschiedene Objekterkennungsmodelle hinsichtlich ihrer Inferenzzeit und Genauigkeit zu evaluieren. Im Folgenden sind die Workflows beschrieben, die für das Training der Modelle erforderlich sind.
 
+\subsection{Bildmanipulation und -augmentation}
+
+
+
 \subsubsection{TensorFlow Model Zoo} \label{cap:tensorflow}
 
 TensorFlow bietet zwei Möglichkeiten, Modelle für die Objekterkennung zu trainieren. Zum einen kann ein eigenes Modell mithilfe der \textit{Keras}-API definiert und trainiert werden. Zum anderen besteht die Möglichkeit, vortrainierte Modelle aus ihrer Modellsammlung \textit{Model Zoo} weiter zu trainieren und auf die eigene Nutzung anzupassen. 
@@ -102,24 +106,50 @@ Nach Abschluss des Trainings wird das Modell eingefroren. Das eingefrorene Model
 
 \subsubsection{Training für Google Coral} \label{cap:coral_train}
 
+Da es nicht von Anfang an möglich war, einen Jetson Nano mit integrierter Grafikkarte zu erhalten, wurde zunächst der Ansatz mit dem Raspberry Pi verfolgt. Es war jedoch von Anfang an klar, dass die Ausführung der Objekterkennung auf dem Raspberry Pi nur zu einer geringen Anzahl von FPS führen würde. Daher war zusätzliche Hardware erforderlich, um eine Objekterkennung auf dem Raspberry Pi zu ermöglichen.
+\\
+In diesem Fall kommt Googles USB-Accelerator \textit{Coral} zum Einsatz. Die über USB anschließbare Edge-TPU ist speziell für KI-Inferenzanwendungen entwickelt worden. Mit seiner Hardware ermöglicht der USB-Stick die Ausführung von \ac{ML}-Algorithmen auf Geräten mit begrenzter Rechenkapazität. Der Coral USB-Stick ist in der Lage, die Objekterkennung in Echtzeit durchzuführen. Dank seines geringen Stromverbrauchs von zwei Watt und seiner Mobilität eignet sich der Coral USB-Stick auch für die Anwendung in dem Abschrecksystem. \cite{coral_google}
+
+Auf der Coral-Webseite (\cite{coral_google}) werden ebenfalls eigene Trainingsmodelle und Jupyter-Notebooks zur Verfügung gestellt, um das Training durchzuführen. Zusätzlich wird eine Auflistung angeboten, wie die Modelle auf der Edge-TPU performen.
+\\
+Coral greift dabei auf Modelle von TensorFlow Version 1 und 2 zurück. Allerdings ist die Auswahl deutlich eingeschränkter als bei TensorFlow ihren \textit{Model Zoo}. Coral selbst bietet nur ein Notebook für die Nutzung mit TensorFlow Version 2 an. Weitere Notebooks sind für TensorFlow Version 1 ausgelegt. Da weder Colab noch die über den JupyterHub der DHBW zur Verfügung gestellte GPU TensorFlow Version 1 unterstützen, konnte nur dieses eine Modell getestet werden. Das Modell benötigte die Annotationen im PASCAL-VOC-Format. Dies ist das ursprüngliche Format der Waschbärbilder von Dat Tran. Unter dem Skriptordner wurde daher ein weiteres Rust-Programm entwickelt, um die CSV-Datei in XML-Dateien zu konvertieren.
+\\
+Um nun mehrere Modelle und deren Performance vergleichen zu können, müssen das \textit{MobileNet}-Modell von TensorFlow und das \ac{YOLO}-Modell für die Edge-TPU konvertiert werden. Bei \ac{YOLO} muss dafür nur der Exportbefehl mit dem Argument \verb|format=edgetpu| aufgerufen werden. Die Konvertierung war jedoch zunächst erfolglos. Richard Aljaste hat den Grund dafür in einem GitHub-Issue unter \cite{coral_yolo} gefunden und einen Pull Request mit einer Lösung erstellt. Dieser Pull Request wurde jedoch noch nicht in das offizielle \ac{YOLO}-Repository aufgenommen.
+\\
+Die Veröffentlichung des Pull Requests erfolgte Ende März und war erst im April ausgereift genug, um angewendet zu werden. Die daraus resultierende Ergebnisse können in \ref{cap:Benchmarks} eingesehen werden.
+
+Die Konvertierung aus TensorFlow heraus verlief jedoch erfolglos. Auf ihrer GitHub-Seite wird dieses Problem immer wieder gemeldet. Es scheint, dass die für die Edge-TPU erforderliche Integer-8-Quantisierung wiederholt Schwierigkeiten verursacht. Das Modell wird dabei zwar konvertiert, aber anscheinend können die Enden der Modellarchitektur nicht immer korrekt quantisiert werden. Dies führt zu einer Senkung der Zuversichtlichkeit der Objekterkennung auf unter 5 Prozent und auch die Position der Bounding Boxes wird inkorrekt.
+
 \subsubsection{\ac{YOLO}v8} \label{cap:yolov8}
+
+Das Framework \textit{Ultralytics} ermöglicht durch einen High-Level Zugriff ein schnelles und einfaches trainieren von Klassifikations-, Segmentierungs- und Objekterkennungsmodellen. Es basiert auf dem \textit{pytorch}-Framework, das bereits einen High-Level-Zugriff auf \ac{ML}-Modelle und deren Entwicklung ermöglichte. Ultralytics vereinfacht diesen Prozess noch weiter. Für das Training werden neben den Daten nur noch die Pfade, eine YAML-Datei und der zu trainierende Modelltyp benötigt.
+\\
+Durch den High-Level-Zugriff wird das Deployment auf sämtlichen Plattformen ermöglicht. Mit einem einfachen Exportbefehl kann das trainierte Modell für gängige Frameworks wie TensorFlow, TensorFlow-Lite, PyTorch und ONNX konvertiert und in diesen verwendet werden.
+\cite{ultralytics}
+
+Da das Training zunächst für TensorFlow vorgesehen war, mussten die Bildannotationen von der CSV-Datei in das für das Framework geeignete TXT-Format konvertiert werden. Hierfür wurde ein selbstgeschriebenes Python-Skript im Skriptordner abgelegt.
 
 \subsubsection{Das Training auf \textit{Google Colab}}
 
-Für das Trainieren der Modelle wurd zunächst \textit{Google Colab} verwendet, allerdings ist die kostenlose \ac{GPU} nicht besonders leistungsstark. Zum späteren Zeitpunkt konnte die DHBW für den Rahmen der Studienarbeit allerdings eine leistungsstarke \ac{GPU} zur Verfügung stellen. Mit dieser konnte die maximale Trainingszeit von wenigen Stunden auf mehrere Tage ausgedehnt werden. Zudem verkürzte sich die Trainingszeit von einigen Stunden auf \textit{Google Colab} zu weniger als 30 Minuten. Wodurch ein großer Perfomancesprung verfügbar war.
+Für das Training der Modelle wurde zunächst \textit{Google Colab} verwendet, jedoch ist die kostenlose \ac{GPU} dort nicht besonders leistungsstark. Zudem ist die maximale Trainingsdauer auf wenige Stunden begrenzt. Colab beendet sämtliche laufende Prozesse spätestens nach zwölf Stunden und entzieht vorher die kostenlose \ac{GPU}. Darüber hinaus werden Prozesse nach zehn bis zwanzig Minuten Inaktivität beendet. Um als aktiv zu gelten und die Trainingsdauer zu verlängern, wurde ein Python-Skript entwickelt, das alle paar Minuten einen Mausklick simuliert. Dadurch kann die Trainingsdauer verlängert werden, ohne dass man aktiv am Training teilnehmen muss.erlängert werden, da man nicht aktiv beim Training etwas tun muss.
+\\
+Zudem mussten die Bild- und Annotierungsdaten auf Colab hochgeladen werden. Glücklicherweise verfügt Colab über eine Integration von \textit{Google Cloud}, wodurch die Bilddaten in der Cloud gespeichert und für mehrere Sitzungen verwendet werden konnten. Andernfalls müssten die Daten bei jeder Sitzung erneut hochgeladen werden, da sie bei Beendigung einer Sitzung gelöscht werden, sofern sie nicht in der Cloud gespeichert sind. Außerdem wurde festgestellt, dass bei wiederholter hoher Auslastung während einer Sitzung die Zeit bis zur Sitzungsbeendung durch Colab weiter verkürzt wird. Ein effektives Training von Modellen ist dadurch nicht möglich.
 
-Allerdings hatte der wechsel seine Nachteile. Da Rechte zum installieren aller Bibliotheken -TensorFlow (Objekterkennung API), EdgeTPU-Konvertierung und TensorFlow-Lite Model Maker- nicht ausreichend waren konnte nur noch \ac{YOLO}-Modelle trainiert werden.
+Zu einem späteren Zeitpunkt konnte die DHBW über den eigenen JupyterHub eine leistungsstarke GPU zur Verfügung stellen. Mit dieser konnte die maximale Trainingszeit von wenigen Stunden auf mehrere Tage ausgedehnt werden. Zudem verkürzte sich die Trainingszeit von einigen Stunden auf weniger als 30 Minuten, was zu einem erheblichen Leistungssprung führte.
 
-+ Mousklicker skript trick für colab
+Allerdings hatte der Wechsel seine Nachteile. Aufgrund unzureichender Berechtigungen zur Installation aller benötigten Bibliotheken - TensorFlow (Objekterkennungs-API), Edge-TPU-Konvertierung und TensorFlow-Lite Model Maker (Google Coral) - war es nur noch möglich, \ac{YOLO}-Modelle zu trainieren.
 
 \subsection{Deployment}
 
- Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
-\subsection{Benchmarks} \label{cap:Benchmarks}
+Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
 
-\subsection{Interferenzzeit}
+\subsection{Auswertung der verschiedenen Modelle} \label{cap:Benchmarks}
 
-\subsection{Erkennungsqualität}
+
+
+\subsubsection{Interferenzzeit}
+
+\subsubsection{Erkennungsqualität}
 
 \section{Zusätzliche Softwarekomponenten}
 
@@ -128,6 +158,8 @@ Allerdings hatte der wechsel seine Nachteile. Da Rechte zum installieren aller B
 \subsection{Verbesserung der Bildqualität}
 
 \subsection{Tiefenberechnung} \label{cap:calc_depth}
+
+\subsection{Kombination der Softwarekomponenten}
 
 \section{Kostenaufstellung}
 

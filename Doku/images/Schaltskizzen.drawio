@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-06-04T20:01:46.324Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.8 Chrome/112.0.5615.165 Electron/24.2.0 Safari/537.36" etag="RW110sbRFwJM6L7g0Q22" version="21.2.8" type="device" pages="3">
+<mxfile host="Electron" modified="2023-06-07T09:38:47.492Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.8 Chrome/112.0.5615.165 Electron/24.2.0 Safari/537.36" etag="Z5Fuh9ddlv8Q0S17Vd6T" version="21.2.8" type="device" pages="4">
   <diagram id="yW0znJ47YIXSkkbVSSil" name="Licht_Steuerung">
     <mxGraphModel dx="1418" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -594,6 +594,67 @@
         </mxCell>
         <mxCell id="pt7Vly5CNBtWuAUPuQbg-82" value="" style="pointerEvents=1;verticalLabelPosition=bottom;shadow=0;dashed=0;align=center;html=1;verticalAlign=top;shape=mxgraph.electrical.signal_sources.signal_ground;rotation=90;" vertex="1" parent="1">
           <mxGeometry x="512" y="605" width="15" height="13" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="LGXlsvwbDBwrdQMqVfoU" name="Seite-4">
+    <mxGraphModel dx="1418" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="kymXC0FtsPj0J60wVpn0-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-1" target="kymXC0FtsPj0J60wVpn0-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-1" value="Training der &lt;br&gt;Modelle" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="340" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-2" target="kymXC0FtsPj0J60wVpn0-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-2" value="Definieren der nötigen Pfade" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-4" target="kymXC0FtsPj0J60wVpn0-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-4" value="Herunterladen des nachzutrainierenden Modelles" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="540" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-6" target="kymXC0FtsPj0J60wVpn0-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-6" value="Installieren der TFOD-API" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-8" target="kymXC0FtsPj0J60wVpn0-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-8" value="Verifizieren der API Installation" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="740" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-10" target="kymXC0FtsPj0J60wVpn0-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-10" value="Umwandeln der Annotationen in .tfrecord Format" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="840" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-12" target="kymXC0FtsPj0J60wVpn0-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-12" value="Updaten der Konfiguratinsdatei des Modells" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="940" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kymXC0FtsPj0J60wVpn0-14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="1140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-14" value="Trainnieren des Modells" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1040" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kymXC0FtsPj0J60wVpn0-18" value="Einfrieren des Modells und der Konfiguration" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1140" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
