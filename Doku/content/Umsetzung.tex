@@ -235,21 +235,56 @@ Damit ist die Erkennung mittels der TensorFlow API abgeschlossen und die Ausgabe
 
 Die TensorFlow Lite-Umgebung basiert auf TensorFlow. TensorFlow Lite-Modelle sind jedoch kompakter als die .pb-Modelle von TensorFlow. Allerdings erfordern sie mehr Aufwand für die Initialisierung von Modellen, da beim Laden des Modells explizit das Format der Ein- und Ausgabeparamter aus dem Modell geladen werden müssen. Diese werden anschließend in der Ausführung und Nachbearbeitung verwendet.
 \\
-Ein Vorteil gegenüber den TensorFlow-Modellen besteht darin, dass sie besser für die Ausführung auf einer CPU geeignet sind. Dies liegt darin, dass sie eine geringere Rechenintensität besitzen. TensorFlow bietet drei Exportformate dafür an: Float-32, Float-16 und Integer-8.\\
-Die Bezeichnungen beschreiben die Art der Gradientenoptimierung. Während Float-32 und -16 Gleitkommazahlen beschreiben, trifft dies bei Integer-8 nicht zu. Bei Integer-8 handelt es sich um eine Ganzzahl im Bereich von 0 bis 255. Die Zahlen 8, 16 und 32 geben die Anzahl der Bits an, mit denen ein Gradient gespeichert wird. Das Modell hat also den kleinsten Speicherbedarf wenn eine Integer-8 Quantifizierung der ursprünglichen .pb-Modelle vorgenommen wird. \cite{tens_zoo}
+Ein Vorteil gegenüber den TensorFlow-Modellen besteht darin, dass sie besser für die Ausführung auf einer CPU geeignet sind. Dies liegt darin, dass sie eine geringere Rechenintensität besitzen. TensorFlow bietet drei Quantisierungstyps dafür an: Float-32, Float-16 und Integer-8.
+\\
+Die Bezeichnungen beschreiben die Art der Gradientenoptimierung. Während Float-32 und -16 Gleitkommazahlen beschreiben, trifft dies bei Integer-8 nicht zu. Bei Integer-8 handelt es sich um eine Ganzzahl im Bereich von 0 bis 255. Die Zahlen 8, 16 und 32 geben die Anzahl der Bits an, mit denen ein Gradient gespeichert wird. Das Modell hat also den kleinsten Speicherbedarf wenn eine Integer-8 Quantifizierung der ursprünglichen .pb-Modelle vorgenommen wird.
+\\
+Die Wahl des Quantisierungstyps hängt dabei von den spezifischen Anforderungen und den verfügbaren Ressourcen ab. Float-32 bietet die höchste Genauigkeit, benötigt jedoch mehr Speicherplatz und kann mehr Ausführungszeit benötigen. Float-16 bietet eine gute Balance zwischen Genauigkeit und Ressourcenverbrauch. Integer-8 hat den geringsten Speicherbedarf und kann auf Hardwareplattformen mit geringerer Präzision wie Mikrocontrollern effizienter ausgeführt werden.
+\\
+Bei der Quantifizierung der Modelle treten allerdings auch Genauigkeitsverluste auf. Dieser Verlust könnte unter Umständen nicht im toleranten Bereich der Anwendung sein. Im Kapitel \ref{cap:Benchmarks} werden auch diese Verluste genauer betrachtet.
+\cite{tens_zoo}
 
 Auf dem USB-Accelerator Coral können allerdings nur Integer-8 Quantifizierte Modelle betrieben werden. Die anderen Modelle werden daher auf der CPU des Mikrocontrollers ausgeführt. Um den USB-Accelerator nutzen zu können muss allerdings lediglich der TensorFlow-Lite Umgebung dies mitgeteilt werden. \cite{coral_google}
 
+\subsubsection{ONNX}
+
+Um Objekterkennungsmodell im ONNX-Format auf dem Jetson nutzen zu können gibt es drei Möglichkeiten: OpenCV, ONNX-Runtime und TensorRT. TensorRT wird im nachfolgenden Kapitel beschrieben, da hierzu weitere Schritte nötig sind.
+
+Das ONNX-Format wird für die Nutzung der \ac{YOLO}-Modelle verwendet. Die trainierten \ac{YOLO}-Modelle können durch das Ultralytics-Framework direkt exportiert und verwendet werden. Laut Ultralytics ermöglicht das konvertieren des Modells nach ONNX eine bis zu dreimal schnellere Ausführungszeit. \cite{ultralytics}
+\\
+Exportierte Modelle können auch direkt mit dem Ultralytics-Framework verwendet werden. Dabei gab es jedoch Probleme mit PyTorch, auf dem das Ultralytics-Framework basiert.
+\\
+Das Ultralytics-Framework kann zwar manuell über die Quelldateien auf dem Jetson Nano installiert werden, aber es treten bei der Ausführung Probleme. Um das Framework nutzen zu können, muss zusätzlich zu PyTorch die \textit{torchvision}-Bibliothek installiert werden. Während dem Detektieren von Objekten trat das Problem auf, da das Detektieren von Objekten nur solange funktionierte nur solange, bis ein Objekt erkannt wurde. Sobald ein Objekt erkannt wurde, kam es zu einer Fehlermeldung. Diese besagt, dass nicht die richtige Version von \textit{torchvision} installiert wurde, da sie nicht mit PyTorch kompatibel sei.
+\\
+Das Nvidia-Forum enthält mehrere Einträge zu diesem Thema. Das eigene Nvidia-Forum, dass die Installation von PyTorch und torchvision beschreibt, enthält über 1200 Einträge mit vielen Lösungsmöglichkeiten. Allerdings konnten viele davon das Problem nicht lösen, wodurch das nutzen des Frameworks auf dem Jetson Nano für das Abschrecksystem nicht möglich war. \cite{pytorch_jn}
+
+OpenCV verfügt ebenfalls über die Möglichkeit, ONNX-Modelle zu laden und eine Objekterkennung durchzuführen. Allerdings müssen die Bilddaten vorher mit der Funktion \verb|blobFromImage| vorbereitet werden, um sie für die Verarbeitung dem Modell übergeben zu können.
+\\
+Nachdem das Modell die Bilddaten verarbeitet hat, muss die Ausgabe nachbearbeitet werden. Dabei werden zunächst die Zuversichtlichkeiten der Bounding Boxen extrahiert und überprüft, ob dieser Wert ausreichend hoch ist. Diese Nachbearbeitung ist ähnlich wie bei TensorFlow. Allerdings konnte bei TensorFlow direkt über ein Dictionary auf die Zuversichtlichkeit zugegriffen werden. Beim ONNX-Format muss diese zunächst durch das Auswählen der entsprechenden Ausgabewerte extrahiert werden. Gleiches gilt für die Ermittlung der Bounding Boxen. \cite{opencv_onnx}
+\\
+Ein ähnliches Verfahren wird bei der Verwendung der ONNX-Runtime angewendet. Der Unterschied zwischen den beiden liegt jedoch in der Ausführungszeit. Die ONNX-Runtime verarbeitet die Eingabewerte schneller als OpenCV, wie aus den Ergebnissen in Kapitel \ref{cap:Benchmarks} hervorgeht.
+
+\subsubsection{TensorRT}
+
+TensorRT ist eine Optimierungs- und Inferenz-Laufzeitbibliothek, die von Nvidia für ihre Grafikkarten entwickelt wurde. Der Zweck dieser Bibliothek besteht darin, \ac{DNN}s für den Einsatz auf Nvidia-GPUs zu optimieren und die Ausführungszeit zu reduzieren. Dafür benötigt die Bibliothek bereits trainierte Modelle von TensorFlow oder PyTorch. Anschließend werden auf diesen Modellen eine Reihe von Optimierungen durchgeführt, um die Inferenzgeschwindigkeit und -effizienz zu verbessern, ohne die Genauigkeit der Modelle zu beeinträchtigen. \\
+Um diese Optimierungsmöglichkeit nutzen zu können, müssen bestehende Modelle in das ONNX-Format konvertiert werden. PyTorch-Modelle können ohne weiteres Zutun direkt in das ONNX-Format konvertiert werden. Für die Verwendung von TensorFlow-Modellen muss jedoch ein Zwischenschritt über die Bibliothek \textit{tf2onnx} erfolgen. Es kann auch erforderlich sein, das exportierte Modell im ONNX-Format zu bearbeiten, falls Probleme bei der Optimierung des Modells auftreten.
+\cite{Tensorrt_2023_nvidia}
+
+Wie auch bei TensorFlow mit TensorFlow-Lite gibt es auch hier die Möglichkeit, die Quantisierung auf Float-32, Float-16 oder Integer-8 festzulegen. Das ermöglicht die Reduzierung des Speicherbedarfs und die Verbesserung der Inferenzgeschwindigkeit auf den Nvidia-\ac{GPU}s, sowie dem Jetson Nano.
+
+Es ist möglich, die mit TensorRT optimierten Modelle sowohl mit TensorRT als auch mit PyTorch zu verwenden. Es wird sogar in \cite{mu_tensorrt} empfohlen, TensorRT in Kombination mit PyTorch zu nutzen, da es performanter sein kann.
+\\
+Diese Möglichkeit kann jedoch aufgrund der bereits genannten Versionsprobleme derzeit nicht angewendet werden.
+Daher wurde die alternative Methode getestet, nämlich die Verwendung von TensorRT mit PyCuda. Dabei müssen die Eingabe- und Ausgabewerte manuell mit PyCuda gesetzt bzw. gelesen werden. Zusätzlich ist mehr Initialisierungscode erforderlich. Durch anfängliche Fehler bei der Konfiguration dieses Codes kam es daher zu keiner sinnvollen Ausgabe. Diese Probleme konnten jedoch im Nachhinein behoben werden.
+
+Die Vorbereitung der Bilddaten und die Nachbearbeitung der Ausgabe sind nahezu identisch zur Verwendung des ONNX-Formats. Der einzige Unterschied besteht darin, dass die Ausgabe in einer anderen Form vorliegt und daher ein anderes Slicing benötigt wird.
+
+
+\subsection{Auswertung der Modelle auf ihre Eignung für das Abschrecksystem} \label{cap:Benchmarks}
 
 
 
-Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
-
-\subsection{Auswertung der verschiedenen Modelle} \label{cap:Benchmarks}
-
-
-
-\subsubsection{Interferenzzeit}
+\subsubsection{Ausführungszeit}
 
 \subsubsection{Erkennungsqualität}
 
@@ -262,7 +297,7 @@ Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und da
 \subsection{Tiefenberechnung} \label{cap:calc_depth}
 
 \subsection{Kombination der Softwarekomponenten}
-
+Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
 \section{Kostenaufstellung}
 
 \begin{longtable}{ p{0.15\textwidth}|p{0.2\textwidth}|p{0.5\textwidth} }
