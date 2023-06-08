@@ -23,7 +23,7 @@ Der \textit{Deployment} Ordner enthält mehrere Unterordner, die zur besseren Ü
 \\
 Das verworfene Python-Modul zur direkten Ansteuerung der Aktoren über die \ac{GPIO}-Pins des Jetson ist ebenfalls in diesem Ordner zu finden.
 
-Des Weiteren gibt es einen separaten Ordner für die zeitlichen Interferenztests. In diesem Ordner befindet sich das Python-Skript, das die Ausführungszeit der verschiedenen Objekterkennungsmodelle und ihrer Formate testet. Die Auswertung der Interferenzzeit wird zudem in eine Markdown-Datei speichert.
+Des Weiteren gibt es einen separaten Ordner für die zeitlichen Inferenztests. In diesem Ordner befindet sich das Python-Skript, das die Ausführungszeit der verschiedenen Objekterkennungsmodelle und ihrer Formate testet. Die Auswertung der Inferenzzeit wird zudem in eine Markdown-Datei speichert.
 
 Die weiteren Dateien, die in diesem Ordner abgelegt sind, werden in denen folgenden Kapiteln beschrieben.
 
@@ -135,7 +135,7 @@ Die Größenanpassung selbst wird mithilfe eines Python-Skripts durchgeführt, d
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/cobined_augment.png}
+    \includegraphics[width=\textwidth]{images/combine_augment.png}
     \label{fig:vgl_img_data_real}
     \caption{Vergleich eines augmentierten und nicht augmentierten Bildes aus den Trainingsdaten (links \cite{wasch_detect}) und ein Bild das vom Abschrecksystem aufgenommen wurde}
 \end{figure}
@@ -194,7 +194,7 @@ Um nun mehrere Modelle und deren Performance vergleichen zu können, müssen das
 \\
 Die Veröffentlichung des Pull Requests erfolgte Ende März und war erst im April ausgereift genug, um angewendet zu werden. Die daraus resultierende Ergebnisse können in \ref{cap:Benchmarks} eingesehen werden.
 
-Die Konvertierung aus TensorFlow heraus verlief jedoch erfolglos. Auf ihrer GitHub-Seite wird dieses Problem immer wieder gemeldet. Es scheint, dass die für die Edge-TPU erforderliche Integer-8-Quantisierung wiederholt Schwierigkeiten verursacht. Das Modell wird dabei zwar konvertiert, aber anscheinend können die Enden der Modellarchitektur nicht immer korrekt quantisiert werden. Dies führt zu einer Senkung der Zuversichtlichkeit der Objekterkennung auf unter 5 Prozent und auch die Position der Bounding Boxes wird inkorrekt.
+Die Konvertierung aus TensorFlow heraus verlief jedoch erfolglos. Auf ihrer GitHub-Seite wird dieses Problem immer wieder gemeldet. Es scheint, dass die für die Edge-TPU erforderliche Integer-8-Quantisierung wiederholt Schwierigkeiten verursacht. Das Modell wird dabei zwar konvertiert, aber anscheinend können die Enden der Modellarchitektur nicht immer korrekt quantisiert werden. Dies führt zu einer Senkung der Zuversichtlichkeit der Objekterkennung auf unter 5 Prozent und auch die Position der Bounding Boxes wird inkorrekt. Daher kann das Model nicht mit der Integer-8 Quantifizierung verwendet werden.
 
 \subsubsection{\ac{YOLO}v8} \label{cap:yolov8}
 
@@ -264,7 +264,7 @@ Nachdem das Modell die Bilddaten verarbeitet hat, muss die Ausgabe nachbearbeite
 \\
 Ein ähnliches Verfahren wird bei der Verwendung der ONNX-Runtime angewendet. Der Unterschied zwischen den beiden liegt jedoch in der Ausführungszeit. Die ONNX-Runtime verarbeitet die Eingabewerte schneller als OpenCV, wie aus den Ergebnissen in Kapitel \ref{cap:Benchmarks} hervorgeht.
 
-\subsubsection{TensorRT}
+\subsubsection{TensorRT} \label{cap:tensorrt}
 
 TensorRT ist eine Optimierungs- und Inferenz-Laufzeitbibliothek, die von Nvidia für ihre Grafikkarten entwickelt wurde. Der Zweck dieser Bibliothek besteht darin, \ac{DNN}s für den Einsatz auf Nvidia-GPUs zu optimieren und die Ausführungszeit zu reduzieren. Dafür benötigt die Bibliothek bereits trainierte Modelle von TensorFlow oder PyTorch. Anschließend werden auf diesen Modellen eine Reihe von Optimierungen durchgeführt, um die Inferenzgeschwindigkeit und -effizienz zu verbessern, ohne die Genauigkeit der Modelle zu beeinträchtigen. \\
 Um diese Optimierungsmöglichkeit nutzen zu können, müssen bestehende Modelle in das ONNX-Format konvertiert werden. PyTorch-Modelle können ohne weiteres Zutun direkt in das ONNX-Format konvertiert werden. Für die Verwendung von TensorFlow-Modellen muss jedoch ein Zwischenschritt über die Bibliothek \textit{tf2onnx} erfolgen. Es kann auch erforderlich sein, das exportierte Modell im ONNX-Format zu bearbeiten, falls Probleme bei der Optimierung des Modells auftreten.
@@ -282,11 +282,72 @@ Die Vorbereitung der Bilddaten und die Nachbearbeitung der Ausgabe sind nahezu i
 
 \subsection{Auswertung der Modelle auf ihre Eignung für das Abschrecksystem} \label{cap:Benchmarks}
 
+Da für den Einsatz im Abschrecksystem das Modell präzise und effizient Arbeiten muss folgt eine detaillierte Auswertung der verschiedenen Modelle hinsichtlich ihrer Eignung für das Abschrecksystem. Dabei werden die Modelle auf Basis ihrer Infrenzzeit und Zuversichtlichkeit analysiert und miteinander verglichen. Im Folgenden werden die Ergebnisse und Erkenntnisse dieser Auswertung präsentiert.
 
+\subsubsection{Inferrenzzeit der Modelle}
 
-\subsubsection{Ausführungszeit}
+Ein wichtiger Aspekt ist die Inferenzzeit, die entscheidend dafür ist, Tiere in Echtzeit erkennen zu können. Daher wurden die Modelle auf verschiedenen Hardwareplattformen getestet, um die Leistung in Bezug auf die Inferenzzeit zu bewerten. Es wurden signifikante Unterschiede sowohl aufgrund der Hardware als auch aufgrund des Modellformats festgestellt. Ein Auszug der Ergebnisse ist in Tabelle \ref{tab:bench_time} dargestellt.
 
-\subsubsection{Erkennungsqualität}
+\begin{table}[h]
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{|l|llccc}
+        \textbf{Modell} & \textbf{Hardware} & \textbf{Format} & \textbf{Schlechtester Lauf} & \textbf{Bester Lauf} & \textbf{Durchschnitt}\\
+        \hline
+        MobilNet SSD & I7-10th & pb  & 147 & 26 & 52 \\
+        MobilNet SSD & I7-10th & TFLITE-f32 & 106 & 18 & 39 \\
+        MobilNet SSD Treaded & I7-10th & TFLITE-f32 & 71 & 0 & 21 \\
+        MobilNet SSD Treaded & I7-10th & TFLITE-f16 & 37 & 0 & 17 \\
+        MobilNet SSD & Jetson & pb  & 681 & 104 & 111 \\
+        MobilNet SSD Treaded & Jetson & TFLITE-f16 & 675 & 0 & 113 \\
+        YOLOv8n & I7-10th & pb & 47 & 13 & 17 \\
+        YOLOv8n Treaded & I7-10th & TFLITE-f32 & 37 & 0 & 15 \\
+        YOLOv8n Treaded & I7-10th & TFLITE-f16 & 31 & 0 & 13 \\
+        YOLOv8n Treaded & I7-10th & TFLITE-i8 & 28 & 0 & 12 \\
+        YOLOv8n & Jetson & pb  & 82 & 48 & 53 \\
+        YOLOv8n Treaded & Jetson & TFLITE-f32 & 226 & 166 & 179 \\
+        YOLOv8n OpenCV & Jetson & ONNX & 47 & 41 & 42 \\
+        YOLOv8n ONNX & Jetson & ONNX & 43 & 33 & 39 \\
+        YOLOv8n TensorRT & Jetson & ONNX & 16 & 10 & 13 \\
+        YOLOv8n Treaded & CM3 & TFLITE-f32 & 686 & 559 & 591 \\
+        YOLOv8n & CM3 + Coral & TFLITE-i8  & 89 & 63 & 68 \\
+        YOLOv8n & Jetson + Coral & TFLITE-i8  & 20 & 16 & 17 \\
+        YOLOv5n & I7-10th & pb & 75 & 13 & 26 \\
+        YOLOv5n & Jetson & pb & 70 & 43 & 47 \\
+        EfficientDet D0 & I7-10th & pb & 453 & 183 & 249 \\
+        EfficientDet D0 & Jetson & pb & 1623 & 492 & 511 \\
+    \end{tabular}
+    }
+    \caption{Vergleich verschiedener Objekterkennungsmodelle auf Basis ihres Formates und Inferennzzeit in Millisekunden}
+    \label{tab:bench_time}
+\end{table}
+
+In der Tabelle ist ein Ausschnitt der durchgeführten Inferenzmessungen zu sehen. Zunächst wurde das Modell \textit{MobileNet} von TensorFlow getestet. Der Test wurde auf einem Laptop mit einem Intel i7-Prozessor der zehnten Generation durchgeführt. Dabei wurde festgestellt, dass das Modell durch die Quantisierung erheblich beschleunigt wurde. Die Verwendung der Float-16-Quantisierung führte zu einer Reduzierung der Ausführungszeit auf ein Drittel der ursprünglich benötigten Zeit. Die Beschleunigung war auch Multithreading zu verdanken. In der TensorFlow-Lite-Umgebung kann man nämlich die Anzahl an Threads, die dem Prozess zustehen, erhöhen. Durch die eingestellten vier Treads konnte daher ebenfalls eine Verringerung der Ausführungszeit ermöglicht werden, wie an dem Float-32 quantifizierten Modell zu erkennen ist.
+\\
+Als derselbe Test auf dem Jetson durchgeführt wurde, konnte nicht die gleiche Beschleunigung beobachtet werden. Dies liegt daran, dass die TensorFlow-Umgebung auf die GPU zugreifen kann, während die TensorFlow-Lite-Umgebung dies nicht kann. Das quantisierte Modell läuft daher auf der CPU des Jetsons, was zu einer deutlichen Steigerung der Inferenzzeit führt. Deshalb haben das ursprüngliche Modell und das float-32-quantisierte Modell nahezu die gleiche durchschnittliche Ausführungszeit von 100 Millisekunden. Eine Inferenzzeit in diesem Bereich ermöglicht keine Echtzeit-Erkennung der Tiere, weshalb eine weitere Untersuchung des Modells nicht länger in Betracht gezogen wurde.
+
+Das zweite TensorFlow-Modell, das \textit{EfficientDet D0}, wurde ebenfalls verworfen. Aufgrund seiner höheren Auflösung lag die Ausführungszeit auf dem Jetson bei über 500 Millisekunden, was für das Abschrecksystem nicht geeignet ist. Die Möglichkeit, die Modelle in das ONNX-Format zu konvertieren und dadurch eine potenzielle Verbesserung der Ausführungszeit zu erzielen, wurde jedoch nicht getestet. Diese Entscheidung wurde aufgrund der Erkenntnisse aus Kapitel \ref{cap:qual_erk}, die parallel gewonnen wurden, getroffen.
+\\
+Durch diese Erkenntnisse sind nur noch die \ac{YOLO}-Modelle in Frage gekommen. 
+
+Auch beim YOLOv8-Modell zeigt sich das gleiche Verhalten wie beim MobileNet-Modell. Auf dem Intel I7-Prozessor wird die Ausführungszeit durch die Quantifizierung stark beschleunigt, jedoch nicht auf dem Jetson. Da aber die Integer-8-Quantifizierung funktioniert, konnte die Ausführungszeit auf dem USB-Accelerator Coral in Kombination mit dem Raspberry Pi CM3 und dem YOLO-Modell getestet werden.
+\\
+Mit einer durchschnittlichen Ausführungszeit von 68 Millisekunden im Vergleich zu den 17 Millisekunden auf dem Jetson, war das Ergebnis aber eher ernüchternd.Deshalb wurde das Raspberry Pi CM3 endgültig von der Liste der möglichen Mikrocontroller für den Einsatz im Abschrecksystem gestrichen. Der Grund für den extremen Unterschied liegt allerdings am USB-Anschluss des CM3. Das CM3 verfügt nämlich nur über einen USB 2.0-Port, während der Jetson Nano über USB 3.0-Ports verfügt. Dadurch geht der Datenaustausch zwischen dem Mikrocontroller und dem Coral USB-Stick beim Raspberry Pi CM3 langsamer vonstatten.
+
+Das Ultralytics-Framework bot auch die Möglichkeit, ältere YOLO-Modelle wie das YOLOv5-Modell zu trainieren. Dieses Modell wurde ebenfalls kurz getestet, jedoch wurde kein Vorteil gegenüber dem neueren YOLOv8-Modell festgestellt. Daher wurde dem YOLOv5-Modell keine weitere Beachtung geschenkt.
+
+Somit blieb nur noch die Konvertierung in das ONNX- und TensorRT-Format als Option übrig. Das mit TensorRT konvertierte Modell erreichte eine beeindruckende Ausführungszeit von 13 Millisekunden für die Verarbeitung der Eingabewerte. Allerdings ist bei genauerer Untersuchung das Problem aus Kapitel \ref{cap:tensorrt} bemerkt worden. Die Verwendung von PyCuda in Verbindung mit der Vor- und Nachbearbeitung verschlechterte die Ausführungszeit erheblich. Dadurch erreichte das TensorRT-Modell letztendlich eine ähnliche Ausführungszeit wie das ONNX-Runtime-Modell. Allerdings war der Ressourcenverbrauch des TensorRT-Modells deutlich höher. Nahezu alle vier Kerne und die \ac{GPU} liefen bei dem Inferenztest auf der maximalen Leistung. In der ONNX-Runtime war der Verbrauch etwas geringer, weshalb dieses Modell eher für die Verwendung im Abschrecksystem geeignet war.
+
+\subsubsection{Zuversichtlichkeit der Modelle} \label{cap:qual_erk}
+
+Ob die Modelle jedoch für das Abschrecksystem geeignet sind, hängt nicht allein von der Inferenzzeit ab, sondern auch von der Qualität des Modells selbst ab. Diese beschreibt, wie gut das Modell mit Daten aus der realen Welt zurechtkommt, das heißt, ob und wie gut das Modell die Tiere erkennen kann.
+
+Hierbei kommt die in Kapitel \ref{cap:struktur} beschriebene Ordnerstruktur zum Tragen. Ein Teil der gesammelten Bilder wurde bereits von den für das Training des Modells vorgesehenen Daten getrennt. Diese Bilder bilden das Testset.
+\\
+Während des Trainings lernt das Modell Erkennungsmethoden anhand des Trainingssets und überprüft deren Genauigkeit anhand der Daten im Devset. Das Testset bleibt dabei völlig unbekannt und kann daher für eine grobe Abschätzung der Performanz auf unbekannte Daten verwendet werden.
+
+Dafür wird der \acf{mAP} der Modelle ermittelt. Diese ist eine  Bewertungsmetrik, die häufig zur Evaluierung von Objekterkennungssystemen verwendet wird. Dabei wird gemessen, ob die erkannten Objekte tatsächlich korrekt sind. Dabei können die Bounding Boxen auch bis zu einen gewissen Grad schwanken ohne den \ac{mAP} zu verschlechtern. Dadurch kann eine umfassende Bewertung der Modellleistung durchgeführt werden. \cite{cv_Szeliski}
+
+Um diesen Wert zu bestimmen wird bei TensorFlow das Programm TensorBoard eingesetzt. Mit dem Tool kann die \ac{mAP} zu jedem Trainingszeitpunkt herausgelesen werden. Allerdings waren die daraus erhaltenen Werte geringer als die der \ac{YOLO}-Modelle.
 
 \section{Zusätzliche Softwarekomponenten}
 
