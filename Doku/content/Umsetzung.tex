@@ -12,6 +12,55 @@ Für die Objekterkennung wurden verschiedene Modelle verwendet. Darunter zwei Mo
 
 \subsection{Ordner- und Datenstruktur} \label{cap:struktur}
 
+TensorFlow bietet in \cite{tf2_object_detection_tut} ein eigenes Tutorial an, welches zeigt, wie man die Objekterkennung API nutzt und ein Objekterkennungsmodell trainiert und evaluiert. Diese Ordnerstruktur wurde für das Trainieren der Objekterkennungsmodelle übernommen und auf die eigene Nutzung angepasst. Die gesamte Ordnerstruktur ist in Abbildung \ref{fig:ordnerstruktur} zu sehen.
+
+Aus der Struktur und dem Ablauf der Studienarbeit ergaben sich vier Kernbereiche, die auch in der Ordnerstruktur widergespiegelt werden. Das Projekt besteht aus den folgenden vier Ordnern: \verb|Dokumentation|, \verb|Dispositionspapier|, \verb|Deployment| und \verb|Detection_training| für das Training der Objekterkennung. Im folgenden werden aber nur die Inhalte des \verb|Deployment| und \verb|Detection_training| Ordners näher betrachtet.
+
+
+\subsubsection{Deployment}
+
+Der \textit{Deployment} Ordner enthält mehrere Unterordner, die zur besseren Übersicht und Einordnung der Funktionen dienen. Darunter befinden sich die \textit{Hardwareansteuerung}. Diese beinhalten auch die Arduino-Dateien des Funktionstestprogramms, sowie das Programm zur externen Steuerung des Zielsystems. Zudem ist in diesem Ordner das Python-Modul abgelegt, das die externe Ansteuerung des Arduinos ermöglicht.
+\\
+Das verworfene Python-Modul zur direkten Ansteuerung der Aktoren über die \ac{GPIO}-Pins des Jetson ist ebenfalls in diesem Ordner zu finden.
+
+Des Weiteren gibt es einen separaten Ordner für die zeitlichen Interferenztests. In diesem Ordner befindet sich das Python-Skript, das die Ausführungszeit der verschiedenen Objekterkennungsmodelle und ihrer Formate testet. Die Auswertung der Interferenzzeit wird zudem in eine Markdown-Datei speichert.
+
+Die weiteren Dateien, die in diesem Ordner abgelegt sind, werden in denen folgenden Kapiteln beschrieben.
+
+{
+\begin{wrapfigure}{l}{0.3\textwidth}
+    \centering
+    \includegraphics[width=0.28\textwidth]{images/ordner_struktur_with_lines.pdf}
+    \label{fig:ordnerstruktur}
+    \caption{Ordner-struktur des Projektes}
+\end{wrapfigure}
+
+\subsubsection{Detection training}
+
+Im \verb|Detection_training| Ordner befinden sich zunächst die Jupyter-Notebooks für die Aufbereitung der Daten und der Auswertung der verschiedenen Modelle. Für die verschiedenen Trainingsmöglichkeiten sind jeweils eigene Notebooks erstellt worden.
+
+
+Des Weiteren enthält der Ordner die modifizierte TensorFlow Ordnerstruktur. Darin befindet sich ein Skriptordner, welche einige Hilfsprogramme für das Trainieren der Objekterkennungsmodelle enthält. Die meisten dieser Hilfsprogramme sind jedoch für die Konvertierung der Bildannotationen in verschiedene Dateiformate zuständig.
+\\
+Der \textit{models} wird benötigt um die Objekterkennungs-API von TensorFlow nutzen zu können. In diesem sind die Installationsdateien, sowie Hilfsprogramme für die TensorFlow Objekterkennungs-API gespeichert.
+
+Es ist auch von TensorFlow vorgesehen, Speicherorte für vortrainierte Objekterkennungsmodelle sowie für nachtrainierte oder selbst trainierte Modelle anzulegen. Diese werden im Unterordner \textit{workspace}.
+
+Zusätzlich wird für das Trainieren mit TensorFlow eine Umwandlung der Bildannotationen in das TFRECORD-Format vorgesehen. Die konvertierten  Annotationen sind daher im \textit{annotations} Ordner unter dem \textit{workspace} Ordner zu finden.
+
+}
+Ein weiterer Unterordner des \textit{workspace} Ordner ist der \textit{images} Ordner, der alle Bilddaten enthält. Darin befindet sich ein Ordner mit der Bezeichnung \textit{collected\_images}. Er enthält alle Bilder und Annotationen, die für das Abschrecksystem verwendet wurden.
+
+
+Zudem wird für das Trainieren der Modelle eine Zerteilung der annotierten Bilder in Train-, Test-, und Devset benötigt. Die Verteilung erfolgt mit den angegebenen Prozentsätzen: 85\% der Daten werden dem Trainingsset zugeordnet, 10\% dem Devset und 5\% dem Testset. Dadurch können die Modelle mit unterschiedlichen Datensätzen trainiert, validiert und getestet werden.
+\\
+Da \ac{YOLO} eine leicht veränderte Datenstruktur erwartet, wird diese separat im Unterordner \textit{yolodata} abgespeichert. Der Unterschied liegt dabei jedoch im Annotierungsformat.
+\\
+Für die Aufteilung werden die Daten aus dem \textit{collected\_images\_resized} Ordner entnommen. Der Ordner enthält alle Bilder und Annotationen, die auf eine einheitliche Höhe normiert wurden. Dies Normierung ist notwendig, da die Objekterkennungsmodelle bestimmte Bilddatenformate erwarten, wie beispielsweise 320x320 Pixel. Durch die Normierung der Bilder auf eine einheitliche Größe wird sichergestellt, dass während des Trainingsprozesses keine zusätzliche Zeit und RAM-Speicher für die Größenanpassung benötigt wird.
+\\
+Einige der Bilder im Originalformat haben eine hohe Auflösung, wie in etwa 4K-Qualität. Diese erfordern entsprechend viel Speicherplatz und erhöhen die Ausführungszeit während des Trainings. Durch die Umwandlung der Bilder von 4K auf 320x320 Pixel vor dem Training der Modelle wird der Speicherbedarf erheblich reduziert. Die Größe der Bilder nach der Umwandlung beträgt weniger als ein Prozent der ursprünglichen Größe. Dadurch wird eine schnellere Ausführung während des Trainingsprozesses ermöglicht und der Speicherplatzbedarf erheblich verringert.
+
+Unter den Bildern befinden sich auch eigene Bilder, die vom Abschrecksystem selbst aufgenommen wurden. Sie sind im Ordner \textit{own\_images} gespeichert. Dabei wird auch unterschieden, ob es sich bei den aufgenommenen Bildern um erkannte Tiere handelt, die mittels Objekterkennung identifiziert wurden, oder ob es sich um eine Bewegungserkennung mittels Kontur-Tracking handelt. Die Disjunktion zwischen den beiden wird später beschrieben. 
 
 \subsection{Sammlung der Trainingsdaten}
 
@@ -33,7 +82,7 @@ Um auch Marder und andere Tiere in die Erkennung aufzunehmen, wurden mehrere Dat
 
 Die gelabelten Daten stehen anschließend in dem XML-basierten \textit{Pascal VOC} Datenanotierungsformat zur Verfügung.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/label_studio.png}
     \label{fig:label_studio}
@@ -64,13 +113,39 @@ Nun gibt es jedoch ein weiteres Problem: Die Daten von Dat Tran und die von \tex
 
 Mit den nun vorliegenden Daten kann die Objekterkennung angegangen werden.
 
+
+\subsection{Bildmanipulation und -augmentation der gesammelten Bilder}
+
+Objekterkennungsmodelle lernen, Objekte anhand von Mustern, Farbtönen und Positionen im Vergleich zu anderen Objekten zu erkennen. Dies führt jedoch häufig zu "`Auswendiglernen'" oder Overfitting der Trainingsdaten. Wenn diese Modelle anschließend auf Daten angewendet werden, die nicht in den Trainingsdaten enthalten sind, können sie diese nur mit geringer Zuversichtlichkeit erkennen. Die Augmentierung der Trainingsdaten versucht, dieses Problem zu lösen, indem sie die Trainingsdaten manipuliert, um das Modell vielseitiger zu machen und unbekannte Daten besser zu erkennen.
+\\
+Gängige Möglichkeiten zur Durchführung von Bildmanipulationen sind:
+\begin{itemize}
+    \item Rotation der Bilder
+    \item Ein- und Auszoomen der Bilder
+    \item Abschneiden eines Bildteils
+    \item Hinzufügen von zufälligem Jitter zu den Bildern
+\end{itemize}
+Es gibt jedoch viele weitere Möglichkeiten. Zum Beispiel bietet das TensorFlow-Framework 39 verschiedene Augmentierungsmöglichkeiten an. Auch andere Frameworks bieten ähnliche Möglichkeiten an. \cite{cv_Szeliski,tens_zoo}
+
+Im vorherigen Abschnitt wurde beschrieben, wie die Daten für das Training der Modelle generiert wurden. Diese können jedoch nicht ohne weitere Anpassungen direkt für das Training verwendet werden, da sie nur geringfügig den erwartenden Bildern durch das Abschrecksystem entsprechen. Ein Beispiel dafür ist in Abbildung \ref{fig:vgl_img_data_real} dargestellt.
+
+Links ist ein Bild aus dem Datensatz von Dat Tran zu sehen, während rechts ein Bild vom Abschrecksystem zu sehen ist. Die Bilder wurden bereits auf die gleiche Höhe normiert. Wie im vorherigen Kapitel \ref{cap:struktur} beschrieben, führt diese Bildmanipulation zu einer erheblichen Reduzierung der Zeit- und Ressourcenanforderungen während des Trainings.
+\\
+Die Größenanpassung selbst wird mithilfe eines Python-Skripts durchgeführt, das sich im Skriptordner befindet. Die Anpassung der Annotationen an die neue Bildgröße erfolgt mit einem separaten Rust-Programm.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/cobined_augment.png}
+    \label{fig:vgl_img_data_real}
+    \caption{Vergleich eines augmentierten und nicht augmentierten Bildes aus den Trainingsdaten (links \cite{wasch_detect}) und ein Bild das vom Abschrecksystem aufgenommen wurde}
+\end{figure}
+
+Die verschiedenen Frameworks, die für das Training der Modelle verwendet werden, verfügen über diese Augmentierungsmöglichkeiten, die Trainingsbilder an die tatsächlichen Bilder anzugleichen. Dazu gehören manuelle Anpassungen an den Farbwerten, der Sättigung und der Dunkelstufe (HSV) an den einzelnen Bildern. In den jeweiligen Frameworks können diese verwendet werden, um ein Bild während des Trainings anzupassen. Auf diese Weise können die Bilder dem pinkfarbenen Erscheinungsbild des Abschrecksystems angepasst werden. Dadurch wird die \ac{mAP} der Modelle auf den heruntergeladenen Datensätzen zwar deutlich verringert, jedoch haben kleinere Tests mit den Bildern des Abschrecksystems gezeigt, dass die Zielobjekte besser erkannt werden. Eine beispielhafte Anpassung der Bilder aus dem Datensatz kann in Abbildung \ref{fig:vgl_img_data_real} betrachtet werden.
+
+
 \subsection{Training}
 
 In der Studienarbeit wurden drei verschiedene Frameworks verwendet, um verschiedene Objekterkennungsmodelle hinsichtlich ihrer Inferenzzeit und Genauigkeit zu evaluieren. Im Folgenden sind die Workflows beschrieben, die für das Training der Modelle erforderlich sind.
-
-\subsection{Bildmanipulation und -augmentation}
-
-
 
 \subsubsection{TensorFlow Model Zoo} \label{cap:tensorflow}
 
@@ -84,18 +159,19 @@ Das schnellste Modell, welches auf eine Bildgröße von 320x320 Pixel trainiert 
 \\
 Basierend auf diesen Werten wurde entschieden, dass die beiden Modelle \textit{SSD MobileNet V2 FPNLite 320x320} und \textit{EfficientDet D0 512x512} für das Abschrecksystem in Betracht gezogen werden sollen. Diese Modelle weisen eine geringe Ausführungszeit auf und ihre Genauigkeit ist nicht zu niedrig. \cite{tens_zoo}
 
-\begin{wrapfigure}{l}{0.3\textwidth}
-    \centering
-    \includegraphics[width=0.18\textwidth]{images/pap_train_tensorflow.pdf}
-    \label{fig:tens-pap}
-    \caption{\acs*{PAP} TensorFlow Nachtraining}
-\end{wrapfigure}
 
 Der Aufwand, die Modelle nachzutrainieren, ist gering, da TensorFlow die erforderlichen Jupyter Notebooks in ihrem GitHub-Repository (\cite{tens_zoo}) hochgeladen hat. Mit kleinen Anpassungen kann das Notebook für das Training des Abschrecksystems verwendet werden. Der Ablauf eines Trainings mit dem Jupyter Notebook ist in dem \ac{PAP} in Abbildung \ref{fig:tens-pap} dargestellt.
 \\
 Zunächst müssen alle erforderlichen Pfade definiert und die entsprechenden Ordnerstrukturen erstellt werden. Ein Großteil dieser Ordnerstrukturen wurde bereits mithilfe des Python-Skripts aus Kapitel \ref{cap:struktur} erzeugt. Es ist lediglich die spezifische Benennung des Modells erforderlich.
 \\
 Anschließend wird das vortrainierte Modell heruntergeladen, sowie die TensorFlow Object Detection API installiert.
+
+\begin{wrapfigure}{l}{0.3\textwidth}
+    \centering
+    \includegraphics[width=0.18\textwidth]{images/pap_train_tensorflow.pdf}
+    \label{fig:tens-pap}
+    \caption{\acs*{PAP} TensorFlow Nachtraining}
+\end{wrapfigure}
 
 Bevor das Training beginnen kann, müssen die Annotationen, die in der Trainings-CSV-Datei enthalten sind, in das TFRecord-Format umgewandelt werden. TensorFlow bietet hierfür ein Python-Skript an. Allerdings musste dieses Skript angepasst werden, da es nicht direkt verwendet werden konnte. Das angepasste Skript iordnest unter dem Skriptordner enthalten.\\
 Anschließend wird die Konfigurationsdatei des zuvor heruntergeladenen Modells aktualisiert. Dies bedeutet, dass die Pfade zu den Bilddaten und der TFRecord-Datei angepasst werden müssen. Darüber hinaus können weitere Trainingsparameter geändert oder hinzugefügt werden. Zum Beispiel können auch Augmentierungen hinzugefügt werden und die Anzahl der Objekttypen kann an den Anwendungsfall angepasst werden.
@@ -140,6 +216,32 @@ Zu einem späteren Zeitpunkt konnte die DHBW über den eigenen JupyterHub eine l
 Allerdings hatte der Wechsel seine Nachteile. Aufgrund unzureichender Berechtigungen zur Installation aller benötigten Bibliotheken - TensorFlow (Objekterkennungs-API), Edge-TPU-Konvertierung und TensorFlow-Lite Model Maker (Google Coral) - war es nur noch möglich, \ac{YOLO}-Modelle zu trainieren.
 
 \subsection{Deployment}
+
+Für das Deployment wurden verschiedene Modelle und Laufzeitumgebungen erstellt. Daher war es erforderlich, fünf Laufzeitumgebungen einzubinden bzw. zu unterstützen, um die Modelle auswerten zu können. Nachfolgend sind die einzelnen Umgebungen beschrieben. Die verschiedene Ergebnisse bei der Nutzung der Umgebungen werden in Kapitel \ref{cap:Benchmarks} beschrieben.
+
+\subsubsection{TensorFlow}
+
+TensorFlow speichert seine Dateien als .pb-Dateien ab, die mit der normalen TensorFlow-API in das Programm geladen werden können. Eine Installation der Object Detection API ist nur für das Training der Modelle erforderlich.
+\\
+Anschließend muss das Eingabebild an das Modell angepasst werden. Wenn das Bild zu groß ist, z.B. mit einer 4K-Auflösung, muss es zuerst verkleinert werden. Außerdem benötigen alle Bilder eine zusätzliche Dimension. Diese Dimension kann einfach mit dem \verb|expand_dims|-Befehl von NumPy hinzugefügt werden.
+\\
+Danach kann das Bild dem Modell zur Verarbeitung übergeben werden. \cite{tens_zoo}
+
+Die Ausgabe der TensorFlow-Modelle muss dennoch nachbearbeitet werden, da sie alle Erkennungen bis zur eingestellten maximalen Anzahl ausgibt. Bei der Standardkonfiguration von MobileNet wären das bis zu 100 Erkennungen. Um unerwünschte Erkennungen herauszufiltern, z.B. solche mit einer Zuversichtlichkeit von nur 1\%, wird die Ausgabe gefiltert und in ein Dictionary gespeichert.
+
+Damit ist die Erkennung mittels der TensorFlow API abgeschlossen und die Ausgabewerte können vom Hauptprogramm ausgewertet werden.
+
+\subsubsection{TensorFlow-Lite und Google Coral}
+
+Die TensorFlow Lite-Umgebung basiert auf TensorFlow. TensorFlow Lite-Modelle sind jedoch kompakter als die .pb-Modelle von TensorFlow. Allerdings erfordern sie mehr Aufwand für die Initialisierung von Modellen, da beim Laden des Modells explizit das Format der Ein- und Ausgabeparamter aus dem Modell geladen werden müssen. Diese werden anschließend in der Ausführung und Nachbearbeitung verwendet.
+\\
+Ein Vorteil gegenüber den TensorFlow-Modellen besteht darin, dass sie besser für die Ausführung auf einer CPU geeignet sind. Dies liegt darin, dass sie eine geringere Rechenintensität besitzen. TensorFlow bietet drei Exportformate dafür an: Float-32, Float-16 und Integer-8.\\
+Die Bezeichnungen beschreiben die Art der Gradientenoptimierung. Während Float-32 und -16 Gleitkommazahlen beschreiben, trifft dies bei Integer-8 nicht zu. Bei Integer-8 handelt es sich um eine Ganzzahl im Bereich von 0 bis 255. Die Zahlen 8, 16 und 32 geben die Anzahl der Bits an, mit denen ein Gradient gespeichert wird. Das Modell hat also den kleinsten Speicherbedarf wenn eine Integer-8 Quantifizierung der ursprünglichen .pb-Modelle vorgenommen wird. \cite{tens_zoo}
+
+Auf dem USB-Accelerator Coral können allerdings nur Integer-8 Quantifizierte Modelle betrieben werden. Die anderen Modelle werden daher auf der CPU des Mikrocontrollers ausgeführt. Um den USB-Accelerator nutzen zu können muss allerdings lediglich der TensorFlow-Lite Umgebung dies mitgeteilt werden. \cite{coral_google}
+
+
+
 
 Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
 
