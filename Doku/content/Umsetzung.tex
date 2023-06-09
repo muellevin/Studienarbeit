@@ -114,7 +114,7 @@ Nun gibt es jedoch ein weiteres Problem: Die Daten von Dat Tran und die von \tex
 Mit den nun vorliegenden Daten kann die Objekterkennung angegangen werden.
 
 
-\subsection{Bildmanipulation und -augmentation der gesammelten Bilder}
+\subsection{Bildmanipulation und -augmentation der gesammelten Bilder} \label{cap:augment}
 
 Objekterkennungsmodelle lernen, Objekte anhand von Mustern, Farbtönen und Positionen im Vergleich zu anderen Objekten zu erkennen. Dies führt jedoch häufig zu "`Auswendiglernen'" oder Overfitting der Trainingsdaten. Wenn diese Modelle anschließend auf Daten angewendet werden, die nicht in den Trainingsdaten enthalten sind, können sie diese nur mit geringer Zuversichtlichkeit erkennen. Die Augmentierung der Trainingsdaten versucht, dieses Problem zu lösen, indem sie die Trainingsdaten manipuliert, um das Modell vielseitiger zu machen und unbekannte Daten besser zu erkennen.
 \\
@@ -347,7 +347,59 @@ Während des Trainings lernt das Modell Erkennungsmethoden anhand des Trainingss
 
 Dafür wird der \acf{mAP} der Modelle ermittelt. Diese ist eine  Bewertungsmetrik, die häufig zur Evaluierung von Objekterkennungssystemen verwendet wird. Dabei wird gemessen, ob die erkannten Objekte tatsächlich korrekt sind. Dabei können die Bounding Boxen auch bis zu einen gewissen Grad schwanken ohne den \ac{mAP} zu verschlechtern. Dadurch kann eine umfassende Bewertung der Modellleistung durchgeführt werden. \cite{cv_Szeliski}
 
-Um diesen Wert zu bestimmen wird bei TensorFlow das Programm TensorBoard eingesetzt. Mit dem Tool kann die \ac{mAP} zu jedem Trainingszeitpunkt herausgelesen werden. Allerdings waren die daraus erhaltenen Werte geringer als die der \ac{YOLO}-Modelle.
+Um diesen Wert zu bestimmen, wird in TensorFlow das Programm TensorBoard verwendet. Mit diesem Tool kann die mittlere durchschnittliche Präzision (\ac{mAP}) zu jedem Trainingszeitpunkt abgerufen werden. Standardmäßig wird jedoch nur beim letzten Schritt nach dem Training die Evaluierung durchgeführt.
+\\
+Daher ist in Abbildung \ref{fig:map_Mobilnet} die Präzision erst nach 50.000 Trainingsschritten dargestellt. Die aus den Daten entnommene \ac{mAP} für die Präzesion der Bounding Boxen im mittleren Bereich liegt demnach bei 36\%.
+
+Beim Ultralytics-Framework wird ebenfalls eine ähnliche Art der Evaluation durchgeführt. Dabei erfolgt standardmäßig nach jeder Trainingsepoche eine Auswertung. Die Ergebnisse der Evaluation werden dem Entwickler nach jeder Epoche mitgeteilt. Zudem erstellt das Ultralytics-Framework automatisch ein Diagramm, das den Verlauf der mittleren durchschnittlichen Präzision (\ac{mAP}) über die einzelnen Trainingsepochen anzeigt. Dadurch ist es nicht erforderlich, ein zusätzliches Tool zu installieren. Es werden auch weiter Metriken, wie z.B. den F1-Wert berechnet. Daher bietet das Framework eine schnelle und aussagekräftige Auswertung des Modells.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[height=5cm]{images/mobileNet_map.png}
+        \caption{\ac{mAP} des MobileNet-Modells nach 50.000 Trainingsschritten}
+        \label{fig:map_Mobilnet}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[height=5cm]{images/P_curve.png}
+        \caption{\ac{mAP} des YOLOv8-Modells nach 30 Epochen}
+        \label{fig:map_yolo}
+    \end{minipage}
+\end{figure}
+
+Aus den Daten in den Abbildungen \ref{fig:map_Mobilnet} und \ref{fig:map_yolo} lässt sich ableiten, dass das YOLO-Modell deutlich schneller eine höhere Präzision erreicht hat. Daher wurde weiterhin mit dem \ac{YOLO}-Modell gearbeitet.
+
+Beim Vergleich wurde darauf geachtet, dass die Modelle einen ähnlichen Ressourcenverbrauch während des Trainings aufweisen. Beide Modelle wurden für etwa dreieinhalb Stunden auf Google Colab trainiert. Bei gleicher Batch-Größe benötigte das MobileNet-Modell jedoch mehr RAM als das Konkurrenzmodell.
+
+Aus der Auswertung dieser Untersuchung geht hervor, dass das YOLOv8-Modell als Basismodell verwendet werden sollte, da es die Anforderungen an das Abschrecksystem am besten erfüllt.
+\\
+Da beim Konvertieren und Quantifizieren der Modelle eine Verringerung des \ac{mAP}-Werts auftreten kann, wurden diese ebenfalls überprüft. Die konvertierten und quantifizierten Modelle können direkt in das Ultralytics-Framework geladen werden, was den Auswertung gegenüber der TensorFlow Modelle vereinfacht. Bei TensorFlow gibt es diese Möglichkeit nämlich nicht direkt. Ein Vergleich der Ergebnisse kann in Tabelle \ref{tab:map_yolo} eingesehen werden.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{llcc}
+        \textbf{Format} & \textbf{Quantifizierung} & \textbf{\ac{mAP}-50} & \textbf{\ac{mAP}-50}\\
+        \hline
+        pt & - & 95,5 & 76,5\\
+        TFLITE & Float-32 & 88,9 & 66,4 \\
+        TFLITE & Float-16 & 88,9 & 66,4\\
+        TFLITE & Integer-8 & 76,4 & 51,6\\
+        ONNX & - & 92,3 & 71,8\\
+    \end{tabular}
+    \caption{Vergleich des \ac{mAP}-Wertes verschiedener YOLOv8-Quantifizierung und Modellformate}
+    \label{tab:map_yolo}
+\end{table}
+
+Daraus geht hervor, dass die Integer-8-Quantifizierung eine erhebliche Verschlechterung des \ac{mAP}-Werts verursacht. Angesichts dessen wird die Verwendung von Integer-8-quantifizierten Modellen verworfen.
+\\
+Beim Anwenden der Quantifizierung auf das ONNX-Modell wird ein ähnliches Verhalten beobachtet. Da das Modell jedoch auch für die Verwendung von TensorRT vorgesehen ist, wird eine weitere Quantifizierung nicht verwendet. TensorRT bietet die Möglichkeit, zu bewerten, ob ein Knoten mit Integer-8 quantisiert werden soll. Dabei wird darauf geachtet, ob ein Präzisionsverlust durch die Quantifizierung auftritt. Diese automatische Auswahl der besten Optimierung des Modells ermöglicht die kürzeste Inferenzzeit bei vernachlässigbarem Präzisionsverlust.
+
+Im Anschluss an diese Auswertung wurden zudem mehrere Testmodelle mit unterschiedlichen Augmentierungen erstellt. Diese Augmentierungen sollten die Modelle besser auf den Einsatz im Abschrecksystem abstimmen. Die Problematik wurde bereits in Kapitel \ref{cap:augment} beschrieben.
+\\
+Anschließend wurden die Modelle anhand einer handverlesenen Auswahl von Bildern getestet. Durch die Augmentierung ist zwar der \ac{mAP}-Wert, der auf den Online-Datensätzen angewendet wurde, gesunken, aber die Erkennung der Tiere auf den ausgewählten Bildern wurde deutlich verbessert.
 
 \section{Zusätzliche Softwarekomponenten}
 

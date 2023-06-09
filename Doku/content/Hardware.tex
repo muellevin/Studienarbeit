@@ -32,8 +32,6 @@ Für den Einsatz eines \textit{Abschusssystems} mit Wasser benötigt das Abschre
 
 \subsubsection{Pumpe} \label{cap:pumpe}
 
-\comment{Bild mit Spritzschutz von Seite aus}
-
 Auch wenn die Aluminiumkiste witterungsbeständig ist, schützt sie nur mäßig vor kalten Temperaturen. Dabei können viele Wasserpumpen schaden nehmen, wenn sie über den Winter draußen sind. Bei Membranpumpen ist dies ein kleineres Problem. Die zu den Oszillationsverdrängerpumpen gehörende Pumpenart ist außerdem sehr wartungsfreundlich und außerordentlich robust. Sie können daher selbst schwierigen Bedingungen und Temperaturumschwünge leicht standhalten.
 \\
 Ihre Funktionsweise beruht darauf, den \textit{Schöpfraum} periodisch zu vergrößern und zu verkleinern. Dadurch erzielen sie ihre Pumpwirkung und werden durch ihre Robustheit, Ölfreiheit (keine Verschmutzung der zu fördernde Flüssigkeit oder Gase) und Wartungsfreundlichkeit auch in chemischen Laboranwendungen verwendet. \cite{Jousten2018}
@@ -51,9 +49,16 @@ Das größte Problem, das gelöst werden muss, ist die Unterbringung des Wassert
 
 Ein weiteres Problem betrifft die Dichtigkeit des Tanks und der Pumpe. Beim Transport der Aluminiumkiste könnte eine große Menge Wasser leicht austreten. Aufgrund der Leitfähigkeit des Wassers könnten die Elektronikkomponenten Schaden nehmen. Dies wäre jedoch nicht so gravierend, da die Elektronik lediglich durchbrennen und der Stromkreislauf unterbrochen würde. Allerdings besteht bei der Aluminiumkiste die Gefahr, dass sie vollständig unter Strom gestellt wird. Dadurch würde sogar eine potenzielle Lebensgefahr entstehen, wenn man die Kiste berührt.
 \\
-Um die Sicherheit zu erhöhen, wird der Wassertank deshalb außerhalb der Kiste platziert und der Zulauf erfolgt durch eine seitliche Öffnung an der Kiste. Die Pumpe befindet sich jedoch weiterhin innerhalb der Kiste, um sie vor den äußeren Witterungsbedingungen zu schützen. Sie wird durch einen gedruckten Spritzschutz räumlich von den anderen Aktoren und der Spannungsversorgung getrennt. Der 3D-Druck ermöglicht jedoch keinen vollständigen Schutz, da er nur gegen geringe Wassermengen dicht hält. Spritzwasser und kleinere Leckagen durch die Pumpe können jedoch bewältigt werden.
+Um die Sicherheit zu erhöhen, wird der Wassertank deshalb außerhalb der Kiste platziert und der Zulauf erfolgt durch eine seitliche Öffnung an der Kiste. Die Pumpe befindet sich jedoch weiterhin innerhalb der Kiste, um sie vor den äußeren Witterungsbedingungen zu schützen. Sie wird durch einen gedruckten Spritzschutz räumlich von den anderen Aktoren und der Spannungsversorgung getrennt. Der 3D-Druck ermöglicht jedoch keinen vollständigen Schutz, da er nur gegen geringe Wassermengen dicht hält. Spritzwasser und kleinere Leckagen durch die Pumpe können jedoch bewältigt werden. Die eingebaute Pumpe mit Zulauf und Spritzschutz ist in Abbildung \ref{fig:Spritzschutz} zu sehen. Dabei wird vorerst eine Gießkanne als Ersatz für einen Wassertank verwendet.
 \\
 Vor dem Einbau in die Kiste wurde ein Dichtigkeitstest der Pumpe und des Spritzschutzes durchgeführt. Dabei traten nur bei bestimmten Bedingungen, wie dem seitlichen Legen oder Schütteln der Pumpe, geringe Mengen Wasser aus der Pumpe aus. Daher sollte der gedruckte Spritzschutz einen ausreichenden Schutz bieten.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/spritzschutz.jpg}
+    \label{fig:Spritzschutz}
+    \caption{Eingebaute Wasserpumpe mit Wasserversorgung und Spritzschutz}
+\end{figure}
 
 \subsection{Mikrocontroller}
 
@@ -184,7 +189,7 @@ Den gesamten Schaltplan können Sie in Abbildung \ref{diag:all} einsehen. Die Ka
 
 \begin{figure}[H]
     \centering
-    \includegraphics[angle=90,width=0.7\textwidth]{images/Schaltskizzen-Seite-3.drawio.pdf}
+    \includegraphics[angle=90,width=0.9\textwidth]{images/Schaltskizzen-Seite-3.drawio.pdf}
     \label{diag:all}
     \caption{Schaltplan der Hardware}
 \end{figure}
