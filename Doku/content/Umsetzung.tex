@@ -403,16 +403,96 @@ Anschließend wurden die Modelle anhand einer handverlesenen Auswahl von Bildern
 
 \section{Zusätzliche Softwarekomponenten}
 
-Für das Abschhrecksystem sind zusätzliche Softwarekomponnenten von nöten. Die wichtigsten werden folgend beschrieben.
+Für das Abschrecksystem sind zusätzliche Softwarekomponnenten von nöten. Die wichtigsten werden folgend beschrieben.
 
 \subsection{Erkennung durch Kontur-tracking}
 
+Ein Ansatz, um schnell Daten zu sammeln, bestand in der Verwendung von Kontur-Tracking mittels OpenCV. Dadurch konnten die Tiere bereits mit Bounding Boxen annotiert werden. Im Nachhinein musste das Tier zwar manuell bestimmt werden, aber auf diese Weise konnten schnell repräsentative Daten gesammelt werden, auf denen das Modell evaluiert werden konnte.
+
+Dabei wird OpenCVs \verb|BackgroundSubtractor| verwendet. Diese berechnet eine Änderung von Pixel auf einem einem Eingabebild gegenüber eines vorherigen Bildes. Das Ergebniss wird in Abbildung \ref{fig:back_sub} dargestellt.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/Background_Subtraction_Tutorial_Scheme.png}
+    \label{fig:back_sub}
+    \caption{Hintergrundsubtraktion auf eine gegebene Eingabe. Quelle: \cite{background_sub}}
+\end{figure}
+
+Dadurch können sich bewegende Objekte leicht erkannt und detektiert werden. Allerdings reicht diese Darstellung allein nicht aus, um eine Bounding Box zu erhalten. Bei der Hintergrundsubtraktion wird viel Rauschen aufgenommen, das nicht als Bounding Box erkannt werden soll. Aus diesem Grund werden morphologische Transformationen durchgeführt. Diese Transformationen werden auf das binäre Bild der Hintergrundsubtraktion angewendet. Mit der Funktion \verb|morphologyEx| werden kleine Änderungen der Hintergrundsubtraktion entfernt.
+\\
+Nachdem das Hintergrundrauschen entfernt wurde, können die Konturen von Objekten gesucht und für die Erstellung von Bounding Boxen verwendet werden. 
+
+Allerdings wurde bei Testläufen festgestellt, dass sich die Boxen häufig überlappen und in den meisten Fällen dasselbe Objekt darstellen. Dies würde den Aufwand für das manuelle Nachbearbeiten der Daten erheblich erhöhen. Aus diesem Grund wurden überlappende Bounding Boxen mit Hilfe eines \ac{IOU}-Algorithmus und der Slicing-Funktion von NumPy zusammengeführt. Durch diesen Schritt wurde die Anzahl der Bounding Boxen drastisch reduziert und die Genauigkeit der Bounding Boxes in Bezug auf ihre Position und Größe verbessert.
+
+Trotz der morphologischen Transformationen blieb ein Problem bestehen, da immer noch kleine Bounding Boxes auf den Bildern vorhanden waren. Um dieses Problem zu beheben, wurden die Bounding Boxes mithilfe einer NumPy-Maskierung basierend auf ihrer Größe herausgefiltert. Durch diese Filterung wurden sowohl kleine Objekte als auch weiter entfernte Tiere nicht mehr erfasst und getrackt.
+\\
+Mit diesen Methoden konnten viele Daten gesammelt werden. Allerdings wurden auch viele Vögel, Wolken oder sich durch den Wind bewegende Büsche durch das Tracking erkannt, was einen hohen Aufwand für das Filtern der Daten bedeutete. Dennoch konnten innerhalb weniger Tage etwa 400 Bilder von Waschbären und Katzen erfolgreich mit Bounding Boxen versehen werden. Die Auswertung der Daten dauerte jedoch aufgrund der bereits genannten Gründe mehrere Tage.
+
+Um das Bearbeiten der Daten zu beschleunigen, wurde ein Skript entwickelt, das mit der Tastatur gesteuert werden kann, um Bounding Boxen zu löschen oder Tierbeschreibungen hinzuzufügen. Die Bounding Boxen sind im Pascal-VOC-Format gespeichert, das eine standardisierte Darstellung von Objekten in Bildern ermöglicht. Das Skript erleichtert somit das schnelle und effiziente Korrigieren der Daten, indem es eine interaktive Methode zur Bearbeitung der Bounding Boxen und ihrer zugehörigen Tierbeschreibungen bereitstellt.
+\\
+Das Skript ermöglicht eine einfache Nutzung zur Bearbeitung der Bounding Boxen und Tierbeschreibungen. Ein Beispiel für die Nutzung ist in der Abbildung dargestellt. Durch die Verwendung der Zahlen 1 bis 4 können Tierbeschreibungen hinzugefügt werden, während durch Drücken der Taste "d" die Bounding Box gelöscht wird. Das Skript erkennt automatisch Dateien, bei denen nach der Bearbeitung keine Bounding Boxen mehr vorhanden sind, und löscht sie entsprechend. Dies erleichtert die effiziente Bearbeitung der Daten, indem nicht mehr benötigte Dateien automatisch entfernt werden.
+\\
+Dadurch ist der Workflow ebenfalls schneller als das editieren der Daten über \textit{Label-Studio}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/xml_relabel.png}
+    \label{fig:xml_relab}
+    \caption{Anwendung zum herausfiltern der Bounding Boxen}
+\end{figure}
+
 \subsection{Verbesserung der Bildqualität}
+
+Die IMX-219 Kamerasensoren, die für das Abschrecksystem verwendet wurden, unterstützen keinen zuschaltbaren Infrarotfilter wie die für den Raspberry Pi geeigneten OV5647 Sensoren. Dadurch sind die Bilder, insbesondere bei Tageslicht, von einer starken Rotfärbung geprägt. Dieser Unterschied zwischen den Kameras ist in Abbildung \ref{fig:vgl_day} dargestellt. Ein kurzer Testlauf mit einem breits trainierten Modell zeigte an das Erkennungen bei diesem Grad an Zuversichtlichkeit verlieren. Um dies zu verhindern sind daher verschiedene Methoden zur Verbesserung der Bildqualität betrachtet worden.
+
+Zunächst ist die Nachbearbeitung der Bilder in Betracht gezogen worden, um sie natürlicher wirken zu lassen. Aufgrund der Ressourcenintensität der Nachbearbeitungsmethoden wurde davon aber Abstand genommen. Diese Nachbearbeitung würde zu einer erheblichen Verzögerung der Erkennung und Verlangsamung des gesamten Prozesses führen und ist daher für das Abschrecksystem nicht praktikabel.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/vgl_imx_ov_day.png}
+    \label{fig:vgl_day}
+    \caption{Makeraufnahme von IMX-219 (links) und OV5647 mit Infrarotfilter(rechts)}
+\end{figure}
+
+Daher musste eine andere Methode gefunden werden, die die Bilder natürlicher aussehen lässt und eine geringe Verarbeitungszeit besitzt. Dabei kam \textit{GStreamer} ins Spiel. GStreamer ist ein leistungsstarkes Multimedia-Framework, das eine Vielzahl von Bildverarbeitungsprozessen bietet. Es ermöglicht die Echtzeitverarbeitung von Bildern und Videos, was ideal für das Abschrecksystem ist. Darüber hinaus bietet GStreamer die Möglichkeit der effizienten Parallelverarbeitung auf der CPU oder GPU, um die Ausführungszeit zu minimieren. Die Integration von GStreamer mit OpenCV erfordert nur geringfügige Anpassungen am Code. Ein weiterer Vorteil besteht darin, dass GStreamer bereits auf dem Jetson Nano durch das Betriebssystem installiert ist. Dies erleichtert die Nutzung und Integration in das Abschrecksystem. \cite{gstreamer}
+
+Für die Verbesserung der Bildqualität und der Nutzung von GStreamer ist es allerdings nötig Kameras via eines Kommandostrings zu Öffnen. Der String ist wie folgend beschrieben:
+
+\begin{quote}
+    \textit{nvarguscamerasrc saturation=0.5 awblock=true wbmode=5 tnr-mode=2 tnr-strength=1  ee-mode=2 ee-strength=1 sensor-id=\%d !
+        video/x-raw(memory:NVMM), width=(int)\%d, height=(int)\%d, framerate=(fraction)\%d/1 !
+        nvvidconv flip-method=\%d ! 
+        video/x-raw, width=(int)\%d, height=(int)\%d, format=(string)BGRx ! 
+        videoconvert ! 
+        video/x-raw, format=(string)BGR ! 
+        videobalance hue=-0.12 contrast=1.1 ! appsink drop}
+\end{quote}
+
+Durch die Verwendung des Arguments \textit{nvarguscamerasrc} werden die Bildverarbeitungsbefehle an GStreamer übergeben. Diese Befehle umfassen die Verringerung der Farbsättigung, sowie die Verbesserung der Kantenerkennung und die Reduzierung von Bildrauschen. Dadurch wird bereits eine deutlcihe Verbesserung der Bilder erkenntlich. Ein weiteres wichtiges Argument ist \textit{wbmode}, das auf den Wert "5" eingestellt ist. Dies bedeutet, dass GStreamer Bildoptimierungen basierend auf den Lichtverhältnissen die bei Tageslicht auftreten vornimmt. Durch diese Konfiguration kann GStreamer die Bildqualität verbessern und die Auswirkungen der Rotfärbung minimieren.\\
+Nach dieser Konfiguration folgt die Einstellung der Kamera bezüglich ihrer Aufnahme und Wiedergabe der Bilder. Dabei kann direkt die Verkleinerung der Bilder für die Objekterkennung durchgeführt werden.
+\\
+Der String schließt jedoch mit dem \texttt{videobalance}-Argument ab. Hierbei werden noch geringfügige Modifikationen der Bilder in Bezug auf Farbton und Kontrast vorgenommen.
+
+Das Endargument \textit{appsink drop} teilt GStreamer mit, das er Daten die er von der Kamera bekommt nicht Zwischenspeichern soll. Ist dieses Argument nicht gesetzt erhält man eine Latenz von mehr als einer Sekunde, da zuerst die alten Bilder aus den GStreamer-FIFO-Buffer gelesen werden. Das Resultat dieser Modifikation ist in Abbildung \ref{fig:gstreamer_argumented} zu sehen. Dabei ist jedoch die Rotfärbung zu einer Gelbfärbung geworden. Dennoch wird die Bildqualität deutlich erhöht.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/gstream_arg_or.png}
+    \label{fig:gstreamer_argumented}
+    \caption{Vergleich einer Szene, die ohne (links) und mit (rechts) GStreamer-Argumenten aufgenommen ist}
+\end{figure}
+
+Nachdem die Aufnahmequalität der Kameras verbessert wurde, wurde die Synchronität der Kameras überprüft. Durch sequenzielle Abfragen der Kameras und das Warten auf die Bilder ergab sich das Problem, dass die Bilder nicht synchron aufgenommen wurden und das Warten blockierend war. Um dieses Problem zu lösen, wurde die Abfrage der Bilddaten in einen parallelen Kontext gestellt. Dabei wurde beobachtet, dass die zeitliche Abweichung der Aufnahmen der beiden Kameras von einer Abweichung von 0,5 Sekunden auf weniger als eine Millisekunde reduziert wurde. Die Kameras laufen somit synchronisiert und können durch den parallelen Kontext für die Tiefenberechnung verwendet werden.
 
 \subsection{Tiefenberechnung} \label{cap:calc_depth}
 
-\subsection{Kombination der Softwarekomponenten}
-Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
+Für die Tiefenberechnung ist es wichtig, genaue Positionen der Tiere in beiden Bildern zu haben. Zusätzlich müssen drei wichtige Daten der Kameras bekannt sein: die Kameraauflösung, die Blickweite und die Brennweite. Mit diesen Informationen und der epipolaren Geometrie aus Kapitel \ref{cap:stereo} ist es möglich, jeden Punkt, der auf beiden Kameras sichtbar ist, im dreidimensionalen Raum darzustellen.
+
+Über die Objekterkennung können die Tiere perfekt in beiden Bildern erkannt werden und ihre Positionen können für die Tiefenberechnung verwendet werden. Der Entfernung auf der Z-Achse der Tiere zu den Kameras kann dann mithilfe der in Kapitel \ref{cap:stereo} beschriebenen Formel berechnet werden. Für das Zielsystem ist es jedoch auch erforderlich, die Winkel der Tiere in Bezug auf das Zielsystem selbst zu bestimmen. Hierbei werden die Kameraauflösung und die Blickweite benötigt.
+\\
+Jeder Punkt auf dem Kamerabild kann als Winkel des Objekts zur Kamera selbst betrachtet werden. Mithilfe der Blickweite der Kamera und der Position des Punktes im Bild kann dann, basierend auf der bereits bestimmten Entfernung auf der Z-Achse, die Entfernung auf der X- und Y-Achse bestimmt werden. Dadurch können die Winkel des Ziels im Bezug auf den Kameras ermittelt werden.
+
+Durch weitere Triangulation und Berücksichtigung der Geometrie des Zielsystems können auch die korrekten Winkel für die horizontale und vertikale Ansteuerung des Zielsystems errechnet werden. Dabei werden die Positionen des Tieres auf beiden Kamerabildern, die Entfernungen und die Blickwinkel genutzt, um die genauen Steuerungswinkel für das Zielsystem zu bestimmen. Diese Werte ermöglichen es, das Zielsystem präzise auf das erkannte Tier auszurichten.
 
 \section{Kostenaufstellung}
 
