@@ -1,1 +1,13 @@
 %!TEX root = ../Studienarbeit.tex
+
+Im Rückblick betrachtet war das Projekt eine Herkulesaufgabe. Anfangs stand aufgrund von Lieferengpässen kein Mikrocontroller mit ausreichender Leistung zur Verfügung, weshalb alternative Hardware gesucht und getestet wurde. Die Mikrocontroller konnten allerdings nicht für das Abschrecksystem verwendet werden, da die Objekterkennung auf den Geräten nicht in Echtzeit verfügbar war.
+\\
+Als der Jetson Nano als letzte verfügbare Option für den Mikrocontroller-Einsatz verfügbar war, stellte sich heraus, dass er nicht mehr aktiv unterstützt wurde und es bei der Verwendung mit verschiedenen Anwendungen zu zahlreichen Problemen kam.
+\\
+Dies liegt daran, dass der Jetson Nano ein veraltetes Modell der Jetson-Reihe ist, wodurch das Betriebssystem noch auf Ubuntu 18.04 basiert. Viele Python-Anwendungen sind jedoch auf neueren Python-Versionen ausgelegt, die auf dem Jetson nicht verfügbar sind. Obwohl ein Upgrade der Python-Version von 3.6 auf neuere Versionen möglich ist, kann die Grafikkarte häufig nicht mehr für die rechenintensiven Objekterkennungsmodelle genutzt werden, was die Verwendung des Jetsons für die Objekterkennung erschwert. Viele Bibliotheken mussten direkt aus den Quelldateien installiert werden. Zudem musste der Jetson zu Beginn häufig neu geflasht werden, da Installationsschritte einer Anwendung die Nutzung einer anderen negativ beeinträchtigten.
+\\
+Deshalb wurde ein Installationsskript erstellt, das die wichtigsten Bibliotheken und Anwendungen erfolgreich und ohne Konflikte installiert. Allerdings konnte das Versionierungsproblem zwischen PyTorch und torchvision innerhalb der gegebenen Zeit nicht gelöst werden. Zudem konnten trotz Modifikation viele Bibliotheken nicht erfolgreich auf dem Jetson installiert werden. Dadurch ist viel Zeit darauf verwendet worden, die wichtigsten Bibliotheken und Anwendungen korrekt zum Laufen zu bringen.
+\\
+Die Einrichtung des Jetson Nano mit Hilfe des Installationsskripts hat alleine schon fast drei Stunden gedauert. Um jedoch die neueste Version von OpenCV nutzen zu können, waren zusätzliche manuelle Schritte erforderlich, was die Gesamtzeit auf etwa 8 Stunden erhöhte.
+
+Der Jetson Nano ermöglichte trotz der genannten Herausforderungen eine Tiererkennung innerhalb 13 Millisekunden unter Verwendung von TensorRT. Jedoch verlängerte sich diese Zeit durch verschiedene Vor- und Nachverarbeitungsschritte. Auch die Integration der Stereo-Vision und die Ansteuerung der Hardware führten zu einer Erhöhung. Um die Latenz zu verringern, wurden nahezu alle Prozesse durch Multithreading beschleunigt. Allerdings konnte keine signifikante Verbesserung der Geschwindigkeit festgestellt werden.

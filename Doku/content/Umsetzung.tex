@@ -403,6 +403,8 @@ Anschließend wurden die Modelle anhand einer handverlesenen Auswahl von Bildern
 
 \section{Zusätzliche Softwarekomponenten}
 
+Für das Abschhrecksystem sind zusätzliche Softwarekomponnenten von nöten. Die wichtigsten werden folgend beschrieben.
+
 \subsection{Erkennung durch Kontur-tracking}
 
 \subsection{Verbesserung der Bildqualität}
@@ -411,7 +413,10 @@ Anschließend wurden die Modelle anhand einer handverlesenen Auswahl von Bildern
 
 \subsection{Kombination der Softwarekomponenten}
 Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und das diese für weiteres Training verwendet werden können. Warum XML? Konvertierungsskript vorhanden, sowie falls 0 Byte Fehler wärs bissle schaud für der rest, weil die dann au weg wäred
+
 \section{Kostenaufstellung}
+
+Folgend sind die Kosten und Verwendungszwecke aufgelistet. 
 
 \begin{longtable}{ p{0.15\textwidth}|p{0.2\textwidth}|p{0.5\textwidth} }
     \endfirsthead
@@ -441,16 +446,28 @@ Auch mit random 0 Byte Bilddaten/ fehlende XML-Dateien /leere XML-Dateien und da
     & Kombiniert mit dem Solarmodul versorgt die Batterie das Abschrecksystem mit der nötigen Energie. Tagsüber wird sie mithilfe des Solarmoduls aufgeladen, während sie Nachts das System mit Energie versorgt. \cite{Autobatterie}
     \\
     Diverse Kleinteile
-    & \centering{25 + X}
+    & \centering{35 + X}
     & Diverse Kleinsteile werden in der Arbeit verwendet. Auch die Transistoren, die verwendet werden um die verschiedenen Aktoren an- und auszuschalten fallen unter dieser Kategorie. Aber auch die Räder, Schläuche, Kabel, Steckverbindungen und Schrauben werden hier miteinberechnet. Zusätzlich kommen die, für das Abschrecksystem angefertigten 3D-gedruckten Elemente hinzu.
     \\
+    NOIR-Kameras
+    & \centering55.98
+    & In der Studienarbeit sind mehrere Kameras verbaut. Dabei wurde zunächst in hinsicht auf den Raspberry Pi, die Kamerasensoren OV5647 angeschaft worden. Diese sind allerdings nicht mit dem Jetson Nano kompaible, weshalb weitere Kamerasensoren bestellt weerden mussten. Die IMX-219 Kamerasensoren sind zudem teurer, weshalb die Kosten für die Kameras von 39.98€ auf 55.98€ erhöhte.
+    \\
+    Jetson Nano
+    & \centering189
+    &  Der Jetson Nano bildet den Kern des Abschrecksystems. Über ihn werden die Tiere erkannt und das Zielsystem und die weiteren Abschreckakoren angesteuert. Mit einer GPU ausgestattet ist sie in der Lage Echtzeiterkennung der Tiere zu ermöglichen.\newline
+    Da aufgrund von Ansteuerungsproblemen der Nano nicht in der Lage war die Hardware direkt anzusteuern, musste ein Arduino UNO diese Funktion übernehmen. Dadurch entstanden zusätzliche Kosten von 13.99€\\
     Aluminium-kiste
     & \centering{109 DM}
-    & Die Aluminiumkiste ist Witterungsfest und besitzt eine gute Wärmeableitung. Alle Aktoren und Gerätschaften können in ihr vor Witterungsbedingungen geschützt untergebracht werden.
+    & Die Aluminiumkiste ist Witterungsfest und besitzt eine gute Wärmeableitung. Alle Aktoren und Gerätschaften können in ihr vor Witterungsbedingungen geschützt untergebracht werden.\\
+    \caption{Kostenübersicht und Erklärung der Funktion der verschieden angeschafften Hardware}
 \end{longtable}
 
-\begin{figure}[h]
+Viele Kleinteile, sowie der Lautsprecher konnten aus dem eigenen Bestand verwendet werden. Daher wird unter dem Punkt \textit{Diverse Kleinteile} eine Summe $X$ angegeben. Die Kosten des Abschrecksystem berufen sich nach dieser rechnung auf mindestens 550€. Dabei kamen circa 200€ für das Verwenden eines autoarken Systems auf. Der Aufbau kann in Abbildung \ref{fig:whole_thing} betrachtet werden. Das 3D-Modell ermöglichte eine übersichtliche Darstellung aller Hardwarekomponenten.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/whole_box.png}
     \label{fig:whole_thing}
+    \caption{Aufbau aller Hardwarekomponenten innerhalb eines 3D-Modells}
 \end{figure}
