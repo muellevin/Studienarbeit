@@ -1,32 +1,41 @@
 %!TEX root = ../Studienarbeit.tex
 
 
-\begin{enumerate}
-    \item Auswahl der Hardware und Bibliotheken (Wasserpumpe, Kamera, Energieversorgung- und Management, Rust-Crates).
-    \item Einarbeitung Opencv, Tensorflow und Rust alternativen (wenn in rust nicht vorhanden).
-    \item Hardwaretechnische Realisierung und Implementierung der einzelnen Hardwarecontroller.
-            Eventuell Auslagerung der Motoransteuerung (Zielsystem) auf Arduino $\rightarrow$
-            Einfacherer Wechsel Pi/Jetson da nur Vertikaler und Horizontaler Winkel
-            gestellt werden müssen.\\
-            Hardware:
-            \begin{itemize}
-                \item (Demo?) Raspberry Pi 3b (PI 4 CM + IO/Jetson)
-                \item Unbestimmte Menge an Kabel
-                \item 1-2 Baugleiche Kameras (NoIR da Einsatz bei Nacht/unbeleuchtete Umgebung)
-                \item vielfältige 3D-Drucke Gehäuse/Zielsystem etc.
-                \item Energieversorgung:\\
-                    12V kleine Autobatterie\\
-                    Solarpaneel
-                \item Schrittmotoren/E-Motoren für Zielsystem (mit Positionssensor oder "`einlernen"')
-                \item Pumpe mit Schläuche
-                \item Tonwiedergabe (+Verstärker?)
-                \item Lichtwiedergabe (Blitzlicht)
-                \item Relais für einschalten der Aktoren
-                \\ MOSFETS durch nicht konstante Energiequelle (Batterie/Solaranlage) nicht direkt möglich
-            \end{itemize}
-    \item Demo- und Testentwicklung der Bildverarbeitungssoftware.
-    \\ Batterie/Solar/PI 3 + Kamera in kleine Box für frühzeitiges erhalten von Real-World-Daten
-    \item Weiterentwicklung und Testen in der freien Wildbahn.
-    \\ Alles zusammen in PI 4 oder Jetson
-\end{enumerate}
+Das Ziel der Arbeit besteht darin, eine weitere Komponente zu herkömmlichen Abschrecksystemen hinzuzufügen - Wasser. Besonders Marder und Katzen, die ihre Hinterlassenschaften im Garten verteilen, meiden Wasser. Daher soll unter Verwendung der bereits erprobten Methoden ein Gesamtpaket entwickelt werden, das überall einfach platziert werden kann und Tiere fernhält, sowohl vom Garten als auch vom Auto.
+
+Da unschuldige Passanten nicht nass gespritzt werden sollen, soll das Abschrecksystem nur auf Kleintiere auslösen. Um dies zu realisieren, sollen die Kleintiere mittels Objekterkennung und einer Kamera erkannt werden. Da dies in Echtzeit geschehen soll, müssen der Erkennungs- und Zielerfassungsprozess so schnell wie möglich abgeschlossen sein. Für eine präzise Zielausrichtung des "`Wasserwerfers'" wird eine Entfernungsmessung vom Ziel zum Zielsystem benötigt, wofür eine zweite Kamera zur Stereo-Vision verwendet wird. Durch die Verwendung der zweiten Kamera können Tiefeninformationen aus den 2D-Bildern der einzelnen Kameras gewonnen werden.
+
+Um die Portabilität zu gewährleisten, soll das System in einem tragbaren Behälter untergebracht werden. In diesem Behälter werden alle Komponenten sicher vor Witterungseinflüssen geschützt.
+
+Damit das Abschrecksystem aber auch überallhin transportiert werden kann und dennoch seine Funktionstüchtigkeit behält, soll es nicht auf einen Hausanschluss für Wasser und Strom angewiesen sein. Das Abschrecksystem soll daher über eine eigenständige Energie- und Wasserversorgung verfügen.
+
+
+% \begin{enumerate}
+%     \item Auswahl der Hardware und Bibliotheken (Wasserpumpe, Kamera, Energieversorgung- und Management, Rust-Crates).
+%     \item Einarbeitung Opencv, Tensorflow und Rust alternativen (wenn in rust nicht vorhanden).
+%     \item Hardwaretechnische Realisierung und Implementierung der einzelnen Hardwarecontroller.
+%             Eventuell Auslagerung der Motoransteuerung (Zielsystem) auf Arduino $\rightarrow$
+%             Einfacherer Wechsel Pi/Jetson da nur Vertikaler und Horizontaler Winkel
+%             gestellt werden müssen.\\
+%             Hardware:
+%             \begin{itemize}
+%                 \item (Demo?) Raspberry Pi 3b (PI 4 CM + IO/Jetson) + Google Coral USB accelerator
+%                 \item Unbestimmte Menge an Kabel
+%                 \item 1-2 Baugleiche Kameras (NoIR da Einsatz bei Nacht/unbeleuchtete Umgebung)
+%                 \item vielfältige 3D-Drucke Gehäuse/Zielsystem etc.
+%                 \item Energieversorgung:\\
+%                     12V kleine Autobatterie\\
+%                     Solarpanel
+%                 \item Schrittmotoren/E-Motoren für Zielsystem (mit Positionssensor oder "`einlernen"')
+%                 \item Pumpe mit Schläuche
+%                 \item Tonwiedergabe (+Verstärker?)
+%                 \item Lichtwiedergabe (Blitzlicht)
+%                 \item Relais für einschalten der Aktoren
+%                 \\ MOSFETS durch nicht konstante Energiequelle (Batterie/Solaranlage) nicht direkt möglich
+%             \end{itemize}
+%     \item Demo- und Testentwicklung der Bildverarbeitungssoftware.
+%     \\ Batterie/Solar/PI 3 + Kamera in kleine Box für frühzeitiges erhalten von Real-World-Daten
+%     \item Weiterentwicklung und Testen in der freien Wildbahn.
+%     \\ Alles zusammen in PI 4 + USB Coral oder Jetson
+% \end{enumerate}
 

@@ -17,12 +17,11 @@
 % Chapter defines
 \newcommand*{\ListOfChapters}{%
     Einleitung,
-	Aufgabenstellung,
+	% Aufgabenstellung,
 	Grundlagen,
 	Umsetzung,
 	Reflexion und Ausblick
 }%
-
 
 % \makeglossaries
 % \input{ads/glossary}
@@ -77,6 +76,10 @@
 	\cleardoublepage
 	\input{ads/acronyms}
 
+	% Formelverzeichnis
+	\cleardoublepage
+	% \input{ads/Formelverzeichnis.tex}
+
 	% Abbildungsverzeichnis
 	\cleardoublepage
 	\listoffigures
@@ -84,6 +87,8 @@
 	%Tabellenverzeichnis
 	\cleardoublepage
 	\listoftables
+
+
 
 	% % Quellcodeverzeichnis
 	% \cleardoublepage
@@ -120,8 +125,8 @@
 	% \printglossary[style=altlist,title=\langglossar]
 	
 	% % sonstiger Anhang
-	% \clearpage
-	% \appendix
-	% \input{ads/appendix}
+	\clearpage
+	\input{ads/appendix}
+
 	
 \end{document}

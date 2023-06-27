@@ -2,6 +2,7 @@
 .project
 output/
 dokumentation.pdf
+Literatur/
 T2000*.pdf
 *.swp
 *.backup

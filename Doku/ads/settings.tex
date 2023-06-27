@@ -92,19 +92,21 @@
 \usepackage{longtable}
 % \usepackage{multirow}
 % \usepackage{tabularray}
-% \usepackage{enumitem}	% mehr Optionen bei Aufzählungen
+\usepackage{enumitem}	% mehr Optionen bei Aufzählungen
 \usepackage{graphicx}
 % \usepackage{pdfpages}   % zum Einbinden von PDFs
 \usepackage{xcolor} 	% für HTML-Notation
-% \usepackage{float}
+\usepackage{float}
 % \usepackage{array}
 \usepackage{calc}		% zum Rechnen (Bildtabelle in Deckblatt)
 % \usepackage[right]{eurosym}
-% \usepackage{wrapfig}
+\usepackage{wrapfig}
 \usepackage{pgffor} % für automatische Kapiteldateieinbindung
 % \usepackage[perpage, hang, multiple, stable]{footmisc} % Fussnoten
 \usepackage[printonlyused]{acronym} % falls gewünscht kann die Option footnote eingefügt werden, dann wird die Erklärung nicht inline sondern in einer Fußnote dargestellt
-% \usepackage{listings}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage[german=quotes]{csquotes}
 
 % Notizen. Einsatz mit \todo{Notiz} oder \todo[inline]{Notiz}. 
 % \usepackage[obeyFinal,backgroundcolor=yellow,linecolor=black]{todonotes}
@@ -159,7 +161,7 @@
 % Literaturverweise (sowohl deutsch als auch englisch)
 % \iflang{de}{%
 \usepackage[
-	backend=biber,		% empfohlen. Falls biber Probleme macht: bibtex
+	backend=bibtex,		% empfohlen. Falls biber Probleme macht: bibtex
 	bibwarn=true,
 	bibencoding=utf8,	% wenn .bib in utf8, sonst ascii
 	sortlocale=de_DE,
@@ -202,6 +204,23 @@
 % \renewcommand\lstlistingname{\langlistingname}
 % \renewcommand\lstlistlistingname{\langlistlistingname}
 % \def\lstlistingautorefname{\langlistingautorefname}
+\lstset{
+        captionpos=b,                % Beschriftung unterhalb (bottom)
+        language=C++,                % Sprache auf C++ einstellen
+        numbers=left,                % Zeilennummern links
+        % frame=trbl,                  % Rahmen zeichnen (top, right, bottom, left)
+        frame=single,
+        basicstyle=\small\ttfamily,  % Festbreitenschrift verwenden (small)
+        xleftmargin=5.0ex,
+        }
+\lstset{language=C++,
+    basicstyle=\ttfamily,
+    keywordstyle=\color{blue}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily,
+	breaklines=true,
+    morecomment=[l][\color{magenta}]{\#}
+}
 
 % Abstände in Tabellen
 \setlength{\tabcolsep}{\spaltenabstand}

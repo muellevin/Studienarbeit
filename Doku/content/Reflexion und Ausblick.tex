@@ -1,1 +1,22 @@
 %!TEX root = ../Studienarbeit.tex
+
+Im Rückblick betrachtet war das Projekt eine Herkulesaufgabe. Anfangs stand aufgrund von Lieferengpässen kein Mikrocontroller mit ausreichender Leistung zur Verfügung, weshalb alternative Hardware gesucht und getestet wurde. Die Mikrocontroller konnten allerdings nicht für das Abschrecksystem verwendet werden, da die Objekterkennung auf den Geräten nicht in Echtzeit verfügbar war.
+\\
+Als der Jetson Nano als letzte verfügbare Option für den Mikrocontroller-Einsatz verfügbar war, stellte sich heraus, dass er nicht mehr aktiv unterstützt wurde und es bei der Verwendung mit verschiedenen Anwendungen zu zahlreichen Problemen kam.
+\\
+Dies liegt daran, dass der Jetson Nano ein veraltetes Modell der Jetson-Reihe ist, wodurch das Betriebssystem noch auf Ubuntu 18.04 basiert. Viele Python-Anwendungen sind jedoch auf neueren Python-Versionen ausgelegt, die auf dem Jetson nicht verfügbar sind. Obwohl ein Upgrade der Python-Version von 3.6 auf neuere Versionen möglich ist, kann die Grafikkarte häufig nicht mehr für die rechenintensiven Objekterkennungsmodelle genutzt werden, was die Verwendung des Jetsons für die Objekterkennung erschwert. Viele Bibliotheken mussten direkt aus den Quelldateien installiert werden. Zudem musste der Jetson zu Beginn häufig neu geflasht werden, da Installationsschritte einer Anwendung die Nutzung einer anderen negativ beeinträchtigten.
+\\
+Deshalb wurde ein Installationsskript erstellt, das die wichtigsten Bibliotheken und Anwendungen erfolgreich und ohne Konflikte installiert. Allerdings konnte das Versionierungsproblem zwischen PyTorch und torchvision innerhalb der gegebenen Zeit nicht gelöst werden. Zudem konnten trotz Modifikation viele Bibliotheken nicht erfolgreich auf dem Jetson installiert werden. Dadurch ist viel Zeit darauf verwendet worden, die wichtigsten Bibliotheken und Anwendungen korrekt zum Laufen zu bringen.
+\\
+Die Einrichtung des Jetson Nano mit Hilfe des Installationsskripts hat alleine schon fast drei Stunden gedauert. Um jedoch die neueste Version von OpenCV nutzen zu können, waren zusätzliche manuelle Schritte erforderlich, was die Gesamtzeit auf etwa 8 Stunden erhöhte.
+
+Der Jetson Nano ermöglichte trotz der genannten Herausforderungen eine Tiererkennung innerhalb 13 Millisekunden unter Verwendung von TensorRT. Jedoch verlängerte sich diese Zeit durch verschiedene Vor- und Nachverarbeitungsschritte. Auch die Integration der Stereo-Vision und die Ansteuerung der Hardware führten zu einer Erhöhung der Inferrenzzeit um den Faktor 10. Um die Latenz zu verringern, wurden deshalb nahezu alle Prozesse durch Multithreading beschleunigt. Allerdings konnte keine signifikante Verbesserung der Geschwindigkeit festgestellt werden.
+
+Eine Verbesserungsmöglichkeit könnte das Auslagern von Codeabschnitten oder des gesamten Codes nach C++ sein. Artikel, die sich mit der Inferenzzeit von Objekterkennungsmodellen beschäftigen, behaupten, dass sie dadurch eine Reduzierung der Inferenzzeit beobachten konnten.
+\\
+Zudem könnte es auch interessant sein, Nvidias DeepStream SDK zu nutzen. Dadurch sollen ebenfalls geringe Inferenzzeiten möglich sein.
+
+Eine weitere Reduzierung der Inferenzzeit könnte durch die Änderungen an dem Stereo-Vision-Aufbau und der Tiefenbestimmung erreicht werden. Die derzeitige Implementierung sieht vor, dass die Objekterkennung gleichzeitig auf beiden Kameras durchgeführt wird. Bereits bei einer Ausführung der Objekterkennung auf einem Bild werden die Ressourcen des Jetsons nahezu vollständig aufgebraucht. Daher wäre es sinnvoll, das Ermitteln der Position des Tieres auf dem zweiten Bild durch alternative Methoden zu ersetzen.
+
+Zusammenfassend lässt sich sagen, dass das Projekt eine große Herausforderung darstellte, sei es bei der Umsetzung oder der Beschaffung der Hardware. Das Projekt war ständig von der Suche nach Problemlösungen überschattet. Dennoch konnte ein funktionierender Prototyp fertiggestellt werden.\\
+Während des Projekts konnte viel über Unix-Systeme, maschinelles Lernen, Objekterkennung und Code-Optimierung gelernt werden. Diese erworbenen Fähigkeiten werden sicherlich bei der Fortführung des Projekts von Nutzen sein. Da der Waschbär im Garten weiterhin sein Unwesen treibt, besteht persönliches Interesse daran, das Projekt abzuschließen und es auf das Optimum auszurichten. Nämlich der Vertreibung des Waschbären und anderen unliebsamen Kleintieren.
