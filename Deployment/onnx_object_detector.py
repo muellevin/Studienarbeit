@@ -1,21 +1,24 @@
 
+
+from typing import List, Tuple
+from Deployment.depths_estimation_and_angle import Detection
+from scripts.Paths import LABELS, paths, TEST_IMAGE
+from camera_setup import vStream
+import numpy as np
+import onnxruntime as ort
+import threading
+import cv2
+import os
 import time
 import sys
 sys.path.append('/home/levin/.local/lib/python3.6/site-packages')
-import os
-import cv2
-import threading
-import onnxruntime as ort
-import numpy as np
-from camera_setup import vStream
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../Detection_training/Tensorflow/"))
-from scripts.Paths import LABELS, paths, TEST_IMAGE
 
 MODEL_NAME = 'raccoon_yolov8n_320_B16_ep34'
 
 onnx_path = os.path.join(paths.MODEL_PATH, MODEL_NAME, 'export',
-                                   'best.onnx')
+                         'best.onnx')
 
 
 EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
@@ -23,8 +26,9 @@ EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 
 MODEL_SHAPE = (320, 320)
 
+
 class ThreadedDetection(threading.Thread):
-    
+
     def __init__(self, frame_capture: vStream, model=onnx_path, threshold=0.25):
         threading.Thread.__init__(self)
         self.model = model
@@ -32,7 +36,7 @@ class ThreadedDetection(threading.Thread):
         self.frame_capture = frame_capture
         # Load the model
         self.session, self.input_name, self.output_name = load_model(self.model)
-        self.detections = [{}, None]
+        self.detections: Tuple[List[Detection], np.ndarray]
         self.daemon = True
         self.start()
 
@@ -42,18 +46,17 @@ class ThreadedDetection(threading.Thread):
             frame = self.frame_capture.getFrame()
             if frame is not None:
                 blob_image = preprocess_frame(frame)
-            
+
                 # run interference
                 output = self.session.run([self.output_name], {self.input_name: blob_image})[0]
-            
-                self.detections[0] = postprocess_onnx(output, confidence_threshold=self.threshold)
-                self.detections[1] = frame
+
+                self.detections[0] = post_process_onnx(output, confidence_threshold=self.threshold)  # type: ignore
+                self.detections[1] = frame  # type: ignore
                 fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
                 print(f'current fps: {fps}')
 
     def get_detections(self):
         return self.detections
-
 
 def load_model(model_path):
     # Load the ONNX model
@@ -76,22 +79,22 @@ def preprocess_image(image_path, input_shape):
     image = cv2.dnn.blobFromImage(image, scalefactor=1 / 255, size=MODEL_SHAPE, swapRB=True)
     return image, original_image, scale
 
-# To test
 def preprocess_frame(frame: np.ndarray):
     image = cv2.dnn.blobFromImage(frame, scalefactor=1 / 255, size=MODEL_SHAPE, swapRB=True)
     return image
 
-def postprocess_onnx(outputs, scale=1, confidence_threshold=0.05):
+
+def post_process_onnx(outputs, scale=1, confidence_threshold=0.05) -> List[Detection]:
     outputs = np.squeeze(outputs).T
-    boxes = outputs[:,:4]
+    boxes = outputs[:, :4]
     classes_scores = outputs[:, 4:]
     valid_indices = np.where(classes_scores > confidence_threshold)[0]
     valid_boxes = boxes[valid_indices]
     valid_scores = classes_scores[valid_indices]
-    valid_boxes[:,0] -=  0.5 * valid_boxes[:,2]
-    valid_boxes[:,1] -= 0.5 * valid_boxes[:,3]
-    valid_boxes[:,2] += valid_boxes[:,0]
-    valid_boxes[:,3] += valid_boxes[:,1]
+    valid_boxes[:, 0] -= 0.5 * valid_boxes[:, 2]
+    valid_boxes[:, 1] -= 0.5 * valid_boxes[:, 3]
+    valid_boxes[:, 2] += valid_boxes[:, 0]
+    valid_boxes[:, 3] += valid_boxes[:, 1]
     valid_boxes *= scale
 
     class_ids = np.argmax(valid_scores, axis=1)
@@ -99,13 +102,11 @@ def postprocess_onnx(outputs, scale=1, confidence_threshold=0.05):
     result_boxes = cv2.dnn.NMSBoxes(valid_boxes, valid_scores, confidence_threshold, 0.45, 0.5)
     detections = []
     for i in result_boxes:
-        detections.append(
-            {
-                'box': np.round(valid_boxes[i]).astype(np.int32),
-                'score': valid_scores[i],
-                'class_name': CLASSES[class_ids[i] - 1]
-            })
+        detections.append(Detection.from_detect(
+            np.round(valid_boxes[i]).astype(np.int32),
+            valid_scores[i], CLASSES[class_ids[i] - 1]))
     return detections
+
 
 def visualize_output(image: np.ndarray, detections) -> np.ndarray:
     """
@@ -131,9 +132,11 @@ def visualize_output(image: np.ndarray, detections) -> np.ndarray:
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=2)
     return image
 
+
 CLASSES = {}
 for label in LABELS:
     CLASSES[label['id']] = label['name']
+
 
 def run_object_detection(image_path, model_path, confidence_threshold=0.25):
     input_shape = (320, 320)  # Adjust the input shape according to your model's requirements
@@ -147,8 +150,8 @@ def run_object_detection(image_path, model_path, confidence_threshold=0.25):
         start_time = cv2.getTickCount()
         image, original_image, scale = preprocess_image(image_path, input_shape)
         output = session.run([output_name], {input_name: image})[0]
-    
-        detections = postprocess_onnx(output, scale, confidence_threshold=confidence_threshold)
+
+        detections = post_process_onnx(output, scale, confidence_threshold=confidence_threshold)
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - start_time)
         print(f'current fps: {fps}')
     cv2.imwrite('img.jpg', visualize_output(original_image, detections))
@@ -177,6 +180,7 @@ def run_object_detection_on_cam(model_path, confidence_threshold=0.25):
     # myFrame3=np.hstack((vis, vis_2))
     cv2.imwrite('img.jpg', vis)
     # cv2.waitKey()
+
 
 # Example usage
 image_path = TEST_IMAGE

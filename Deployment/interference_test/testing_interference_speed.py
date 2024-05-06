@@ -346,13 +346,10 @@ for filename in os.listdir(input_dir):
         print(f"time needed for file {filename} is {file_time:.4f} seconds")
         times.append(file_time)
 
-        if file_time < fastest_time:
-            fastest_time = file_time
 
-        if file_time > slowest_time:
-            slowest_time = file_time
-
-# Calculate the average time
+# Calculate the times
+fastest_time = min(times)
+slowest_time = max(times)
 average_time = sum(times) / len(times)
 
 # Print the results

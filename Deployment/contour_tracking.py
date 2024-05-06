@@ -1,9 +1,11 @@
+from typing import List
 import cv2
 import threading
 import numpy as np
 import sys
 import os
-from camera_setup import gstreamer_pipeline, vStream
+from depths_estimation_and_angle import Detection
+from camera_interaction import gstreamer_pipeline, vStream
 import datetime
 from time import sleep
 
@@ -31,25 +33,25 @@ def get_jetson_temp():
     return float(temp_string) / 1000.0
 
 
-def write_detections_and_image(detections, frame, prefix='img'):
+def write_detections_and_image(detections: List[Detection], frame, prefix='img'):
     file = prefix + str(datetime.datetime.now()).replace(':', '_') + '.xml'
     file = os.path.join(paths.SAVED_MOVING, file)
     img_path = os.path.splitext(file)[0] + '.jpg'
     cv2.imwrite(img_path, frame)
-    
+
     objects = ""
     for box in detections:
-        bbox = box['box']
         objects += f"""<object>
-                        <name>{box['class_name']}</name>
+                        <name>{box.classification}</name>
                         <pose>Unspecified</pose>
                         <truncated>1</truncated>
                         <difficult>0</difficult>
+                        <score>{box.confidence:.4f}</score>
                         <bndbox>
-                            <xmin>{bbox[0]}</xmin>
-                            <ymin>{bbox[1]}</ymin>
-                            <xmax>{bbox[2]}</xmax>
-                            <ymax>{bbox[3]}</ymax>
+                            <xmin>{box.xmin}</xmin>
+                            <ymin>{box.ymin}</ymin>
+                            <xmax>{box.xmax}</xmax>
+                            <ymax>{box.ymax}</ymax>
                         </bndbox>
                     </object>\n"""
     file_str = f"""<annotation verified="no">

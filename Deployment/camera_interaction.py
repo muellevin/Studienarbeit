@@ -1,15 +1,11 @@
-# MIT License
-# Copyright (c) 2019-2022 JetsonHacks
-
-# Using a CSI camera (such as the Raspberry Pi Version 2) connected to a
-# NVIDIA Jetson Nano Developer Kit using OpenCV
-# Drivers for the camera and OpenCV are included in the base image
-
+import threading
+from time import sleep
 import cv2
 from threading import Thread
-import time
 import atexit
 import numpy as np
+
+# sudo service nvargus-daemon restart # Because too much errors occured
 
 """ 
 gstreamer_pipeline returns a GStreamer pipeline for capturing from the CSI camera
@@ -18,67 +14,69 @@ display_width and display_height determine the size of each camera pane in the w
 Default 1920x1080 displayd in a 1/4 size window
 """
 
+
 def gstreamer_pipeline(
     sensor_id=0,
-    capture_width=3264,
-    capture_height=2464,
+    capture_width=1920,
+    capture_height=1080,
     display_width=320,
     display_height=320,
-    framerate=21,
+    framerate=30,
     flip_method=0,
 ):
+    # return (f"nvarguscamerasrc sensor-id={sensor_id} ! "
+    #         "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080,format=(string)NV12, framerate=(fraction)30/1 ! "
+    #         f"nvvidconv flip-method={flip_method} ! "
+    #         f"video/x-raw, width=(int){display_width}, height=(int){display_height}, format=(string)BGRx ! "
+    #         "videoconvert !"
+    #         "appsink drop")
+
     return (
-        "nvarguscamerasrc saturation=0.5 awblock=true wbmode=5 tnr-mode=2 tnr-strength=1  ee-mode=2 ee-strength=1 sensor-id=%d !"
-        "video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, framerate=(fraction)%d/1 ! "
-        "nvvidconv flip-method=%d ! "
-        "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
-        "videoconvert ! "
-        "video/x-raw, format=(string)BGR ! "
-        "videobalance hue=-0.12 contrast=1.1 ! appsink drop"
-        % (
-            sensor_id,
-            capture_width,
-            capture_height,
-            framerate,
-            flip_method,
-            display_width,
-            display_height,
-        )
+        f"nvarguscamerasrc saturation=0.5 awblock=true wbmode=5 tnr-mode=2 tnr-strength=1  ee-mode=2 ee-strength=1 sensor-id={sensor_id} ! "
+        f"video/x-raw(memory:NVMM), width=(int){capture_width}, height=(int){capture_height}, framerate=(fraction){framerate}/1 ! "
+        f"nvvidconv flip-method={flip_method} ! "
+        f"video/x-raw, width=(int){display_width}, height=(int){display_height}, format=(string)BGRx ! "
+        f"videoconvert ! "
+        f"video/x-raw, format=(string)BGR ! "
+        f"videobalance hue=-0.12 contrast=1.1 ! appsink max-time=0.5 max-buffers=1 drop=true"
     )
-    # return (
-    #     "nvarguscamerasrc saturation=1 awblock=false wbmode=1 tnr-mode=1 tnr-strength=-1  ee-mode=1 ee-strength=-1 sensor-id=%d !"
-    #     "video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, framerate=(fraction)%d/1 ! "
-    #     "nvvidconv flip-method=%d ! "
-    #     "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
-    #     "videoconvert ! "
-    #     "video/x-raw, format=(string)BGR ! "
-    #     "appsink"
-    #     % (
-    #         sensor_id,
-    #         capture_width,
-    #         capture_height,
-    #         framerate,
-    #         flip_method,
-    #         display_width,
-    #         display_height,
-    #     )
-    # )
 
 
 class vStream:
-    def __init__(self,src):
+    def __init__(self, src, max_invalid=100):
 
-        self.capture=cv2.VideoCapture(src)
+        self.capture = cv2.VideoCapture(src, cv2.CAP_GSTREAMER)
+        self.frame = np.ndarray([])
+        self.max_invalid = max_invalid
+        # self.times = []
         atexit.register(self.capture.release)
-        self.thread=Thread(target=self.update,args=())
-        self.thread.daemon=True
+        self.thread = Thread(target=self.update, args=())
+        self.thread.daemon = True
+        self.read_lock = threading.Lock()
         self.thread.start()
-    def update(self):
-        while True:
-            _,self.frame=self.capture.read()
 
-    def getFrame(self):
-        return self.frame
+    def update(self):
+
+        invalid_counter = 0
+
+        while True:
+            grabbed, frame = self.capture.read()
+            if grabbed and frame is not None:
+                invalid_counter = 0
+                with self.read_lock:
+                    self.frame = frame
+            else:
+                invalid_counter += 1
+
+            if invalid_counter >= self.max_invalid:
+                self.capture.release()
+                raise BufferError(f'Failed to read camera data {invalid_counter} times')
+
+    def get_frame(self):
+        with self.read_lock:
+            frame = self.frame.copy()
+        return frame
+
 
 def show_camera():
     window_title = "CSI Camera"
@@ -92,8 +90,8 @@ def show_camera():
             ret_val, frame = video_capture.read()
             ret_val, frame1 = video_capture1.read()
 
-            myFrame3=np.hstack((frame,frame1))
-            cv2.imwrite('ComboCam.jpg',myFrame3)
+            myFrame3 = np.hstack((frame, frame1))
+            cv2.imwrite('ComboCam.jpg', myFrame3)
             cv2.imwrite("image.jpg", frame)
 
         finally:
@@ -105,31 +103,60 @@ def show_camera():
 
 
 def take_mul_cam():
-    cam1=vStream(gstreamer_pipeline(flip_method=3, sensor_id=0))
-    cam2=vStream(gstreamer_pipeline(flip_method=1, sensor_id=1))
-    font=cv2.FONT_HERSHEY_SIMPLEX
-    startTime=time.time()
-    dtav=0
-    i = 0
-    if True:
+    cam1 = vStream(gstreamer_pipeline(flip_method=3, sensor_id=0))
+    cam2 = vStream(gstreamer_pipeline(flip_method=1, sensor_id=1))
+    while not (cam1.capture.grab() and cam2.capture.grab()):
+        sleep(0.1)
+
+    for _ in range(0, 100):
         try:
-            myFrame1=cam1.getFrame()
-            cv2.imwrite('ComboCam.jpg',myFrame1)
-            myFrame2=cam2.getFrame()
-            cv2.imwrite('ComboCam.jpg',myFrame2)
-            myFrame3=np.hstack((myFrame1,myFrame2))
-            cv2.imwrite('ComboCam.jpg',myFrame3)
-    
-    
-    
+            myFrame1 = cam1.get_frame()
+            # cv2.imwrite('own_images/left' +str(datetime.datetime.now()).replace(':', '_') +'.jpg', myFrame1)
+            myFrame2 = cam2.get_frame()
+            # cv2.imwrite('own_images/right' +str(datetime.datetime.now()).replace(':', '_') +'.jpg', myFrame2)
+            myFrame3 = np.hstack((myFrame1, myFrame2))
+            cv2.imwrite('image.jpg', myFrame3)
+
         except:
             print('frame not available')
-            
-    cam1.capture.release()
-    cam2.capture.release()
-    cv2.destroyAllWindows()
+        sleep(0.4)
     exit(1)
+
+
+def check_fps():
+    # read is ok
+    cam = vStream(gstreamer_pipeline(flip_method=3))
+    # cam = CSI_Camera()
+    # cam.open(0)
+    # cam.start()
+
+    # while not cam.capture.grab():
+    #     sleep(0.1)
+
+    for i in range(0, 1000):
+        #     # cv2.imshow('Images', cam.getFrame())
+        #     # time.sleep(0.01)
+        cv2.imwrite('image.jpg', cam.get_frame())
+        sleep(0.01)
+        # cam.get_frame()
+    # cam.stop()
+    # cam.release()
+    # Calculate the average time
+    # tt = cam.times.copy()
+    # # Calculate the times
+    # fastest_time = min(tt)
+    # slowest_time = max(tt)
+    # average_time = sum(tt) / len(tt)
+
+    # # Print the results
+    # print(f"Interference time stats")
+    # print(f"    Average time: {average_time:.4f} seconds. Took: {len(tt)} pictures")
+    # print(f"    Fastest time: {fastest_time:.4f} seconds")
+    # print(f"    Slowest time: {slowest_time:.4f} seconds")
+    # exit(1)
+
 
 if __name__ == "__main__":
     take_mul_cam()
     # show_camera()
+    # check_fps()

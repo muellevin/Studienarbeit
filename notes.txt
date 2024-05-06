@@ -329,3 +329,6 @@ Bei Obj. vollständiger Absturz -> stromzufuhr gekappt
 Single detection 22 FPS
 multiple cams detection 11 FPS
 beides 100% Auslastung oder mehr nach Jtop > 8W -> test in 5W modus -> kein crash 6 FPS einfach
+
+
+in case of gestreamer error sudo service nvargus-daemon restart

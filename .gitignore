@@ -1,1 +1,6 @@
 .vscode
+rac
+runs
+/devset
+/own_images
+*__pycache__*

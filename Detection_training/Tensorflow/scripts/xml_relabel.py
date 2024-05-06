@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 import cv2
 
 import xml.etree.ElementTree as ET
@@ -10,29 +11,30 @@ for label in LABELS:
     labels.update({label['id'] : label['name']})
 
 
-def get_bbox(object):
+def get_bbox(object: ET.Element) -> Tuple[int, int, int, int]:
     for element in object:
         if element.tag == 'bndbox':
             x = 0
             y = 0
-            width = 0
-            height = 0
+            xmin = 0
+            xmax = 0
+            ymin = 0
+            ymax = 0
 
             for coord in element:
                 if coord.tag == "xmin":
-                    xmin = int(coord.text)
+                    xmin = int(coord.text)  # type: ignore
                 elif coord.tag == "ymin":
-                    ymin = int(coord.text)
+                    ymin = int(coord.text)  # type: ignore
                 elif coord.tag == "xmax":
-                    xmax = int(coord.text)
+                    xmax = int(coord.text)  # type: ignore
                 elif coord.tag == "ymax":
-                    ymax = int(coord.text)
+                    ymax = int(coord.text)  # type: ignore
 
             x = xmin
             y = ymin
-            width = xmax - xmin
-            height = ymax - ymin
-            return (x, y, height, width)
+    return (x, y, xmax, ymax)
+
 
 
 def main():
