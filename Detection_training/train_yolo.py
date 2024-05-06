@@ -14,7 +14,7 @@ with open(pp.YOLO_CONFIG_PATH, "w") as config:
     config.write("train: ../trainset/images\n")
     config.write("test: ../testset/images\n")
     config.write("val: ../devset/images\n\n")
-    config.write('nc: {}\n'.format(len(pp.LABELS)))
+    config.write('names:\n')
     for i in range(0, len(pp.LABELS)):
         label = pp.LABELS[i]
         yaml_name = '   {}: {}'.format(label['id'], label['name'])
