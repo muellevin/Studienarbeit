@@ -141,6 +141,11 @@ fn delete_unused_labels(
             let mut image_path = input_dir.join("data");
             image_path = image_path.join(&record.ImageID);
 
+            // Ignore not downloaded images
+            if !image_path.exists(){
+                continue;
+            }
+
             let output_file = output_dir.join(&record.ImageID);
             // Copy the image file to the output directory
             if !output_file.exists() {

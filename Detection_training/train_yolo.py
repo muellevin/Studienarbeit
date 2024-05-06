@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 paths = pp.paths
 paths.setup_paths()
-CUSTOM_MODEL_NAME = 'raccoon_pre_yolov8s_320_Bbest_ep100_aug_alb'
+CUSTOM_MODEL_NAME = 'raccoon_pre_yolov8n_320_Bbest_ep100_aug_alb'
 YOLO_WEIGHTS = os.path.join("runs", "detect", CUSTOM_MODEL_NAME, "weights")
 YOLO_BEST = os.path.join(YOLO_WEIGHTS, 'best_saved_model')
 
@@ -14,8 +14,7 @@ with open(pp.YOLO_CONFIG_PATH, "w") as config:
     config.write("train: ../trainset/images\n")
     config.write("test: ../testset/images\n")
     config.write("val: ../devset/images\n\n")
-    config.write('nc: {}\n'.format(len(pp.LABELS) + 1))
-    config.write("names:\n   0: index_error,\n")
+    config.write('nc: {}\n'.format(len(pp.LABELS)))
     for i in range(0, len(pp.LABELS)):
         label = pp.LABELS[i]
         yaml_name = '   {}: {}'.format(label['id'], label['name'])
@@ -27,44 +26,46 @@ with open(pp.YOLO_CONFIG_PATH, "w") as config:
 # Load a model from the ultralytics hub
 # yaml -> scratch
 # .pt pretrained
-model = YOLO("yolov8s.pt")  # build a new model from scratch
+model = YOLO("yolov8n.pt")
 
-"""
+
 # Use the model
 results = model.train(
     data=pp.YOLO_CONFIG_PATH,
-    epochs=100,
+    epochs=34,
     imgsz=320,
-    batch=-1, # Use best option
-    augment=True,# currently it does not care
-    hsv_s=0.1,# during night saturation is low increasing would not be much better
-    hsv_v=0.7, # make it darker (brightness)
-    degrees=15,#image rotation
-    perspective=0.001,# max perspective distortion
-    shear=4,# shearing of objects in image
-    mixup=0.1,# mixin images togethter (probability)
+    patience=10,  # stop after x epochs without some improvements
+    save=True,  # Save model for later resume of training
+    batch=-1,  # automatically set batchsize depending on availability
+    augment=True,  # currently it does not care
+    hsv_s=0.1,  # during night saturation is low increasing would not be better
+    hsv_v=0.7,  # make it darker (brightness)
+    degrees=15,  # image rotation
+    perspective=0.001,  # max perspective distortion
+    shear=4,  # shearing of objects in image
+    mixup=0.1,  # mixin images togethter (probability)
     name=CUSTOM_MODEL_NAME)  # train the model
-"""
+
 #results = model.val()  # evaluate model performance on the validation set
 
 # Load the trained model
-model = YOLO(os.path.join(YOLO_WEIGHTS, "best.pt"), task='detect')
-model.val(data=pp.YOLO_CONFIG_PATH)
+# model = YOLO(os.path.join(YOLO_WEIGHTS, "best.pt"), task='detect')
+model.val()
 # it automatically converts for anything you need
 # Known Bug all int quantization .tflite files are not working (no Detections) same goes with the edgetpu
 # to fix this you need to manually install this PR https://github.com/ultralytics/ultralytics/pull/1695
-model.export(format='tflite', int8=True, imgsz=320, data=pp.YOLO_CONFIG_PATH)
+# model.export(format='tflite', int8=True, imgsz=320, data=pp.YOLO_CONFIG_PATH)
 
-# eval on edgetpu only locally possible
-TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_float32.tflite')
-tflite = YOLO(TFLITE_MODEL, task='detect')
-tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
+# # eval on edgetpu only locally possible
+# TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_float32.tflite')
+# tflite = YOLO(TFLITE_MODEL, task='detect')
+# tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
 
-TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_float16.tflite')
-tflite = YOLO(TFLITE_MODEL, task='detect')
-tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
+# TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_float16.tflite')
+# tflite = YOLO(TFLITE_MODEL, task='detect')
+# tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
 
-# eval on edgetpu only locally possible
-TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_full_integer_quant.tflite')
-tflite = YOLO(TFLITE_MODEL, task='detect')
-tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)
+# # eval on edgetpu only locally possible
+# TFLITE_MODEL = os.path.join(YOLO_BEST, 'best_full_integer_quant.tflite')
+# tflite = YOLO(TFLITE_MODEL, task='detect')
+# tflite.val(data=pp.YOLO_CONFIG_PATH, imgsz=320)

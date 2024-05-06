@@ -44,6 +44,10 @@ class WorkingPaths:
         """Init paths"""
         self.IMAGE_PATH = os.path.join(CURRENT_DIRECTORY, 'workspace','images')
         self.COLLECTED_IMAGES_PATH = os.path.join(self.IMAGE_PATH, 'collected_images')
+        self.OPEN_IMAGES = os.path.join(self.IMAGE_PATH, 'open-images-v7')
+        self.OPEN_IMAGES_TRAIN = os.path.join(self.OPEN_IMAGES, "train")
+        self.OPEN_IMAGES_TEST = os.path.join(self.OPEN_IMAGES, "test")
+        self.OPEN_IMAGES_VALIDATION = os.path.join(self.OPEN_IMAGES, "validation")
         self.RESIZED_IMAGES_PATH = self.COLLECTED_IMAGES_PATH + '_resized'
         self.TRAINSET_PATH = os.path.join(self.IMAGE_PATH, 'trainset')
         self.TESTSET_PATH = os.path.join(self.IMAGE_PATH, 'testset')
@@ -76,7 +80,8 @@ class WorkingPaths:
             os.makedirs(path, exist_ok=True)
 
 
-LABELS = [{'name':'Raccoon', 'id':1}, {'name':'Cat', 'id':2}, {'name':'Fox', 'id':3}, {'name':'Squirrel', 'id':4}]
+LABELS = [{'name': 'Raccoon', 'id': 1}, {'name': 'Cat', 'id': 2}, {'name': 'Fox', 'id': 3},
+          {'name': 'Squirrel', 'id': 4}, {'name': 'Bird', 'id': 5}, {'name': 'Person', 'id': 6}]
 TF_RECORD_SCRIPT_NAME = 'generate_tfrecord.py'
 LABEL_MAP_NAME = 'label_map.pbtxt'
 DATASET_NAME = 'dataset.tar.gz'
@@ -85,6 +90,7 @@ TESTSET_NAME = 'testset.record'
 
 paths = WorkingPaths
 
+GOOGLE_DRIVE_PATH = '/content/drive/MyDrive/Studienarbeit'
 DATASET = os.path.join(paths.IMAGE_PATH, DATASET_NAME)
 YOLO_DATASET = os.path.join(paths.YOLO_IMG_PATH, 'yolo_' + DATASET_NAME)
 YOLO_CONFIG_PATH = os.path.join(paths.YOLO_IMG_PATH, "config.yaml")
@@ -99,10 +105,6 @@ CSV_CONV = os.path.join(paths.SCRIPTS_PATH, "csv_conv", "Cargo.toml")
 CSV_RESIZE = os.path.join(paths.SCRIPTS_PATH, "resize_csv", "Cargo.toml")
 CSV_TO_VOC = os.path.join(paths.SCRIPTS_PATH, "csv_to_xml", "Cargo.toml")
 CSV_FILE_RESIZED = os.path.join(paths.RESIZED_IMAGES_PATH, CSV_FILE_NAME)
-OPEN_IMAGES = os.path.join(paths.IMAGE_PATH, "open-images-v7")
-OPEN_IMAGES_TRAIN = os.path.join(OPEN_IMAGES, "train")
-OPEN_IMAGES_TEST = os.path.join(OPEN_IMAGES, "test")
-OPEN_IMAGES_VALIDATION = os.path.join(OPEN_IMAGES, "validation")
 SPLIT_DATASET = os.path.join(paths.SCRIPTS_PATH, "split_dataset", "Cargo.toml")
 EDGE_TPU_DETECT = os.path.join(paths.PYCORAL, 'examples', 'detect_image.py')
 LABEL_FILE_LITE = os.path.join(paths.IMAGE_PATH, 'labels.txt')
