@@ -80,8 +80,8 @@ class WorkingPaths:
             os.makedirs(path, exist_ok=True)
 
 
-LABELS = [{'name': 'Raccoon', 'id': 1}, {'name': 'Cat', 'id': 2}, {'name': 'Fox', 'id': 3},
-          {'name': 'Squirrel', 'id': 4}, {'name': 'Bird', 'id': 5}, {'name': 'Person', 'id': 6}]
+LABELS = [{'name': 'Raccoon', 'id': 0}, {'name': 'Cat', 'id': 1}, {'name': 'Fox', 'id': 2},
+          {'name': 'Squirrel', 'id': 3}, {'name': 'Bird', 'id': 4}, {'name': 'Person', 'id': 5}]
 TF_RECORD_SCRIPT_NAME = 'generate_tfrecord.py'
 LABEL_MAP_NAME = 'label_map.pbtxt'
 DATASET_NAME = 'dataset.tar.gz'
