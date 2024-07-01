@@ -26,31 +26,31 @@ with open(pp.YOLO_CONFIG_PATH, "w") as config:
 # Load a model from the ultralytics hub
 # yaml -> scratch
 # .pt pretrained
-model = YOLO("yolov8n.pt")
+model = YOLO("best.pt")
 
 
-# Use the model
-results = model.train(
-    data=pp.YOLO_CONFIG_PATH,
-    epochs=34,
-    imgsz=320,
-    patience=10,  # stop after x epochs without some improvements
-    save=True,  # Save model for later resume of training
-    batch=-1,  # automatically set batchsize depending on availability
-    augment=True,  # currently it does not care
-    hsv_s=0.1,  # during night saturation is low increasing would not be better
-    hsv_v=0.7,  # make it darker (brightness)
-    degrees=15,  # image rotation
-    perspective=0.001,  # max perspective distortion
-    shear=4,  # shearing of objects in image
-    mixup=0.1,  # mixin images togethter (probability)
-    name=CUSTOM_MODEL_NAME)  # train the model
+# # Use the model
+# results = model.train(
+#     data=pp.YOLO_CONFIG_PATH,
+#     epochs=34,
+#     imgsz=320,
+#     patience=100,  # stop after x epochs without some improvements
+#     save=True,  # Save model for later resume of training
+#     batch=-1,  # automatically set batchsize depending on availability
+#     augment=True,  # currently it does not care
+#     hsv_s=0.1,  # during night saturation is low increasing would not be better
+#     hsv_v=0.4,  # make it darker (brightness)
+#     degrees=15,  # image rotation
+#     perspective=0.001,  # max perspective distortion
+#     shear=4,  # shearing of objects in image
+#     mixup=0.1,  # mixin images togethter (probability)
+#     name=CUSTOM_MODEL_NAME)  # train the model
 
 #results = model.val()  # evaluate model performance on the validation set
 
 # Load the trained model
 # model = YOLO(os.path.join(YOLO_WEIGHTS, "best.pt"), task='detect')
-model.val()
+model.predict("devset/devset", save=True, conf=0.4)
 # it automatically converts for anything you need
 # Known Bug all int quantization .tflite files are not working (no Detections) same goes with the edgetpu
 # to fix this you need to manually install this PR https://github.com/ultralytics/ultralytics/pull/1695
